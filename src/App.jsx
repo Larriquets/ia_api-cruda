@@ -5,11 +5,16 @@ import {
   createConversation,
   fetchConversationItems,
 } from './openai.js'
+import { sendClaudeMessage } from './anthropic.js'
 import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
+import Proveedores from './Proveedores.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
+const PROVIDER_KEY = 'chat_provider'
+const LOGS_KEY = 'chat_logs'
+const LOGS_MAX = 500
 
 const initialMessages = [
   { role: 'system', content: 'Eres un asistente útil que responde en español de forma clara y concisa.' },
@@ -22,9 +27,21 @@ export default function App() {
   const [error, setError] = useState(null)
   const [rawRequest, setRawRequest] = useState(null)
   const [rawResponse, setRawResponse] = useState(null)
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = localStorage.getItem(LOGS_KEY)
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  })
   const [rawMode, setRawMode] = useState(false)
   const [persistentMode, setPersistentMode] = useState(false)
+  const [provider, setProvider] = useState(() => {
+    if (typeof window === 'undefined') return 'openai'
+    return localStorage.getItem(PROVIDER_KEY) || 'openai'
+  })
   const [conversationId, setConversationId] = useState(() => {
     if (typeof window === 'undefined') return null
     return localStorage.getItem(CONV_ID_KEY) || null
@@ -34,6 +51,7 @@ export default function App() {
     if (typeof window === 'undefined') return 'chat'
     if (window.location.pathname === '/criollo') return 'criollo'
     if (window.location.pathname === '/contexto') return 'contexto'
+    if (window.location.pathname === '/proveedores') return 'proveedores'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -56,7 +74,31 @@ export default function App() {
     } catch {
       // localStorage lleno o no disponible
     }
+
+    console.groupCollapsed(
+      `%c[CONTEXTO] ${messages.length} mensaje(s)`,
+      'color:#fbbf24;font-weight:600'
+    )
+    console.table(
+      messages.map((m, i) => ({
+        '#': i,
+        role: m.role,
+        content: m.content.length > 80 ? m.content.slice(0, 77) + '...' : m.content,
+        chars: m.content.length,
+      }))
+    )
+    console.log('Array completo:', messages)
+    console.groupEnd()
   }, [messages])
+
+  useEffect(() => {
+    try {
+      const trimmed = logs.slice(-LOGS_MAX)
+      localStorage.setItem(LOGS_KEY, JSON.stringify(trimmed))
+    } catch {
+      // localStorage lleno o no disponible
+    }
+  }, [logs])
 
   useEffect(() => {
     if (persistentMode && conversationId) {
@@ -101,7 +143,7 @@ export default function App() {
     appendLog('user', `Usuario envía: "${text}"`)
 
     try {
-      if (persistentMode) {
+      if (persistentMode && provider === 'openai') {
         appendLog('info', 'Modo PERSISTENTE activo — usando /v1/responses + Conversations API')
 
         const id = await ensureConversationId()
@@ -134,9 +176,11 @@ export default function App() {
         } else {
           appendLog('info', `Modo conversación — enviando ${payload.length} mensaje(s) (system + historial + nuevo)`)
         }
-        appendLog('info', 'Iniciando llamada a /v1/chat/completions…')
 
-        const reply = await sendChatMessage(payload, {
+        const sendFn = provider === 'anthropic' ? sendClaudeMessage : sendChatMessage
+        appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+
+        const reply = await sendFn(payload, {
           onLog: appendLog,
           onRawRequest: setRawRequest,
           onRawResponse: setRawResponse,
@@ -166,9 +210,15 @@ export default function App() {
     setError(null)
     setRawRequest(null)
     setRawResponse(null)
-    setLogs([])
     setServerHistory([])
-    appendLog('info', 'Conversación local reiniciada (la del servidor sigue intacta)')
+    appendLog('info', 'Conversación local reiniciada (logs preservados)')
+  }
+
+  const handleClearLogs = () => {
+    setLogs([])
+    try {
+      localStorage.removeItem(LOGS_KEY)
+    } catch { /* noop */ }
   }
 
   const handleNewConversation = () => {
@@ -190,16 +240,61 @@ export default function App() {
   if (page === 'contexto') {
     return <Contexto onBack={() => window.close()} />
   }
+  if (page === 'proveedores') {
+    return <Proveedores onBack={() => window.close()} />
+  }
 
   return (
     <div className="app">
       <header className="header">
         <h1>Chat IA — debug</h1>
         <div className="header-actions">
-          <label className={`raw-toggle ${persistentMode ? 'persistent-toggle-on' : ''}`}>
+          <div className={`provider-selector provider-${provider}`}>
+            <span className="provider-label">Proveedor:</span>
+            <button
+              type="button"
+              className={`provider-btn ${provider === 'openai' ? 'active' : ''}`}
+              onClick={() => {
+                setProvider('openai')
+                localStorage.setItem(PROVIDER_KEY, 'openai')
+                appendLog('info', 'Proveedor cambiado a OpenAI')
+              }}
+            >
+              OpenAI
+            </button>
+            <button
+              type="button"
+              className={`provider-btn ${provider === 'anthropic' ? 'active' : ''}`}
+              onClick={() => {
+                setProvider('anthropic')
+                localStorage.setItem(PROVIDER_KEY, 'anthropic')
+                if (persistentMode) {
+                  setPersistentMode(false)
+                  appendLog('info', 'Modo persistente desactivado (Claude no soporta Conversations API)')
+                }
+                appendLog('info', 'Proveedor cambiado a Anthropic (Claude)')
+              }}
+            >
+              Claude
+            </button>
+            <a
+              href="/proveedores"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="provider-compare-link"
+              title="Explica las diferencias entre OpenAI y Claude (abre en otra pestaña)"
+            >
+              comparar 🔀
+            </a>
+          </div>
+          <label
+            className={`raw-toggle ${persistentMode ? 'persistent-toggle-on' : ''} ${provider === 'anthropic' ? 'raw-toggle-disabled' : ''}`}
+            title={provider === 'anthropic' ? 'No disponible: Claude no tiene Conversations API' : ''}
+          >
             <input
               type="checkbox"
               checked={persistentMode}
+              disabled={provider === 'anthropic'}
               onChange={(e) => {
                 const on = e.target.checked
                 setPersistentMode(on)
@@ -238,7 +333,12 @@ export default function App() {
       <div className="layout">
         {/* Panel 1 — Chat */}
         <section className="panel chat-panel">
-          <div className="panel-title">Chat</div>
+          <div className="panel-title">
+            <span>Chat</span>
+            <span className={`provider-badge provider-badge-${provider}`}>
+              {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+            </span>
+          </div>
           <div className="chat" ref={chatRef}>
             {visibleMessages.length === 0 && (
               <div className="empty">Escribe un mensaje para comenzar.</div>
@@ -475,7 +575,24 @@ export default function App() {
 
         {/* Panel 3 — Log de proceso */}
         <section className="panel log-panel">
-          <div className="panel-title">Log del proceso</div>
+          <div className="panel-title">
+            <span>Log del proceso</span>
+            <span className="panel-links">
+              <span className="context-meta">
+                {logs.length} línea(s) · persistido
+              </span>
+              {logs.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearLogs}
+                  className="docs-link"
+                  title="Borra el log y elimina la entrada de localStorage"
+                >
+                  vaciar
+                </button>
+              )}
+            </span>
+          </div>
           <div className="log" ref={logRef}>
             {logs.length === 0 && <div className="empty">Sin actividad todavía.</div>}
             {logs.map((entry, i) => (
