@@ -7,19 +7,26 @@ const CODE_KEY = 'editor_code_snapshot'
 const LANG_KEY = 'editor_language'
 const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'editor_logs'
+const KEEP_CONTEXT_KEY = 'editor_keep_context'
+const HISTORY_KEY = 'editor_history'
 const LOGS_MAX = 500
+const HISTORY_MAX = 40
 
-const DEFAULT_CODE = `// Probá pedirle a la IA que mejore, explique o testee este código.
-// Ejemplo de instrucción: "Agregale validación de entrada y un test"
+const DEFAULT_CODE = `public class CuentaBancaria {
+    private double saldo;
 
-function suma(a, b) {
-  return a + b
+    public void depositar(double monto) {
+        saldo += monto;
+    }
+
+    public double getSaldo() {
+        return saldo;
+    }
 }
-
-console.log(suma(2, 3))
 `
 
 const LANGUAGES = [
+  { id: 'java', label: 'Java' },
   { id: 'javascript', label: 'JavaScript' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
@@ -29,6 +36,11 @@ const LANGUAGES = [
   { id: 'markdown', label: 'Markdown' },
   { id: 'sql', label: 'SQL' },
   { id: 'shell', label: 'Shell' },
+]
+
+const SUGGESTED_STEPS = [
+  'Agregá otra clase a este código.',
+  '¿Cómo se llama la clase que agregaste?',
 ]
 
 const SYSTEM_PROMPT = `Sos un asistente de programación. El usuario te pasa un fragmento de código y una instrucción.
@@ -51,14 +63,14 @@ export default function Editor({ onBack }) {
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
   })
   const [language, setLanguage] = useState(() => {
-    if (typeof window === 'undefined') return 'javascript'
-    return localStorage.getItem(LANG_KEY) || 'javascript'
+    if (typeof window === 'undefined') return 'java'
+    return localStorage.getItem(LANG_KEY) || 'java'
   })
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'openai'
     return localStorage.getItem(PROVIDER_KEY) || 'openai'
   })
-  const [instruction, setInstruction] = useState('Refactorizá esta función para que sea más legible y agregale comentarios explicando cada paso.')
+  const [instruction, setInstruction] = useState('Agregá otra clase a este código.')
   const [reply, setReply] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -68,6 +80,19 @@ export default function Editor({ onBack }) {
     if (typeof window === 'undefined') return []
     try {
       const raw = localStorage.getItem(LOGS_KEY)
+      return raw ? JSON.parse(raw) : []
+    } catch {
+      return []
+    }
+  })
+  const [keepContext, setKeepContext] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(KEEP_CONTEXT_KEY) === 'true'
+  })
+  const [history, setHistory] = useState(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY)
       return raw ? JSON.parse(raw) : []
     } catch {
       return []
@@ -92,6 +117,17 @@ export default function Editor({ onBack }) {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [logs])
 
+  useEffect(() => {
+    try { localStorage.setItem(KEEP_CONTEXT_KEY, String(keepContext)) } catch { /* noop */ }
+  }, [keepContext])
+
+  useEffect(() => {
+    try {
+      const trimmed = history.slice(-HISTORY_MAX)
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
+    } catch { /* noop */ }
+  }, [history])
+
   const appendLog = useCallback((level, message) => {
     const timestamp = new Date().toLocaleTimeString('es-AR', { hour12: false })
     setLogs((prev) => [...prev, { level, message, timestamp }])
@@ -111,11 +147,14 @@ export default function Editor({ onBack }) {
 
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 80)}${instruction.length > 80 ? '…' : ''}"`)
     appendLog('info', `Lenguaje: ${language} · Tamaño código: ${code.length} chars`)
+    appendLog('info', keepContext
+      ? `Modo CON CONTEXTO — incluyendo ${history.length} mensaje(s) previos del historial`
+      : 'Modo SIN CONTEXTO — cada instrucción es independiente')
 
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: buildUserMessage() },
-    ]
+    const userMsg = { role: 'user', content: buildUserMessage() }
+    const messages = keepContext
+      ? [{ role: 'system', content: SYSTEM_PROMPT }, ...history, userMsg]
+      : [{ role: 'system', content: SYSTEM_PROMPT }, userMsg]
 
     try {
       const sendFn = provider === 'anthropic' ? sendClaudeMessage : sendChatMessage
@@ -128,13 +167,24 @@ export default function Editor({ onBack }) {
       })
 
       setReply(result)
-      appendLog('success', 'Respuesta recibida y mostrada')
+      if (keepContext) {
+        setHistory((h) => [...h, userMsg, { role: 'assistant', content: result }])
+        appendLog('success', `Respuesta agregada al historial (${history.length + 2} mensajes en total)`)
+      } else {
+        appendLog('success', 'Respuesta recibida (no se guardó en historial)')
+      }
     } catch (err) {
       setError(err.message || 'Error al contactar la API')
       appendLog('error', err.message || 'Error desconocido')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleClearHistory = () => {
+    setHistory([])
+    try { localStorage.removeItem(HISTORY_KEY) } catch { /* noop */ }
+    appendLog('info', 'Historial del editor vaciado')
   }
 
   const handleApply = () => {
@@ -186,6 +236,25 @@ export default function Editor({ onBack }) {
             >
               <option value="openai">🟢 OpenAI</option>
               <option value="anthropic">🟠 Claude (Anthropic)</option>
+            </select>
+          </label>
+
+          <label className="hdr-select">
+            <span className="hdr-select-label">Modo</span>
+            <select
+              value={keepContext ? 'with' : 'without'}
+              onChange={(e) => {
+                const next = e.target.value === 'with'
+                setKeepContext(next)
+                appendLog('info', next
+                  ? 'Modo CON CONTEXTO activado — los próximos requests incluirán el historial'
+                  : 'Modo SIN CONTEXTO activado — cada request será independiente')
+              }}
+              className={`hdr-select-input mode-select-${keepContext ? 'persistent' : 'conversation'}`}
+              title="Sin contexto: cada instrucción es independiente. Con contexto: la IA recuerda las instrucciones anteriores."
+            >
+              <option value="without">Sin contexto</option>
+              <option value="with">Con contexto</option>
             </select>
           </label>
 
@@ -248,6 +317,30 @@ export default function Editor({ onBack }) {
             </span>
           </div>
           <div className="instr-body">
+            <div className="suggested-steps">
+              <div className="suggested-steps-title">
+                Probá esta secuencia (clic en cada paso para cargarlo):
+              </div>
+              <ol className="suggested-steps-list">
+                {SUGGESTED_STEPS.map((step, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="suggested-step-btn"
+                      onClick={() => setInstruction(step)}
+                      disabled={loading}
+                      title="Cargar esta instrucción en el campo"
+                    >
+                      {step}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <div className="suggested-steps-foot">
+                Probá los 2 pasos <b>Con contexto</b> → la IA recuerda el nombre que ella misma eligió.
+                Después vaciá historial, pasá a <b>Sin contexto</b> y mandá solo el #2 → la IA no tiene cómo saber qué clase agregó.
+              </div>
+            </div>
             <textarea
               className="instr-input"
               value={instruction}
@@ -290,6 +383,57 @@ export default function Editor({ onBack }) {
               </div>
             </div>
           </div>
+
+          <div className={`context-section ${keepContext ? '' : 'context-raw-warning'}`}>
+            <div className="context-header">
+              <span className="context-title">
+                {keepContext ? 'Contexto del editor (historial)' : 'Contexto del editor'}
+              </span>
+              <span className="context-header-right">
+                <span className={`context-meta ${keepContext ? '' : 'context-meta-warn'}`}>
+                  {keepContext
+                    ? `${history.length} mensaje(s) · ≈ ${history.reduce((s, m) => s + Math.ceil((m.content || '').length / 4), 0)} tokens`
+                    : 'desactivado (sin contexto)'}
+                </span>
+                {keepContext && history.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearHistory}
+                    className="docs-link"
+                    title="Vacía el historial guardado del editor"
+                  >
+                    vaciar
+                  </button>
+                )}
+              </span>
+            </div>
+            {keepContext ? (
+              <>
+                <div className="context-list">
+                  {history.length === 0 ? (
+                    <div className="empty" style={{ fontSize: 12 }}>
+                      Sin historial todavía. El primer envío inicia el contexto.
+                    </div>
+                  ) : (
+                    history.map((m, i) => (
+                      <div key={i} className={`ctx-msg ctx-${m.role}`}>
+                        <span className="ctx-role">{m.role}</span>
+                        <span className="ctx-content">{m.content}</span>
+                        <span className="ctx-tokens">≈{Math.ceil((m.content || '').length / 4)}t</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="context-foot">
+                  El próximo request mandará: <code>system</code> + estos {history.length} mensaje(s) + tu instrucción nueva con el código actual.
+                </div>
+              </>
+            ) : (
+              <div className="context-foot">
+                Cada instrucción se manda sola: <code>system</code> + tu instrucción + código. La IA no recuerda lo anterior.
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Panel 3 — Raw + Log apilados */}
@@ -300,6 +444,14 @@ export default function Editor({ onBack }) {
           <pre className="raw raw-compact">
             {rawRequest ? JSON.stringify(rawRequest, null, 2) : '// Sin request todavía'}
           </pre>
+          {rawRequest && (
+            <div className="ctx-tip">
+              💡 Mirá el <code>messages[]</code> de arriba: <b>todo</b> lo que ves ahí es lo que
+              la IA usa para responder. Comentarios del código, nombres de variables, instrucción,
+              system prompt — todo es contexto. Si "adivina" algo aparentemente sin contexto, fijate
+              si la pista no estaba metida en el código.
+            </div>
+          )}
           <div className="panel-title panel-title-sub">
             <span>Response ← API</span>
           </div>

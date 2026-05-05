@@ -1417,3 +1417,101 @@ body {
   padding: 3px 7px;
   font-size: 10px;
 }
+
+/* === Panel de pasos sugeridos en el Editor === */
+.suggested-steps {
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid #1e3a8a;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.suggested-steps-title {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+
+.suggested-steps-list {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 0 0 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #94a3b8;
+}
+
+.suggested-steps-list li::marker {
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.suggested-step-btn {
+  background: transparent;
+  border: 1px dashed #334155;
+  color: #cbd5e1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  line-height: 1.45;
+  transition: all 0.15s;
+}
+
+.suggested-step-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: #3b82f6;
+  color: #e2e8f0;
+}
+
+.suggested-step-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.suggested-steps-foot {
+  font-size: 11px;
+  color: #64748b;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.suggested-steps-foot b {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* Tip didáctico debajo del raw request */
+.ctx-tip {
+  margin: 6px 10px 0;
+  padding: 8px 12px;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid #b45309;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: #fde68a;
+}
+
+.ctx-tip code {
+  background: #0b1220;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #fbbf24;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10px;
+  border: 1px solid #334155;
+}
+
+.ctx-tip b {
+  color: #fef3c7;
+}
