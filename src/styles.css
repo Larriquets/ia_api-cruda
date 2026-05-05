@@ -1272,3 +1272,148 @@ body {
 .editor-page .raw-panel {
   border-right: none;
 }
+
+/* === Switch de modo de app (Chat / Editor) === */
+.app-mode-switch {
+  display: inline-flex;
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.app-mode-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-mode-btn:hover {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.app-mode-btn.active {
+  background: #1e293b;
+  color: #e2e8f0;
+  box-shadow: 0 0 0 1px #475569;
+}
+
+/* === Selects del header (Proveedor / Modo / Lenguaje) === */
+.hdr-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.hdr-select-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.hdr-select-input {
+  background: #0b1220;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.hdr-select-input:hover {
+  border-color: #475569;
+}
+
+.hdr-select-input:focus {
+  border-color: #3b82f6;
+}
+
+/* Tinte por proveedor */
+.provider-select-openai {
+  border-color: #166534;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.provider-select-anthropic {
+  border-color: #c2410c;
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.08);
+}
+
+/* Tinte por modo de envío */
+.mode-select-persistent {
+  border-color: #166534;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.mode-select-raw {
+  border-color: #b45309;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.hdr-aux-link {
+  font-size: 11px;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #1e3a8a;
+  border-radius: 4px;
+  padding: 4px 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.hdr-aux-link:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+/* === Selector de Proveedor dentro del panel del Chat === */
+.panel-provider {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.panel-provider-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.panel-provider .hdr-select-input {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.panel-provider .hdr-aux-link {
+  padding: 3px 7px;
+  font-size: 10px;
+}

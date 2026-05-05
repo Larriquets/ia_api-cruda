@@ -167,35 +167,35 @@ export default function Editor({ onBack }) {
       <header className="header">
         <h1>Editor de código + IA</h1>
         <div className="header-actions">
-          <div className={`provider-selector provider-${provider}`}>
-            <span className="provider-label">Proveedor:</span>
-            <button
-              type="button"
-              className={`provider-btn ${provider === 'openai' ? 'active' : ''}`}
-              onClick={() => {
-                setProvider('openai')
-                localStorage.setItem(PROVIDER_KEY, 'openai')
-                appendLog('info', 'Proveedor cambiado a OpenAI')
-              }}
-            >
-              OpenAI
-            </button>
-            <button
-              type="button"
-              className={`provider-btn ${provider === 'anthropic' ? 'active' : ''}`}
-              onClick={() => {
-                setProvider('anthropic')
-                localStorage.setItem(PROVIDER_KEY, 'anthropic')
-                appendLog('info', 'Proveedor cambiado a Anthropic (Claude)')
-              }}
-            >
-              Claude
-            </button>
+          <div className="app-mode-switch">
+            <a href="/" className="app-mode-btn">💬 Chat</a>
+            <a href="/editor" className="app-mode-btn active" aria-current="page">💻 Editor</a>
           </div>
 
-          <label className="lang-selector">
-            <span className="lang-label">Lenguaje:</span>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <label className="hdr-select">
+            <span className="hdr-select-label">Proveedor</span>
+            <select
+              value={provider}
+              onChange={(e) => {
+                const next = e.target.value
+                setProvider(next)
+                localStorage.setItem(PROVIDER_KEY, next)
+                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+              }}
+              className={`hdr-select-input provider-select-${provider}`}
+            >
+              <option value="openai">🟢 OpenAI</option>
+              <option value="anthropic">🟠 Claude (Anthropic)</option>
+            </select>
+          </label>
+
+          <label className="hdr-select">
+            <span className="hdr-select-label">Lenguaje</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="hdr-select-input"
+            >
               {LANGUAGES.map((l) => (
                 <option key={l.id} value={l.id}>{l.label}</option>
               ))}
@@ -208,9 +208,6 @@ export default function Editor({ onBack }) {
           <button onClick={handleClearCode} className="clear-btn" type="button">
             Vaciar editor
           </button>
-          <a href="/" className="clear-btn" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-            ← Volver al chat
-          </a>
         </div>
       </header>
 

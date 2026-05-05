@@ -254,87 +254,62 @@ export default function App() {
       <header className="header">
         <h1>Chat IA — debug</h1>
         <div className="header-actions">
-          <a
-            href="/editor"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="provider-compare-link"
-            title="Editor de código con IA (Monaco + OpenAI/Claude)"
-          >
-            editor 💻
-          </a>
-          <div className={`provider-selector provider-${provider}`}>
-            <span className="provider-label">Proveedor:</span>
-            <button
-              type="button"
-              className={`provider-btn ${provider === 'openai' ? 'active' : ''}`}
-              onClick={() => {
-                setProvider('openai')
-                localStorage.setItem(PROVIDER_KEY, 'openai')
-                appendLog('info', 'Proveedor cambiado a OpenAI')
-              }}
-            >
-              OpenAI
-            </button>
-            <button
-              type="button"
-              className={`provider-btn ${provider === 'anthropic' ? 'active' : ''}`}
-              onClick={() => {
-                setProvider('anthropic')
-                localStorage.setItem(PROVIDER_KEY, 'anthropic')
-                if (persistentMode) {
+          <div className="app-mode-switch">
+            <a href="/" className="app-mode-btn active" aria-current="page">💬 Chat</a>
+            <a href="/editor" className="app-mode-btn">💻 Editor</a>
+          </div>
+
+          <label className="hdr-select">
+            <span className="hdr-select-label">Proveedor</span>
+            <select
+              value={provider}
+              onChange={(e) => {
+                const next = e.target.value
+                setProvider(next)
+                localStorage.setItem(PROVIDER_KEY, next)
+                if (next === 'anthropic' && persistentMode) {
                   setPersistentMode(false)
                   appendLog('info', 'Modo persistente desactivado (Claude no soporta Conversations API)')
                 }
-                appendLog('info', 'Proveedor cambiado a Anthropic (Claude)')
+                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
               }}
+              className={`hdr-select-input provider-select-${provider}`}
             >
-              Claude
-            </button>
-            <a
-              href="/proveedores"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="provider-compare-link"
-              title="Explica las diferencias entre OpenAI y Claude (abre en otra pestaña)"
+              <option value="openai">🟢 OpenAI</option>
+              <option value="anthropic">🟠 Claude (Anthropic)</option>
+            </select>
+          </label>
+
+          <label className="hdr-select">
+            <span className="hdr-select-label">Modo</span>
+            <select
+              value={persistentMode ? 'persistent' : rawMode ? 'raw' : 'conversation'}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === 'conversation') {
+                  setPersistentMode(false)
+                  setRawMode(false)
+                  appendLog('info', 'Modo CONVERSACIÓN — system + historial completo en cada request')
+                } else if (v === 'persistent') {
+                  setPersistentMode(true)
+                  setRawMode(false)
+                  appendLog('info', 'Modo PERSISTENTE — el contexto vive en OpenAI (/v1/responses)')
+                } else if (v === 'raw') {
+                  setPersistentMode(false)
+                  setRawMode(true)
+                  appendLog('info', 'Modo CRUDO — sin system, sin historial')
+                }
+              }}
+              className={`hdr-select-input mode-select-${persistentMode ? 'persistent' : rawMode ? 'raw' : 'conversation'}`}
             >
-              comparar 🔀
-            </a>
-          </div>
-          <label
-            className={`raw-toggle ${persistentMode ? 'persistent-toggle-on' : ''} ${provider === 'anthropic' ? 'raw-toggle-disabled' : ''}`}
-            title={provider === 'anthropic' ? 'No disponible: Claude no tiene Conversations API' : ''}
-          >
-            <input
-              type="checkbox"
-              checked={persistentMode}
-              disabled={provider === 'anthropic'}
-              onChange={(e) => {
-                const on = e.target.checked
-                setPersistentMode(on)
-                if (on && rawMode) setRawMode(false)
-                appendLog('info', on
-                  ? 'Modo PERSISTENTE activado — el contexto vive en OpenAI (/v1/responses)'
-                  : 'Modo PERSISTENTE desactivado — vuelve a /v1/chat/completions')
-              }}
-            />
-            <span>Modo persistente (servidor)</span>
+              <option value="conversation">Conversación (cliente)</option>
+              <option value="persistent" disabled={provider === 'anthropic'}>
+                Persistente (servidor){provider === 'anthropic' ? ' — solo OpenAI' : ''}
+              </option>
+              <option value="raw">Crudo (sin contexto)</option>
+            </select>
           </label>
-          <label className={`raw-toggle ${rawMode ? 'raw-toggle-on' : ''} ${persistentMode ? 'raw-toggle-disabled' : ''}`}>
-            <input
-              type="checkbox"
-              checked={rawMode}
-              disabled={persistentMode}
-              onChange={(e) => {
-                const on = e.target.checked
-                setRawMode(on)
-                appendLog('info', on
-                  ? 'API cruda ACTIVADA — sin contexto, sin system prompt'
-                  : 'API cruda DESACTIVADA — vuelve a usar contexto')
-              }}
-            />
-            <span>API cruda (sin contexto)</span>
-          </label>
+
           <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
           {persistentMode && (
             <button onClick={handleNewConversation} className="clear-btn" type="button" title="Descarta el conversation_id actual y crea uno nuevo en el próximo envío">
@@ -349,8 +324,19 @@ export default function App() {
         <section className="panel chat-panel">
           <div className="panel-title">
             <span>Chat</span>
-            <span className={`provider-badge provider-badge-${provider}`}>
-              {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+            <span className="panel-provider">
+              <span className={`provider-badge provider-badge-${provider}`}>
+                {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+              </span>
+              <a
+                href="/proveedores"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hdr-aux-link"
+                title="Compara OpenAI vs Claude (abre en otra pestaña)"
+              >
+                comparar 🔀
+              </a>
             </span>
           </div>
           <div className="chat" ref={chatRef}>
