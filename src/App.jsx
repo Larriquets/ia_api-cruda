@@ -9,6 +9,7 @@ import { sendClaudeMessage } from './anthropic.js'
 import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
+import Editor from './Editor.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
@@ -52,6 +53,7 @@ export default function App() {
     if (window.location.pathname === '/criollo') return 'criollo'
     if (window.location.pathname === '/contexto') return 'contexto'
     if (window.location.pathname === '/proveedores') return 'proveedores'
+    if (window.location.pathname === '/editor') return 'editor'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -243,12 +245,24 @@ export default function App() {
   if (page === 'proveedores') {
     return <Proveedores onBack={() => window.close()} />
   }
+  if (page === 'editor') {
+    return <Editor onBack={() => window.close()} />
+  }
 
   return (
     <div className="app">
       <header className="header">
         <h1>Chat IA — debug</h1>
         <div className="header-actions">
+          <a
+            href="/editor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="provider-compare-link"
+            title="Editor de código con IA (Monaco + OpenAI/Claude)"
+          >
+            editor 💻
+          </a>
           <div className={`provider-selector provider-${provider}`}>
             <span className="provider-label">Proveedor:</span>
             <button
