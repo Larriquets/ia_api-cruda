@@ -41,6 +41,7 @@ const LANGUAGES = [
 const SUGGESTED_STEPS = [
   'Agregá otra clase a este código.',
   '¿Cómo se llama la clase que agregaste?',
+  'Creá un objeto de la clase que creaste, instanciala.',
 ]
 
 const SYSTEM_PROMPT = `Sos un asistente de programación. El usuario te pasa un fragmento de código y una instrucción.
