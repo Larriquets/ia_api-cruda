@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell(npx vite build 2>&1)",
+      "PowerShell(npm install 2>&1)",
+      "PowerShell(npm install --include=dev --no-save 2>&1)"
+    ]
+  }
+}

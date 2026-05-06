@@ -10,6 +10,7 @@ import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
 import Editor from './Editor.jsx'
+import EditorAgente from './EditorAgente.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
@@ -54,6 +55,7 @@ export default function App() {
     if (window.location.pathname === '/contexto') return 'contexto'
     if (window.location.pathname === '/proveedores') return 'proveedores'
     if (window.location.pathname === '/editor') return 'editor'
+    if (window.location.pathname === '/editor-agente') return 'editor-agente'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -248,6 +250,9 @@ export default function App() {
   if (page === 'editor') {
     return <Editor onBack={() => window.close()} />
   }
+  if (page === 'editor-agente') {
+    return <EditorAgente />
+  }
 
   return (
     <div className="app">
@@ -257,6 +262,7 @@ export default function App() {
           <div className="app-mode-switch">
             <a href="/" className="app-mode-btn active" aria-current="page">💬 Chat</a>
             <a href="/editor" className="app-mode-btn">💻 Editor</a>
+            <a href="/editor-agente" className="app-mode-btn">🤖 Agente</a>
           </div>
 
           <label className="hdr-select">

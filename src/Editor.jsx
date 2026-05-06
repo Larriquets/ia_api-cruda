@@ -9,8 +9,13 @@ const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'editor_logs'
 const KEEP_CONTEXT_KEY = 'editor_keep_context'
 const HISTORY_KEY = 'editor_history'
+const COLS_KEY = 'editor_cols'
 const LOGS_MAX = 500
 const HISTORY_MAX = 40
+
+// Anchos por defecto de las 3 columnas (en fracciones — deben sumar 1)
+const DEFAULT_COLS = [0.42, 0.29, 0.29]
+const MIN_COL = 0.12 // 12% mínimo por columna
 
 const DEFAULT_CODE = `public class CuentaBancaria {
     private double saldo;
@@ -99,8 +104,21 @@ export default function Editor({ onBack }) {
       return []
     }
   })
+  const [cols, setCols] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_COLS
+    try {
+      const raw = localStorage.getItem(COLS_KEY)
+      if (!raw) return DEFAULT_COLS
+      const parsed = JSON.parse(raw)
+      if (!Array.isArray(parsed) || parsed.length !== 3) return DEFAULT_COLS
+      return parsed
+    } catch {
+      return DEFAULT_COLS
+    }
+  })
 
   const logRef = useRef(null)
+  const layoutRef = useRef(null)
 
   useEffect(() => {
     try { localStorage.setItem(CODE_KEY, code) } catch { /* noop */ }
@@ -128,6 +146,55 @@ export default function Editor({ onBack }) {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
     } catch { /* noop */ }
   }, [history])
+
+  useEffect(() => {
+    try { localStorage.setItem(COLS_KEY, JSON.stringify(cols)) } catch { /* noop */ }
+  }, [cols])
+
+  // Redimensionado de columnas: dividerIndex 0 = entre col 0 y 1, 1 = entre col 1 y 2.
+  const startResize = (dividerIndex) => (e) => {
+    e.preventDefault()
+    const layout = layoutRef.current
+    if (!layout) return
+    const rect = layout.getBoundingClientRect()
+    const totalWidth = rect.width
+    const startX = e.clientX
+    const startCols = cols.slice()
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX
+      const deltaFrac = dx / totalWidth
+      const a = dividerIndex
+      const b = dividerIndex + 1
+      let newA = startCols[a] + deltaFrac
+      let newB = startCols[b] - deltaFrac
+      if (newA < MIN_COL) {
+        newB -= (MIN_COL - newA)
+        newA = MIN_COL
+      }
+      if (newB < MIN_COL) {
+        newA -= (MIN_COL - newB)
+        newB = MIN_COL
+      }
+      const next = startCols.slice()
+      next[a] = newA
+      next[b] = newB
+      setCols(next)
+    }
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
+  const handleResetCols = () => setCols(DEFAULT_COLS)
 
   const appendLog = useCallback((level, message) => {
     const timestamp = new Date().toLocaleTimeString('es-AR', { hour12: false })
@@ -221,6 +288,7 @@ export default function Editor({ onBack }) {
           <div className="app-mode-switch">
             <a href="/" className="app-mode-btn">💬 Chat</a>
             <a href="/editor" className="app-mode-btn active" aria-current="page">💻 Editor</a>
+            <a href="/editor-agente" className="app-mode-btn">🤖 Agente</a>
           </div>
 
           <label className="hdr-select">
@@ -281,7 +349,13 @@ export default function Editor({ onBack }) {
         </div>
       </header>
 
-      <div className="layout editor-layout">
+      <div
+        className="layout editor-layout editor-layout-resizable"
+        ref={layoutRef}
+        style={{
+          gridTemplateColumns: `${cols[0]}fr 6px ${cols[1]}fr 6px ${cols[2]}fr`,
+        }}
+      >
         {/* Panel 1 — Editor Monaco */}
         <section className="panel editor-panel">
           <div className="panel-title">
@@ -308,6 +382,15 @@ export default function Editor({ onBack }) {
             />
           </div>
         </section>
+
+        <div
+          className="col-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          onMouseDown={startResize(0)}
+          onDoubleClick={handleResetCols}
+          title="Arrastrá para redimensionar · doble clic = reset"
+        />
 
         {/* Panel 2 — Instrucción + respuesta */}
         <section className="panel instr-panel">
@@ -436,6 +519,15 @@ export default function Editor({ onBack }) {
             )}
           </div>
         </section>
+
+        <div
+          className="col-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          onMouseDown={startResize(1)}
+          onDoubleClick={handleResetCols}
+          title="Arrastrá para redimensionar · doble clic = reset"
+        />
 
         {/* Panel 3 — Raw + Log apilados */}
         <section className="panel raw-panel">
