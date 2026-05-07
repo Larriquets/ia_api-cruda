@@ -2,7 +2,7 @@
 // Pedagógico: cada iteración llama a la API; los onStep / onCodeChange permiten
 // ver desde la UI cómo la IA llama N herramientas en un solo prompt.
 
-import { AGENT_SYSTEM_PROMPT, AGENT_TOOL_DEFS, runAgentTool } from './agent-tools.js'
+import { AGENT_SYSTEM_PROMPT, getAgentToolDefs, runAgentTool } from './agent-tools.js'
 
 const MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
 const ANTHROPIC_VERSION = '2023-06-01'
@@ -11,20 +11,13 @@ const getApiKey = () => import.meta.env.VITE_ANTHROPIC_API_KEY
 const getModel = () => import.meta.env.VITE_ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
-// Adaptamos las defs neutras al shape de Anthropic (input_schema en lugar de parameters).
-const ANTHROPIC_TOOLS = AGENT_TOOL_DEFS.map((t) => ({
-  name: t.name,
-  description: t.description,
-  input_schema: t.parameters,
-}))
-
 /**
  * Loop agéntico Claude.
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '' },
-  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange } = {},
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false },
+  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
   const model = getModel()
@@ -37,11 +30,28 @@ export async function runClaudeAgent(
   onLog?.('info', `API key Anthropic detectada (${maskKey(apiKey)})`)
 
   let code = initialCode
-  const getCode = () => code
-  const setCode = (next) => {
-    code = next
-    onCodeChange?.(next)
+  const toolState = {
+    getCode: () => code,
+    setCode: (next) => {
+      code = next
+      onCodeChange?.(next)
+    },
+    approved: false,
+    requireImpactApproval,
+    awaitApproval: async (payload) => {
+      if (typeof onAwaitApproval !== 'function') {
+        // Sin UI — por defecto aprobamos para no romper corridas headless.
+        return true
+      }
+      return await onAwaitApproval(payload)
+    },
   }
+  // Adaptamos las defs neutras al shape de Anthropic (input_schema en lugar de parameters).
+  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval }).map((t) => ({
+    name: t.name,
+    description: t.description,
+    input_schema: t.parameters,
+  }))
 
   const messages = [
     {
@@ -69,7 +79,7 @@ export async function runClaudeAgent(
       model,
       system: fullSystem,
       messages,
-      tools: ANTHROPIC_TOOLS,
+      tools,
       max_tokens: 1024,
     }
 
@@ -142,7 +152,7 @@ export async function runClaudeAgent(
       onStep?.({ n: iter, type: 'tool_use', name: tu.name, input: tu.input, id: tu.id })
       onLog?.('info', `→ tool_use: ${tu.name}(${JSON.stringify(tu.input).slice(0, 80)})`)
 
-      const { result, isError } = runAgentTool(tu.name, tu.input, getCode, setCode)
+      const { result, isError } = await runAgentTool(tu.name, tu.input, toolState)
       onStep?.({ n: iter, type: 'tool_result', name: tu.name, content: result, isError, id: tu.id })
       onLog?.(isError ? 'error' : 'info', `← tool_result (${tu.name}): ${String(result).slice(0, 80)}`)
 

@@ -10,7 +10,7 @@
 // - Resultado: nuevo mensaje con role 'tool', tool_call_id, content (string).
 // - Termina cuando finish_reason !== 'tool_calls' (típicamente 'stop').
 
-import { AGENT_SYSTEM_PROMPT, AGENT_TOOL_DEFS, runAgentTool } from './agent-tools.js'
+import { AGENT_SYSTEM_PROMPT, getAgentToolDefs, runAgentTool } from './agent-tools.js'
 
 const CHAT_URL = 'https://api.openai.com/v1/chat/completions'
 
@@ -18,19 +18,9 @@ const getApiKey = () => import.meta.env.VITE_OPENAI_API_KEY
 const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
-// Adaptamos las defs neutras al shape de OpenAI.
-const OPENAI_TOOLS = AGENT_TOOL_DEFS.map((t) => ({
-  type: 'function',
-  function: {
-    name: t.name,
-    description: t.description,
-    parameters: t.parameters,
-  },
-}))
-
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '' },
-  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange } = {},
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false },
+  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
   const model = getModel()
@@ -43,11 +33,28 @@ export async function runOpenAIAgent(
   onLog?.('info', `API key OpenAI detectada (${maskKey(apiKey)})`)
 
   let code = initialCode
-  const getCode = () => code
-  const setCode = (next) => {
-    code = next
-    onCodeChange?.(next)
+  const toolState = {
+    getCode: () => code,
+    setCode: (next) => {
+      code = next
+      onCodeChange?.(next)
+    },
+    approved: false,
+    requireImpactApproval,
+    awaitApproval: async (payload) => {
+      if (typeof onAwaitApproval !== 'function') return true
+      return await onAwaitApproval(payload)
+    },
   }
+  // Adaptamos las defs neutras al shape de OpenAI.
+  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval }).map((t) => ({
+    type: 'function',
+    function: {
+      name: t.name,
+      description: t.description,
+      parameters: t.parameters,
+    },
+  }))
 
   const fullSystem = extraSystem
     ? `${AGENT_SYSTEM_PROMPT}\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
@@ -74,7 +81,7 @@ export async function runOpenAIAgent(
     const body = {
       model,
       messages,
-      tools: OPENAI_TOOLS,
+      tools,
       temperature: 0.2,
     }
 
@@ -158,7 +165,7 @@ export async function runOpenAIAgent(
       onStep?.({ n: iter, type: 'tool_use', name, input: parsed, id: tc.id })
       onLog?.('info', `→ tool_use: ${name}(${JSON.stringify(parsed).slice(0, 80)})`)
 
-      const { result, isError } = runAgentTool(name, parsed, getCode, setCode)
+      const { result, isError } = await runAgentTool(name, parsed, toolState)
       onStep?.({ n: iter, type: 'tool_result', name, content: result, isError, id: tc.id })
       onLog?.(isError ? 'error' : 'info', `← tool_result (${name}): ${String(result).slice(0, 80)}`)
 

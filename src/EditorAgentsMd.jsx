@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
+import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 
 const CODE_KEY = 'agentmd_code_snapshot'
-const AGENTS_KEY = 'agentmd_agents_md'
+const AGENTS_KEY = 'agentmd_agents_md_v4'
 const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'agentmd_logs'
 const COLS_KEY = 'agentmd_cols'
@@ -24,29 +25,46 @@ const DEFAULT_CODE = `public class CuentaBancaria {
 }
 `
 
-const DEFAULT_AGENTS_MD = `# Convenciones del proyecto Banco
+const DEFAULT_AGENTS_MD = `# AGENTS.md
 
-## Estilo de código
-- Los campos privados de las clases del modelo usan prefijo \`_\` (ej: \`_saldo\`, \`_cliente\`).
-- Los métodos públicos validan inputs ANTES de modificar estado. Si el input es inválido,
-  lanzan \`IllegalArgumentException\` con un mensaje claro en español.
-- Nunca uses \`System.out.println\` para logging — siempre usá \`log.info(...)\`,
-  \`log.warn(...)\`, etc. (asumí que la clase tiene un campo \`log\` ya inyectado).
+## Reglas obligatorias
+- NO se pueden hacer cambios sin medir antes el impacto del cambio en el código usando \`assess_impact\`.
+- Toda clase, función/método o propiedad/campo que se cree debe tener sí o sí el prefijo \`_bco\` en su nombre.
+  Ejemplos: \`_bcoCuentaBancaria\`, \`_bcoRetirar\`, \`_bcoSaldo\`.
 
-## Naming
-- Los métodos públicos son verbos en infinitivo en español: \`depositar\`, \`retirar\`, \`consultarSaldo\`.
-- Los getters siguen la convención Java estándar: \`getSaldo()\`, \`getCliente()\`.
-
-## Reglas de negocio
-- Un monto siempre debe ser estrictamente positivo (\`> 0\`). Cero o negativo es inválido.
-- Las operaciones que retiran fondos verifican primero que haya saldo suficiente;
-  si no, lanzan \`SaldoInsuficienteException\`.
+## Niveles de impacto
+- \`low\`: cambio puntual de bajo riesgo, sin tocar firmas públicas ni crear tipos nuevos.
+- \`medium\`: varios edits relacionados o una clase nueva chica, sin romper APIs existentes.
+- \`high\`: rompe firmas públicas, cambia el modelo de datos, hace un refactor estructural o agrega varias clases relacionadas.
 `
+
+const LEGACY_AGENTS_MD_MARKERS = [
+  '# Convenciones del proyecto Banco',
+  'SaldoInsuficienteException',
+]
+const REQUIRED_AGENTS_MD_MARKERS = [
+  'assess_impact',
+  'prefijo `_bco`',
+]
+
+function loadInitialAgentsMd() {
+  if (typeof window === 'undefined') return DEFAULT_AGENTS_MD
+  const stored = localStorage.getItem(AGENTS_KEY)
+  if (!stored) return DEFAULT_AGENTS_MD
+  const isLegacy = LEGACY_AGENTS_MD_MARKERS.some((marker) => stored.includes(marker))
+  const isMissingRequiredRule = REQUIRED_AGENTS_MD_MARKERS.some((marker) => !stored.includes(marker))
+  if (isLegacy || isMissingRequiredRule) {
+    localStorage.setItem(AGENTS_KEY, DEFAULT_AGENTS_MD)
+    return DEFAULT_AGENTS_MD
+  }
+  return stored
+}
 
 const SUGGESTED_PROMPTS = [
   'Agregá un método retirar(monto).',
   'Agregá un método transferir(destino, monto) que retire de esta cuenta y deposite en otra.',
   'Agregá validación al método depositar para que rechace montos inválidos.',
+  'Agregá una clase Cliente con campos privados nombre, dni y email, su constructor y getters. Después agregá un campo cliente a CuentaBancaria con su getter.',
 ]
 
 const DEFAULT_COLS = [0.32, 0.42, 0.26]
@@ -58,10 +76,8 @@ export default function EditorAgentsMd() {
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
   })
   const [agentsMd, setAgentsMd] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_AGENTS_MD
-    return localStorage.getItem(AGENTS_KEY) ?? DEFAULT_AGENTS_MD
+    return loadInitialAgentsMd()
   })
-  const [useAgentsMd, setUseAgentsMd] = useState(true)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'anthropic'
     return localStorage.getItem(PROVIDER_KEY) || 'anthropic'
@@ -74,8 +90,10 @@ export default function EditorAgentsMd() {
   const [rawHistory, setRawHistory] = useState([])
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [iterCount, setIterCount] = useState(0)
-  // Resultado de la comparación: { withCode, withoutCode, withIters, withoutIters, withInitial }
-  const [compareResult, setCompareResult] = useState(null)
+  const [lastMode, setLastMode] = useState(null) // 'with' | 'without' | null
+  // Aprobación humana del plan que la IA propone vía assess_impact.
+  // pending: { level, summary, plan, resolve } cuando hay un assess_impact en vuelo.
+  const [pendingApproval, setPendingApproval] = useState(null)
   const [logs, setLogs] = useState(() => {
     if (typeof window === 'undefined') return []
     try {
@@ -102,6 +120,7 @@ export default function EditorAgentsMd() {
   const stepsRef = useRef(null)
   const layoutRef = useRef(null)
   const rawHistoryRef = useRef(null)
+  const approvalRef = useRef(null)
 
   useEffect(() => {
     try { localStorage.setItem(CODE_KEY, code) } catch { /* noop */ }
@@ -125,11 +144,29 @@ export default function EditorAgentsMd() {
   useEffect(() => {
     rawHistoryRef.current?.scrollTo({ top: rawHistoryRef.current.scrollHeight, behavior: 'smooth' })
   }, [rawHistory.length])
+  useEffect(() => {
+    if (pendingApproval) {
+      // Scroll para que el banner (con botones Proseguir/Cancelar) quede visible.
+      approvalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [pendingApproval])
 
   const appendLog = useCallback((level, message) => {
     const timestamp = new Date().toLocaleTimeString('es-AR', { hour12: false })
     setLogs((prev) => [...prev, { level, message, timestamp }])
   }, [])
+
+  // Cuando la IA llama assess_impact, el wrapper invoca esta función esperando
+  // que la resolvamos con true (proseguir) o false (cancelar). Acá la convertimos
+  // en una promesa que se resuelve cuando el usuario clickea uno de los dos botones.
+  const requestApproval = useCallback(
+    (payload) =>
+      new Promise((resolve) => {
+        appendLog('info', `🛑 Pausa para aprobación humana — impacto=${payload.level}`)
+        setPendingApproval({ ...payload, resolve })
+      }),
+    [appendLog],
+  )
 
   // Devuelve los hooks UI estándar para una corrida de agente.
   const buildHooks = useCallback(
@@ -154,12 +191,26 @@ export default function EditorAgentsMd() {
         }),
       onStep: (step) => setSteps((prev) => [...prev, step]),
       onCodeChange: codeSetter,
+      onAwaitApproval: requestApproval,
     }),
-    [appendLog],
+    [appendLog, requestApproval],
   )
 
-  // Corrida normal (con o sin AGENTS.md según toggle).
-  const handleSend = async () => {
+  const handleApprovalDecision = (approved) => {
+    setPendingApproval((prev) => {
+      if (!prev) return null
+      appendLog(approved ? 'success' : 'info', approved ? '✓ Plan aprobado por el humano — el agente continúa.' : '✗ Plan cancelado por el humano — el agente debe terminar sin editar.')
+      try { prev.resolve(approved) } catch { /* noop */ }
+      return null
+    })
+  }
+
+  // Manda la instrucción y, según `withAgents`, incluye o no el AGENTS.md
+  // en el system prompt. Si YA hubo una corrida previa (lastMode !== null),
+  // reseteamos el código al ejemplo base antes de mandar — así la próxima
+  // opción (CON o SIN) arranca del mismo estado limpio y se puede comparar.
+  // En la primera corrida respetamos lo que el usuario tenga en el editor.
+  const handleSend = async (withAgents) => {
     if (!instruction.trim() || loading) return
     setLoading(true)
     setError(null)
@@ -168,11 +219,24 @@ export default function EditorAgentsMd() {
     setRawHistory([])
     setCollapsed(new Set())
     setIterCount(0)
-    setCompareResult(null)
+    // Si quedó una aprobación pendiente de una corrida anterior (no debería,
+    // pero por las dudas), la resolvemos como cancelada antes de arrancar.
+    setPendingApproval((prev) => {
+      if (prev) try { prev.resolve(false) } catch { /* noop */ }
+      return null
+    })
+
+    const hadPreviousRun = lastMode !== null
+    const codeForRun = hadPreviousRun ? DEFAULT_CODE : code
+    if (hadPreviousRun) {
+      setCode(DEFAULT_CODE)
+      appendLog('info', `Reset: ya hubo una corrida previa, vuelvo el código al ejemplo base (${DEFAULT_CODE.length} chars) para arrancar limpio.`)
+    }
+    setLastMode(withAgents ? 'with' : 'without')
 
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
-    appendLog('info', `Lenguaje: java · Tamaño código inicial: ${code.length} chars`)
-    appendLog('info', `AGENTS.md: ${useAgentsMd ? 'INCLUIDO en system prompt' : 'IGNORADO (toggle off)'}`)
+    appendLog('info', `Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`)
+    appendLog('info', `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`)
     appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
 
     try {
@@ -180,16 +244,17 @@ export default function EditorAgentsMd() {
       const { finalText: ft, code: finalCode, iterations } = await runFn(
         {
           userInstruction: instruction,
-          initialCode: code,
+          initialCode: codeForRun,
           language: 'java',
           maxIterations: 8,
-          extraSystem: useAgentsMd ? agentsMd : '',
+          extraSystem: withAgents ? agentsMd : '',
+          requireImpactApproval: withAgents,
         },
         buildHooks(setCode),
       )
       setFinalText(ft)
       setIterCount(iterations)
-      appendLog('success', `Agente terminó. ${finalCode.length} chars finales, ${iterations} iter.`)
+      appendLog('success', `Agente terminó. ${finalCode.length} chars finales, ${iterations} iter. Código del editor actualizado.`)
     } catch (err) {
       setError(err.message || 'Error al ejecutar el agente')
       appendLog('error', err.message || 'Error desconocido')
@@ -198,92 +263,13 @@ export default function EditorAgentsMd() {
     }
   }
 
-  // Comparación: corre la MISMA instrucción dos veces (con y sin AGENTS.md)
-  // partiendo del MISMO código inicial, y muestra los dos resultados lado a lado.
-  const handleCompare = async () => {
-    if (!instruction.trim() || loading) return
-    setLoading(true)
-    setError(null)
-    setFinalText('')
-    setSteps([])
-    setRawHistory([])
-    setCollapsed(new Set())
-    setIterCount(0)
-    setCompareResult(null)
-
-    const initialSnapshot = code
-
-    appendLog('user', `🔬 COMPARACIÓN — instrucción: "${instruction.trim().slice(0, 80)}…"`)
-    appendLog('info', `Código inicial común (${initialSnapshot.length} chars). Ejecutando dos corridas independientes.`)
-
-    const runFn = provider === 'anthropic' ? runClaudeAgent : runOpenAIAgent
-
-    try {
-      // 1) CON AGENTS.md
-      appendLog('info', '═══ Corrida 1 de 2: CON AGENTS.md ═══')
-      let codeWith = initialSnapshot
-      const resultWith = await runFn(
-        {
-          userInstruction: instruction,
-          initialCode: initialSnapshot,
-          language: 'java',
-          maxIterations: 8,
-          extraSystem: agentsMd,
-        },
-        {
-          ...buildHooks((c) => { codeWith = c }),
-        },
-      )
-
-      // 2) SIN AGENTS.md
-      appendLog('info', '═══ Corrida 2 de 2: SIN AGENTS.md ═══')
-      let codeWithout = initialSnapshot
-      const resultWithout = await runFn(
-        {
-          userInstruction: instruction,
-          initialCode: initialSnapshot,
-          language: 'java',
-          maxIterations: 8,
-          extraSystem: '',
-        },
-        {
-          ...buildHooks((c) => { codeWithout = c }),
-        },
-      )
-
-      setCompareResult({
-        withCode: codeWith,
-        withoutCode: codeWithout,
-        withIters: resultWith.iterations,
-        withoutIters: resultWithout.iterations,
-        withInitial: initialSnapshot,
-      })
-      appendLog('success', `Comparación lista. CON: ${codeWith.length} chars / ${resultWith.iterations} iter — SIN: ${codeWithout.length} chars / ${resultWithout.iterations} iter`)
-      // Dejamos el código del editor en el estado original para que el usuario
-      // pueda elegir cuál aplicar manualmente.
-      setCode(initialSnapshot)
-    } catch (err) {
-      setError(err.message || 'Error en la comparación')
-      appendLog('error', err.message || 'Error desconocido')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleApplyCompareResult = (which) => {
-    if (!compareResult) return
-    const next = which === 'with' ? compareResult.withCode : compareResult.withoutCode
-    setCode(next)
-    appendLog('info', `Aplicado al editor el resultado ${which === 'with' ? 'CON' : 'SIN'} AGENTS.md`)
-  }
-
   const handleResetAll = () => {
     setCode(DEFAULT_CODE)
     setAgentsMd(DEFAULT_AGENTS_MD)
     setSteps([])
     setFinalText('')
     setRawHistory([])
-    setCompareResult(null)
+    setLastMode(null)
     appendLog('info', 'Todo reseteado al ejemplo')
   }
 
@@ -375,15 +361,15 @@ export default function EditorAgentsMd() {
         <section className="panel editor-panel">
           <div className="panel-title">
             <span>AGENTS.md</span>
-            <label className="agentmd-toggle">
-              <input
-                type="checkbox"
-                checked={useAgentsMd}
-                onChange={(e) => setUseAgentsMd(e.target.checked)}
-                disabled={loading}
-              />
-              <span>{useAgentsMd ? 'incluido' : 'ignorado'}</span>
-            </label>
+            <button
+              type="button"
+              className="docs-link"
+              onClick={() => { setAgentsMd(DEFAULT_AGENTS_MD); appendLog('info', 'AGENTS.md reseteado al ejemplo de fábrica') }}
+              disabled={loading}
+              title="Vuelve al AGENTS.md de ejemplo precargado"
+            >
+              ejemplo
+            </button>
           </div>
           <div className="monaco-wrap">
             <MonacoEditor
@@ -408,6 +394,23 @@ export default function EditorAgentsMd() {
             estas reglas todas las veces. Es la única forma porque la IA es
             <b> virgen en cada llamada</b>.
           </div>
+
+          <details className="docs-collapsible base-prompt-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🔧 System prompt BASE del agente (antes del AGENTS.md)</span>
+            </summary>
+            <div className="docs-collapsible-body">
+              <div className="ctx-tip" style={{ marginTop: 0 }}>
+                💡 Esto es lo que el agente recibe SIEMPRE, además de tu AGENTS.md.
+                Define cómo usa las herramientas base (<code>read_code</code> y{' '}
+                <code>edit_code</code>). Cuando enviás CON AGENTS.md, se agrega{' '}
+                <code>assess_impact</code> y la aprobación humana antes de editar.
+                Read-only, no se puede modificar desde la UI.
+              </div>
+              <pre className="base-prompt-body">{AGENT_SYSTEM_PROMPT}</pre>
+            </div>
+          </details>
         </section>
 
         <div
@@ -471,77 +474,70 @@ export default function EditorAgentsMd() {
             <div className="instr-actions">
               <button
                 type="button"
-                onClick={handleSend}
+                onClick={() => handleSend(true)}
                 disabled={loading || !instruction.trim()}
                 className="instr-send-btn"
+                title="Manda la instrucción incluyendo el AGENTS.md en el system prompt"
               >
-                {loading ? 'Trabajando…' : `🤖 Mandar (${useAgentsMd ? 'CON' : 'SIN'} AGENTS.md)`}
+                {loading && lastMode === 'with' ? 'Trabajando…' : '✅ Enviar CON AGENTS.md'}
               </button>
               <button
                 type="button"
-                onClick={handleCompare}
+                onClick={() => handleSend(false)}
                 disabled={loading || !instruction.trim()}
                 className="instr-apply-btn"
-                title="Corre la misma instrucción dos veces — una con AGENTS.md, otra sin — y muestra los resultados lado a lado"
+                title="Manda la instrucción sin incluir el AGENTS.md — solo el system base del agente"
               >
-                🔬 Comparar con/sin
+                {loading && lastMode === 'without' ? 'Trabajando…' : '❌ Enviar SIN AGENTS.md'}
               </button>
             </div>
 
-            {error && <div className="error">{error}</div>}
-
-            {compareResult && (
-              <div className="compare-panel">
-                <div className="compare-header">
-                  <span>🔬 Resultado de la comparación</span>
+            {pendingApproval && (
+              <div ref={approvalRef} className={`approval-banner approval-${pendingApproval.level}`}>
+                <div className="approval-header">
+                  <span className="approval-badge">
+                    {pendingApproval.level === 'low' && '🟢 Impacto BAJO'}
+                    {pendingApproval.level === 'medium' && '🟡 Impacto MEDIO'}
+                    {pendingApproval.level === 'high' && '🔴 Impacto ALTO'}
+                  </span>
+                  <span className="approval-title">El agente pide permiso para editar</span>
+                </div>
+                <div className="approval-section">
+                  <div className="approval-label">Resumen</div>
+                  <div className="approval-body">{pendingApproval.summary}</div>
+                </div>
+                <div className="approval-section">
+                  <div className="approval-label">Plan</div>
+                  <pre className="approval-plan">{pendingApproval.plan}</pre>
+                </div>
+                <div className="approval-actions">
                   <button
                     type="button"
-                    className="docs-link"
-                    onClick={() => setCompareResult(null)}
+                    className="instr-send-btn"
+                    onClick={() => handleApprovalDecision(true)}
                   >
-                    cerrar
+                    ✓ Proseguir
                   </button>
-                </div>
-                <div className="compare-grid">
-                  <div className="compare-col compare-col-with">
-                    <div className="compare-col-title">
-                      ✅ CON AGENTS.md
-                      <span className="compare-col-meta">{compareResult.withIters} iter · {compareResult.withCode.length} chars</span>
-                    </div>
-                    <pre className="compare-code">{compareResult.withCode}</pre>
-                    <button
-                      type="button"
-                      className="instr-apply-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => handleApplyCompareResult('with')}
-                    >
-                      ✓ Aplicar este al editor
-                    </button>
-                  </div>
-                  <div className="compare-col compare-col-without">
-                    <div className="compare-col-title">
-                      ❌ SIN AGENTS.md
-                      <span className="compare-col-meta">{compareResult.withoutIters} iter · {compareResult.withoutCode.length} chars</span>
-                    </div>
-                    <pre className="compare-code">{compareResult.withoutCode}</pre>
-                    <button
-                      type="button"
-                      className="instr-apply-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => handleApplyCompareResult('without')}
-                    >
-                      ✓ Aplicar este al editor
-                    </button>
-                  </div>
-                </div>
-                <div className="ctx-tip" style={{ marginTop: 8 }}>
-                  💡 Mismo prompt humano, mismo código inicial, mismo modelo.
-                  La <b>única</b> diferencia es el contenido del system prompt.
-                  Por eso AGENTS.md no es un detalle — es <b>cómo le enseñás</b>
-                  a la IA las convenciones de tu proyecto.
+                  <button
+                    type="button"
+                    className="instr-apply-btn"
+                    onClick={() => handleApprovalDecision(false)}
+                  >
+                    ✗ Cancelar
+                  </button>
                 </div>
               </div>
             )}
+
+            {lastMode && !loading && (
+              <div className="ctx-tip" style={{ marginTop: 8 }}>
+                💡 Última corrida: <b>{lastMode === 'with' ? 'CON AGENTS.md' : 'SIN AGENTS.md'}</b>.
+                El código del editor ya fue actualizado por el agente. Probá ahora la otra opción
+                con la misma instrucción para ver la diferencia.
+              </div>
+            )}
+
+            {error && <div className="error">{error}</div>}
 
             <div className="reply-section" style={{ minHeight: 100 }}>
               <div className="reply-header">
@@ -551,8 +547,8 @@ export default function EditorAgentsMd() {
                 </span>
               </div>
               <div className="reply-content" ref={stepsRef}>
-                {Object.keys(stepsByIter).length === 0 && !finalText && !compareResult && (
-                  <span className="empty">Mandá una instrucción o usá "Comparar con/sin" para ver el efecto del AGENTS.md.</span>
+                {Object.keys(stepsByIter).length === 0 && !finalText && (
+                  <span className="empty">Mandá una instrucción con uno de los dos botones para ver el efecto del AGENTS.md.</span>
                 )}
                 {Object.entries(stepsByIter).map(([iter, group]) => (
                   <div key={iter} className="agent-iter">
@@ -590,7 +586,7 @@ export default function EditorAgentsMd() {
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
             💡 Mirá el campo <code>system</code> de cada request — ahí vas a ver
-            tu AGENTS.md inyectado en cada llamada (cuando el toggle está ON).
+            tu AGENTS.md inyectado en cada llamada cuando usás CON AGENTS.md.
           </div>
 
           <div className="raw-history" ref={rawHistoryRef}>
@@ -616,6 +612,11 @@ export default function EditorAgentsMd() {
                   >
                     <span className="raw-iter-chev">{isCollapsed ? '▸' : '▾'}</span>
                     <span className="raw-iter-label">Iter #{entry.iter}</span>
+                    {entry.label && (
+                      <span className={`raw-iter-badge raw-iter-badge-${entry.label === 'CON' ? 'with' : 'without'}`}>
+                        {entry.label === 'CON' ? '✅ CON' : '❌ SIN'}
+                      </span>
+                    )}
                     <span className="raw-iter-meta">
                       {reqMsgCount} msg(s) · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : '…'}
                     </span>
