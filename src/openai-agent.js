@@ -29,7 +29,7 @@ const OPENAI_TOOLS = AGENT_TOOL_DEFS.map((t) => ({
 }))
 
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8 },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '' },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange } = {},
 ) {
   const apiKey = getApiKey()
@@ -49,9 +49,13 @@ export async function runOpenAIAgent(
     onCodeChange?.(next)
   }
 
+  const fullSystem = extraSystem
+    ? `${AGENT_SYSTEM_PROMPT}\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
+    : AGENT_SYSTEM_PROMPT
+
   // OpenAI mete el system prompt como primer mensaje (no aparte como Anthropic).
   const messages = [
-    { role: 'system', content: AGENT_SYSTEM_PROMPT },
+    { role: 'system', content: fullSystem },
     {
       role: 'user',
       content: `Lenguaje: ${language}\n\nInstrucción:\n${userInstruction.trim()}\n\nCódigo inicial:\n\`\`\`${language}\n${initialCode}\n\`\`\`\n\nUsá las herramientas para inspeccionar y editar el código según lo pedido. Cuando termines, respondé con un texto breve.`,

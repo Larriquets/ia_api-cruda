@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import MonacoEditor from '@monaco-editor/react'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
+import ModeSwitch from './ModeSwitch.jsx'
 
 const CODE_KEY = 'editor_code_snapshot'
 const LANG_KEY = 'editor_language'
@@ -285,11 +286,7 @@ export default function Editor({ onBack }) {
       <header className="header">
         <h1>Editor de código + IA</h1>
         <div className="header-actions">
-          <div className="app-mode-switch">
-            <a href="/" className="app-mode-btn">💬 Chat</a>
-            <a href="/editor" className="app-mode-btn active" aria-current="page">💻 Editor</a>
-            <a href="/editor-agente" className="app-mode-btn">🤖 Agente</a>
-          </div>
+          <ModeSwitch active="editor" />
 
           <label className="hdr-select">
             <span className="hdr-select-label">Proveedor</span>

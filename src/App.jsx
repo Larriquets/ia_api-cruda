@@ -11,6 +11,9 @@ import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
 import Editor from './Editor.jsx'
 import EditorAgente from './EditorAgente.jsx'
+import EditorAgentsMd from './EditorAgentsMd.jsx'
+import Docs from './Docs.jsx'
+import ModeSwitch from './ModeSwitch.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
@@ -56,6 +59,8 @@ export default function App() {
     if (window.location.pathname === '/proveedores') return 'proveedores'
     if (window.location.pathname === '/editor') return 'editor'
     if (window.location.pathname === '/editor-agente') return 'editor-agente'
+    if (window.location.pathname === '/agents-md') return 'agents-md'
+    if (window.location.pathname === '/docs') return 'docs'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -253,17 +258,19 @@ export default function App() {
   if (page === 'editor-agente') {
     return <EditorAgente />
   }
+  if (page === 'agents-md') {
+    return <EditorAgentsMd />
+  }
+  if (page === 'docs') {
+    return <Docs />
+  }
 
   return (
     <div className="app">
       <header className="header">
         <h1>Chat IA — debug</h1>
         <div className="header-actions">
-          <div className="app-mode-switch">
-            <a href="/" className="app-mode-btn active" aria-current="page">💬 Chat</a>
-            <a href="/editor" className="app-mode-btn">💻 Editor</a>
-            <a href="/editor-agente" className="app-mode-btn">🤖 Agente</a>
-          </div>
+          <ModeSwitch active="chat" />
 
           <label className="hdr-select">
             <span className="hdr-select-label">Proveedor</span>

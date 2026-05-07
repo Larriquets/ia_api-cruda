@@ -23,7 +23,7 @@ const ANTHROPIC_TOOLS = AGENT_TOOL_DEFS.map((t) => ({
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8 },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '' },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange } = {},
 ) {
   const apiKey = getApiKey()
@@ -59,9 +59,15 @@ export async function runClaudeAgent(
     onStep?.({ n: iter, type: 'iteration_start' })
     onLog?.('info', `— Iteración #${iter} (Claude) — enviando ${messages.length} mensaje(s)`)
 
+    // Si hay extraSystem (ej: AGENTS.md), se concatena después del prompt base
+    // — la IA lo lee como si fuera parte de las instrucciones del proyecto.
+    const fullSystem = extraSystem
+      ? `${AGENT_SYSTEM_PROMPT}\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
+      : AGENT_SYSTEM_PROMPT
+
     const body = {
       model,
-      system: AGENT_SYSTEM_PROMPT,
+      system: fullSystem,
       messages,
       tools: ANTHROPIC_TOOLS,
       max_tokens: 1024,

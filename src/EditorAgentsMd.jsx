@@ -4,11 +4,11 @@ import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 
-const CODE_KEY = 'agente_code_snapshot'
-const LANG_KEY = 'agente_language'
+const CODE_KEY = 'agentmd_code_snapshot'
+const AGENTS_KEY = 'agentmd_agents_md'
 const PROVIDER_KEY = 'chat_provider'
-const LOGS_KEY = 'agente_logs'
-const COLS_KEY = 'agente_cols'
+const LOGS_KEY = 'agentmd_logs'
+const COLS_KEY = 'agentmd_cols'
 const LOGS_MAX = 500
 
 const DEFAULT_CODE = `public class CuentaBancaria {
@@ -24,34 +24,46 @@ const DEFAULT_CODE = `public class CuentaBancaria {
 }
 `
 
-const LANGUAGES = [
-  { id: 'java', label: 'Java' },
-  { id: 'javascript', label: 'JavaScript' },
-  { id: 'typescript', label: 'TypeScript' },
-  { id: 'python', label: 'Python' },
-]
+const DEFAULT_AGENTS_MD = `# Convenciones del proyecto Banco
+
+## Estilo de código
+- Los campos privados de las clases del modelo usan prefijo \`_\` (ej: \`_saldo\`, \`_cliente\`).
+- Los métodos públicos validan inputs ANTES de modificar estado. Si el input es inválido,
+  lanzan \`IllegalArgumentException\` con un mensaje claro en español.
+- Nunca uses \`System.out.println\` para logging — siempre usá \`log.info(...)\`,
+  \`log.warn(...)\`, etc. (asumí que la clase tiene un campo \`log\` ya inyectado).
+
+## Naming
+- Los métodos públicos son verbos en infinitivo en español: \`depositar\`, \`retirar\`, \`consultarSaldo\`.
+- Los getters siguen la convención Java estándar: \`getSaldo()\`, \`getCliente()\`.
+
+## Reglas de negocio
+- Un monto siempre debe ser estrictamente positivo (\`> 0\`). Cero o negativo es inválido.
+- Las operaciones que retiran fondos verifican primero que haya saldo suficiente;
+  si no, lanzan \`SaldoInsuficienteException\`.
+`
 
 const SUGGESTED_PROMPTS = [
-  'Renombrá la variable saldo a balance en toda la clase, incluyendo getters/setters.',
-  'Agregá un método retirar(monto) que reste del saldo solo si hay fondos suficientes; si no, no haga nada.',
-  'Agregá validación a depositar(): que ignore montos negativos.',
+  'Agregá un método retirar(monto).',
+  'Agregá un método transferir(destino, monto) que retire de esta cuenta y deposite en otra.',
+  'Agregá validación al método depositar para que rechace montos inválidos.',
 ]
 
-const DEFAULT_COLS = [0.42, 0.32, 0.26]
+const DEFAULT_COLS = [0.32, 0.42, 0.26]
 const MIN_COL = 0.12
 
-export default function EditorAgente() {
+export default function EditorAgentsMd() {
   const [code, setCode] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_CODE
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
   })
-  const [language, setLanguage] = useState(() => {
-    if (typeof window === 'undefined') return 'java'
-    return localStorage.getItem(LANG_KEY) || 'java'
+  const [agentsMd, setAgentsMd] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_AGENTS_MD
+    return localStorage.getItem(AGENTS_KEY) ?? DEFAULT_AGENTS_MD
   })
+  const [useAgentsMd, setUseAgentsMd] = useState(true)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'anthropic'
-    // Default a Anthropic en agente: Claude rinde mejor con tool-use estructurado.
     return localStorage.getItem(PROVIDER_KEY) || 'anthropic'
   })
   const [instruction, setInstruction] = useState(SUGGESTED_PROMPTS[0])
@@ -59,13 +71,11 @@ export default function EditorAgente() {
   const [error, setError] = useState(null)
   const [finalText, setFinalText] = useState('')
   const [steps, setSteps] = useState([])
-  // Historial de pares request/response — uno por iteración. Pedagógicamente clave:
-  // muestra cómo el prompt crece turno a turno con los tool_result acumulados.
   const [rawHistory, setRawHistory] = useState([])
-  // Iteraciones colapsadas (Set de números). Default: todas expandidas excepto las
-  // anteriores cuando llega una nueva, para que el usuario vea la última activa.
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [iterCount, setIterCount] = useState(0)
+  // Resultado de la comparación: { withCode, withoutCode, withIters, withoutIters, withInitial }
+  const [compareResult, setCompareResult] = useState(null)
   const [logs, setLogs] = useState(() => {
     if (typeof window === 'undefined') return []
     try {
@@ -97,8 +107,8 @@ export default function EditorAgente() {
     try { localStorage.setItem(CODE_KEY, code) } catch { /* noop */ }
   }, [code])
   useEffect(() => {
-    try { localStorage.setItem(LANG_KEY, language) } catch { /* noop */ }
-  }, [language])
+    try { localStorage.setItem(AGENTS_KEY, agentsMd) } catch { /* noop */ }
+  }, [agentsMd])
   useEffect(() => {
     try {
       const trimmed = logs.slice(-LOGS_MAX)
@@ -121,6 +131,34 @@ export default function EditorAgente() {
     setLogs((prev) => [...prev, { level, message, timestamp }])
   }, [])
 
+  // Devuelve los hooks UI estándar para una corrida de agente.
+  const buildHooks = useCallback(
+    (codeSetter) => ({
+      onLog: appendLog,
+      onRawRequest: (req) =>
+        setRawHistory((prev) => {
+          const nextN = prev.length + 1
+          setCollapsed((c) => {
+            const ns = new Set(c)
+            for (let i = 1; i < nextN; i++) ns.add(i)
+            return ns
+          })
+          return [...prev, { iter: nextN, request: req, response: null }]
+        }),
+      onRawResponse: (res) =>
+        setRawHistory((prev) => {
+          if (prev.length === 0) return prev
+          const next = prev.slice()
+          next[next.length - 1] = { ...next[next.length - 1], response: res }
+          return next
+        }),
+      onStep: (step) => setSteps((prev) => [...prev, step]),
+      onCodeChange: codeSetter,
+    }),
+    [appendLog],
+  )
+
+  // Corrida normal (con o sin AGENTS.md según toggle).
   const handleSend = async () => {
     if (!instruction.trim() || loading) return
     setLoading(true)
@@ -130,9 +168,11 @@ export default function EditorAgente() {
     setRawHistory([])
     setCollapsed(new Set())
     setIterCount(0)
+    setCompareResult(null)
 
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
-    appendLog('info', `Lenguaje: ${language} · Tamaño código inicial: ${code.length} chars`)
+    appendLog('info', `Lenguaje: java · Tamaño código inicial: ${code.length} chars`)
+    appendLog('info', `AGENTS.md: ${useAgentsMd ? 'INCLUIDO en system prompt' : 'IGNORADO (toggle off)'}`)
     appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
 
     try {
@@ -141,39 +181,15 @@ export default function EditorAgente() {
         {
           userInstruction: instruction,
           initialCode: code,
-          language,
+          language: 'java',
           maxIterations: 8,
+          extraSystem: useAgentsMd ? agentsMd : '',
         },
-        {
-          onLog: appendLog,
-          // En cada iteración: request llega primero → empuja entry nueva.
-          // Auto-colapsamos las iteraciones previas para que solo la actual quede expandida.
-          onRawRequest: (req) =>
-            setRawHistory((prev) => {
-              const nextN = prev.length + 1
-              setCollapsed((c) => {
-                const ns = new Set(c)
-                for (let i = 1; i < nextN; i++) ns.add(i)
-                return ns
-              })
-              return [...prev, { iter: nextN, request: req, response: null }]
-            }),
-          // Response llega después → mergea sobre la última entry.
-          onRawResponse: (res) =>
-            setRawHistory((prev) => {
-              if (prev.length === 0) return prev
-              const next = prev.slice()
-              next[next.length - 1] = { ...next[next.length - 1], response: res }
-              return next
-            }),
-          onStep: (step) => setSteps((prev) => [...prev, step]),
-          onCodeChange: setCode,
-        },
+        buildHooks(setCode),
       )
-
       setFinalText(ft)
       setIterCount(iterations)
-      appendLog('success', `Agente terminó. Código final: ${finalCode.length} chars, ${iterations} iteración(es).`)
+      appendLog('success', `Agente terminó. ${finalCode.length} chars finales, ${iterations} iter.`)
     } catch (err) {
       setError(err.message || 'Error al ejecutar el agente')
       appendLog('error', err.message || 'Error desconocido')
@@ -182,11 +198,93 @@ export default function EditorAgente() {
     }
   }
 
-  const handleResetCode = () => {
+  // Comparación: corre la MISMA instrucción dos veces (con y sin AGENTS.md)
+  // partiendo del MISMO código inicial, y muestra los dos resultados lado a lado.
+  const handleCompare = async () => {
+    if (!instruction.trim() || loading) return
+    setLoading(true)
+    setError(null)
+    setFinalText('')
+    setSteps([])
+    setRawHistory([])
+    setCollapsed(new Set())
+    setIterCount(0)
+    setCompareResult(null)
+
+    const initialSnapshot = code
+
+    appendLog('user', `🔬 COMPARACIÓN — instrucción: "${instruction.trim().slice(0, 80)}…"`)
+    appendLog('info', `Código inicial común (${initialSnapshot.length} chars). Ejecutando dos corridas independientes.`)
+
+    const runFn = provider === 'anthropic' ? runClaudeAgent : runOpenAIAgent
+
+    try {
+      // 1) CON AGENTS.md
+      appendLog('info', '═══ Corrida 1 de 2: CON AGENTS.md ═══')
+      let codeWith = initialSnapshot
+      const resultWith = await runFn(
+        {
+          userInstruction: instruction,
+          initialCode: initialSnapshot,
+          language: 'java',
+          maxIterations: 8,
+          extraSystem: agentsMd,
+        },
+        {
+          ...buildHooks((c) => { codeWith = c }),
+        },
+      )
+
+      // 2) SIN AGENTS.md
+      appendLog('info', '═══ Corrida 2 de 2: SIN AGENTS.md ═══')
+      let codeWithout = initialSnapshot
+      const resultWithout = await runFn(
+        {
+          userInstruction: instruction,
+          initialCode: initialSnapshot,
+          language: 'java',
+          maxIterations: 8,
+          extraSystem: '',
+        },
+        {
+          ...buildHooks((c) => { codeWithout = c }),
+        },
+      )
+
+      setCompareResult({
+        withCode: codeWith,
+        withoutCode: codeWithout,
+        withIters: resultWith.iterations,
+        withoutIters: resultWithout.iterations,
+        withInitial: initialSnapshot,
+      })
+      appendLog('success', `Comparación lista. CON: ${codeWith.length} chars / ${resultWith.iterations} iter — SIN: ${codeWithout.length} chars / ${resultWithout.iterations} iter`)
+      // Dejamos el código del editor en el estado original para que el usuario
+      // pueda elegir cuál aplicar manualmente.
+      setCode(initialSnapshot)
+    } catch (err) {
+      setError(err.message || 'Error en la comparación')
+      appendLog('error', err.message || 'Error desconocido')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleApplyCompareResult = (which) => {
+    if (!compareResult) return
+    const next = which === 'with' ? compareResult.withCode : compareResult.withoutCode
+    setCode(next)
+    appendLog('info', `Aplicado al editor el resultado ${which === 'with' ? 'CON' : 'SIN'} AGENTS.md`)
+  }
+
+  const handleResetAll = () => {
     setCode(DEFAULT_CODE)
+    setAgentsMd(DEFAULT_AGENTS_MD)
     setSteps([])
     setFinalText('')
-    appendLog('info', 'Editor reseteado al ejemplo')
+    setRawHistory([])
+    setCompareResult(null)
+    appendLog('info', 'Todo reseteado al ejemplo')
   }
 
   const handleClearLogs = () => {
@@ -194,7 +292,7 @@ export default function EditorAgente() {
     try { localStorage.removeItem(LOGS_KEY) } catch { /* noop */ }
   }
 
-  // Resizers
+  // Resizers (idem otras páginas)
   const startResize = (dividerIndex) => (e) => {
     e.preventDefault()
     const layout = layoutRef.current
@@ -230,7 +328,6 @@ export default function EditorAgente() {
   }
   const handleResetCols = () => setCols(DEFAULT_COLS)
 
-  // Agrupamos los steps por iteración para visualizarlos como turnos.
   const stepsByIter = steps.reduce((acc, s) => {
     const key = s.n
     if (!acc[key]) acc[key] = []
@@ -241,9 +338,9 @@ export default function EditorAgente() {
   return (
     <div className="app editor-page">
       <header className="header">
-        <h1>Editor agéntico (Claude tool-use)</h1>
+        <h1>📋 AGENTS.md — instrucciones persistentes para el agente</h1>
         <div className="header-actions">
-          <ModeSwitch active="agente" />
+          <ModeSwitch active="agents-md" />
           <label className="hdr-select">
             <span className="hdr-select-label">Proveedor</span>
             <select
@@ -256,27 +353,13 @@ export default function EditorAgente() {
               }}
               className={`hdr-select-input provider-select-${provider}`}
               disabled={loading}
-              title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use. Mismo concepto, distinto shape."
             >
               <option value="anthropic">🟠 Claude (Anthropic)</option>
               <option value="openai">🟢 OpenAI</option>
             </select>
           </label>
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Lenguaje</span>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="hdr-select-input"
-            >
-              {LANGUAGES.map((l) => (
-                <option key={l.id} value={l.id}>{l.label}</option>
-              ))}
-            </select>
-          </label>
-          <button onClick={handleResetCode} className="clear-btn" type="button">
-            Reset código
+          <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
+            Reset todo
           </button>
         </div>
       </header>
@@ -288,59 +371,80 @@ export default function EditorAgente() {
           gridTemplateColumns: `${cols[0]}fr 6px ${cols[1]}fr 6px ${cols[2]}fr`,
         }}
       >
-        {/* Panel 1 — Editor */}
+        {/* Panel 1 — AGENTS.md */}
         <section className="panel editor-panel">
           <div className="panel-title">
-            <span>Editor (estado vivo)</span>
-            <span className="context-meta">
-              {code.length} chars · ≈ {Math.ceil(code.length / 4)} tokens
-            </span>
+            <span>AGENTS.md</span>
+            <label className="agentmd-toggle">
+              <input
+                type="checkbox"
+                checked={useAgentsMd}
+                onChange={(e) => setUseAgentsMd(e.target.checked)}
+                disabled={loading}
+              />
+              <span>{useAgentsMd ? 'incluido' : 'ignorado'}</span>
+            </label>
           </div>
           <div className="monaco-wrap">
             <MonacoEditor
               height="100%"
-              language={language}
-              value={code}
-              onChange={(v) => setCode(v ?? '')}
+              language="markdown"
+              value={agentsMd}
+              onChange={(v) => setAgentsMd(v ?? '')}
               theme="vs-dark"
               options={{
-                fontSize: 13,
+                fontSize: 12,
                 minimap: { enabled: false },
-                scrollBeyondLastLine: false,
                 wordWrap: 'on',
                 automaticLayout: true,
-                tabSize: 2,
+                scrollBeyondLastLine: false,
                 readOnly: loading,
               }}
             />
           </div>
           <div className="ctx-tip" style={{ borderRadius: 0 }}>
-            💡 Mientras el agente corre, vas a ver cómo el código se modifica acá en tiempo real
-            cada vez que la IA llama a <code>edit_code</code>. <b>Un solo prompt</b> puede generar
-            varias ediciones.
+            💡 Este archivo se inyecta en el <code>system</code> prompt del agente
+            <b> en cada request</b>. La IA "no aprende" tu proyecto — vos le mandás
+            estas reglas todas las veces. Es la única forma porque la IA es
+            <b> virgen en cada llamada</b>.
           </div>
         </section>
 
         <div
           className="col-resizer"
-          role="separator"
-          aria-orientation="vertical"
           onMouseDown={startResize(0)}
           onDoubleClick={handleResetCols}
           title="Arrastrá para redimensionar · doble clic = reset"
         />
 
-        {/* Panel 2 — Prompt + timeline */}
+        {/* Panel 2 — Código + Prompt + Timeline */}
         <section className="panel instr-panel">
           <div className="panel-title">
-            <span>Prompt → Loop agéntico</span>
+            <span>Código + instrucción</span>
             <span className={`provider-badge provider-badge-${provider}`}>
               {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
             </span>
           </div>
-          <div className="instr-body">
+          <div style={{ flex: '0 0 38%', minHeight: 0, display: 'flex', flexDirection: 'column', borderBottom: '1px solid #334155' }}>
+            <MonacoEditor
+              height="100%"
+              language="java"
+              value={code}
+              onChange={(v) => setCode(v ?? '')}
+              theme="vs-dark"
+              options={{
+                fontSize: 12,
+                minimap: { enabled: false },
+                wordWrap: 'on',
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                readOnly: loading,
+              }}
+            />
+          </div>
+          <div className="instr-body" style={{ flex: 1 }}>
             <div className="suggested-steps">
-              <div className="suggested-steps-title">Probá una de estas instrucciones:</div>
+              <div className="suggested-steps-title">Probá una instrucción y mirá cómo cambia con/sin AGENTS.md:</div>
               <ol className="suggested-steps-list">
                 {SUGGESTED_PROMPTS.map((p, i) => (
                   <li key={i}>
@@ -355,18 +459,14 @@ export default function EditorAgente() {
                   </li>
                 ))}
               </ol>
-              <div className="suggested-steps-foot">
-                A diferencia del editor común, acá <b>la IA no devuelve un bloque de código</b>:
-                llama a herramientas (<code>read_code</code>, <code>edit_code</code>) y el código
-                se modifica solo. Mirá la timeline de la derecha para ver las idas y vueltas.
-              </div>
             </div>
             <textarea
               className="instr-input"
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
-              placeholder="¿Qué querés que haga el agente con tu código?"
+              placeholder="¿Qué querés que haga el agente?"
               disabled={loading}
+              style={{ minHeight: 60 }}
             />
             <div className="instr-actions">
               <button
@@ -375,13 +475,75 @@ export default function EditorAgente() {
                 disabled={loading || !instruction.trim()}
                 className="instr-send-btn"
               >
-                {loading ? 'Agente trabajando…' : '🤖 Mandar al agente →'}
+                {loading ? 'Trabajando…' : `🤖 Mandar (${useAgentsMd ? 'CON' : 'SIN'} AGENTS.md)`}
+              </button>
+              <button
+                type="button"
+                onClick={handleCompare}
+                disabled={loading || !instruction.trim()}
+                className="instr-apply-btn"
+                title="Corre la misma instrucción dos veces — una con AGENTS.md, otra sin — y muestra los resultados lado a lado"
+              >
+                🔬 Comparar con/sin
               </button>
             </div>
 
             {error && <div className="error">{error}</div>}
 
-            <div className="reply-section">
+            {compareResult && (
+              <div className="compare-panel">
+                <div className="compare-header">
+                  <span>🔬 Resultado de la comparación</span>
+                  <button
+                    type="button"
+                    className="docs-link"
+                    onClick={() => setCompareResult(null)}
+                  >
+                    cerrar
+                  </button>
+                </div>
+                <div className="compare-grid">
+                  <div className="compare-col compare-col-with">
+                    <div className="compare-col-title">
+                      ✅ CON AGENTS.md
+                      <span className="compare-col-meta">{compareResult.withIters} iter · {compareResult.withCode.length} chars</span>
+                    </div>
+                    <pre className="compare-code">{compareResult.withCode}</pre>
+                    <button
+                      type="button"
+                      className="instr-apply-btn"
+                      style={{ width: '100%' }}
+                      onClick={() => handleApplyCompareResult('with')}
+                    >
+                      ✓ Aplicar este al editor
+                    </button>
+                  </div>
+                  <div className="compare-col compare-col-without">
+                    <div className="compare-col-title">
+                      ❌ SIN AGENTS.md
+                      <span className="compare-col-meta">{compareResult.withoutIters} iter · {compareResult.withoutCode.length} chars</span>
+                    </div>
+                    <pre className="compare-code">{compareResult.withoutCode}</pre>
+                    <button
+                      type="button"
+                      className="instr-apply-btn"
+                      style={{ width: '100%' }}
+                      onClick={() => handleApplyCompareResult('without')}
+                    >
+                      ✓ Aplicar este al editor
+                    </button>
+                  </div>
+                </div>
+                <div className="ctx-tip" style={{ marginTop: 8 }}>
+                  💡 Mismo prompt humano, mismo código inicial, mismo modelo.
+                  La <b>única</b> diferencia es el contenido del system prompt.
+                  Por eso AGENTS.md no es un detalle — es <b>cómo le enseñás</b>
+                  a la IA las convenciones de tu proyecto.
+                </div>
+              </div>
+            )}
+
+            <div className="reply-section" style={{ minHeight: 100 }}>
               <div className="reply-header">
                 <span>Timeline del agente</span>
                 <span className="context-meta">
@@ -389,8 +551,8 @@ export default function EditorAgente() {
                 </span>
               </div>
               <div className="reply-content" ref={stepsRef}>
-                {Object.keys(stepsByIter).length === 0 && !finalText && (
-                  <span className="empty">La actividad del agente va a aparecer acá: cada llamada a herramienta y su resultado.</span>
+                {Object.keys(stepsByIter).length === 0 && !finalText && !compareResult && (
+                  <span className="empty">Mandá una instrucción o usá "Comparar con/sin" para ver el efecto del AGENTS.md.</span>
                 )}
                 {Object.entries(stepsByIter).map(([iter, group]) => (
                   <div key={iter} className="agent-iter">
@@ -402,7 +564,7 @@ export default function EditorAgente() {
                 ))}
                 {finalText && (
                   <div className="agent-final">
-                    <div className="agent-final-title">✓ Respuesta final del agente</div>
+                    <div className="agent-final-title">✓ Respuesta final</div>
                     <div className="agent-final-text">{finalText}</div>
                   </div>
                 )}
@@ -413,8 +575,6 @@ export default function EditorAgente() {
 
         <div
           className="col-resizer"
-          role="separator"
-          aria-orientation="vertical"
           onMouseDown={startResize(1)}
           onDoubleClick={handleResetCols}
           title="Arrastrá para redimensionar · doble clic = reset"
@@ -425,19 +585,17 @@ export default function EditorAgente() {
           <div className="panel-title">
             <span>Historial Request/Response</span>
             <span className="context-meta">
-              {rawHistory.length === 0 ? 'sin actividad' : `${rawHistory.length} iteración(es)`}
+              {rawHistory.length === 0 ? 'sin actividad' : `${rawHistory.length} req`}
             </span>
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
-            💡 <b>El prompt crece turno a turno.</b> Mirá cómo en cada iteración el array
-            <code>messages</code> incluye los <code>tool_result</code> del turno anterior — eso
-            es lo que hace que la IA pueda encadenar llamadas. <b>Un solo prompt</b> tuyo, N
-            requests internas.
+            💡 Mirá el campo <code>system</code> de cada request — ahí vas a ver
+            tu AGENTS.md inyectado en cada llamada (cuando el toggle está ON).
           </div>
 
           <div className="raw-history" ref={rawHistoryRef}>
             {rawHistory.length === 0 && (
-              <div className="empty" style={{ padding: 12 }}>Mandale una instrucción al agente para ver el historial.</div>
+              <div className="empty" style={{ padding: 12 }}>Sin requests todavía.</div>
             )}
             {rawHistory.map((entry) => {
               const isCollapsed = collapsed.has(entry.iter)
@@ -455,20 +613,17 @@ export default function EditorAgente() {
                         return ns
                       })
                     }
-                    title="Click para expandir/colapsar"
                   >
                     <span className="raw-iter-chev">{isCollapsed ? '▸' : '▾'}</span>
-                    <span className="raw-iter-label">Iteración #{entry.iter}</span>
+                    <span className="raw-iter-label">Iter #{entry.iter}</span>
                     <span className="raw-iter-meta">
-                      {reqMsgCount} msg(s) · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : 'esperando…'}
+                      {reqMsgCount} msg(s) · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : '…'}
                     </span>
                   </button>
                   {!isCollapsed && (
                     <>
                       <div className="raw-iter-subtitle">→ Request</div>
-                      <pre className="raw raw-compact raw-nested">
-                        {JSON.stringify(entry.request, null, 2)}
-                      </pre>
+                      <pre className="raw raw-compact raw-nested">{JSON.stringify(entry.request, null, 2)}</pre>
                       <div className="raw-iter-subtitle">← Response</div>
                       <pre className="raw raw-compact raw-nested">
                         {entry.response ? JSON.stringify(entry.response, null, 2) : '// esperando…'}
@@ -506,9 +661,7 @@ export default function EditorAgente() {
 }
 
 function AgentStep({ step }) {
-  if (step.type === 'iteration_start') {
-    return null // ya lo mostramos como header de grupo
-  }
+  if (step.type === 'iteration_start' || step.type === 'final_text') return null
   if (step.type === 'tool_use') {
     return (
       <div className="agent-step agent-step-tool-use">
@@ -528,9 +681,6 @@ function AgentStep({ step }) {
         <pre className="agent-step-body">{String(step.content)}</pre>
       </div>
     )
-  }
-  if (step.type === 'final_text') {
-    return null // se muestra abajo, fuera del grupo
   }
   return null
 }
