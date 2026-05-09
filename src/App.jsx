@@ -41,7 +41,7 @@ export default function App() {
       return []
     }
   })
-  const [rawMode, setRawMode] = useState(false)
+  const [rawMode, setRawMode] = useState(true)
   const [persistentMode, setPersistentMode] = useState(false)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'openai'
@@ -243,17 +243,18 @@ export default function App() {
   const estimateTokens = (text) => Math.ceil((text || '').length / 4)
   const contextTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0)
 
+  const goHome = () => { window.location.href = '/' }
   if (page === 'criollo') {
-    return <Criollo onBack={() => window.close()} />
+    return <Criollo onBack={goHome} />
   }
   if (page === 'contexto') {
-    return <Contexto onBack={() => window.close()} />
+    return <Contexto onBack={goHome} />
   }
   if (page === 'proveedores') {
-    return <Proveedores onBack={() => window.close()} />
+    return <Proveedores onBack={goHome} />
   }
   if (page === 'editor') {
-    return <Editor onBack={() => window.close()} />
+    return <Editor onBack={goHome} />
   }
   if (page === 'editor-agente') {
     return <EditorAgente />
@@ -293,42 +294,7 @@ export default function App() {
             </select>
           </label>
 
-          <label className="hdr-select">
-            <span className="hdr-select-label">Modo</span>
-            <select
-              value={persistentMode ? 'persistent' : rawMode ? 'raw' : 'conversation'}
-              onChange={(e) => {
-                const v = e.target.value
-                if (v === 'conversation') {
-                  setPersistentMode(false)
-                  setRawMode(false)
-                  appendLog('info', 'Modo CONVERSACIÓN — system + historial completo en cada request')
-                } else if (v === 'persistent') {
-                  setPersistentMode(true)
-                  setRawMode(false)
-                  appendLog('info', 'Modo PERSISTENTE — el contexto vive en OpenAI (/v1/responses)')
-                } else if (v === 'raw') {
-                  setPersistentMode(false)
-                  setRawMode(true)
-                  appendLog('info', 'Modo CRUDO — sin system, sin historial')
-                }
-              }}
-              className={`hdr-select-input mode-select-${persistentMode ? 'persistent' : rawMode ? 'raw' : 'conversation'}`}
-            >
-              <option value="conversation">Conversación (cliente)</option>
-              <option value="persistent" disabled={provider === 'anthropic'}>
-                Persistente (servidor){provider === 'anthropic' ? ' — solo OpenAI' : ''}
-              </option>
-              <option value="raw">Crudo (sin contexto)</option>
-            </select>
-          </label>
-
           <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
-          {persistentMode && (
-            <button onClick={handleNewConversation} className="clear-btn" type="button" title="Descarta el conversation_id actual y crea uno nuevo en el próximo envío">
-              Nueva conv. servidor
-            </button>
-          )}
         </div>
       </header>
 
@@ -352,6 +318,74 @@ export default function App() {
               </a>
             </span>
           </div>
+
+          <div className="mode-segmented" role="tablist" aria-label="Modo de envío">
+            <span className="mode-segmented-label">Modo</span>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={rawMode}
+              className={`mode-seg-btn mode-seg-raw${rawMode ? ' active' : ''}`}
+              onClick={() => {
+                if (rawMode) return
+                setPersistentMode(false)
+                setRawMode(true)
+                appendLog('info', 'Modo CRUDO — sin system, sin historial')
+              }}
+              title="Cada mensaje se envía solo, sin system ni historial. Demuestra que la API no recuerda nada."
+            >
+              Crudo
+              <span className="mode-seg-sub">sin contexto</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!rawMode && !persistentMode}
+              className={`mode-seg-btn mode-seg-conversation${!rawMode && !persistentMode ? ' active' : ''}`}
+              onClick={() => {
+                if (!rawMode && !persistentMode) return
+                setPersistentMode(false)
+                setRawMode(false)
+                appendLog('info', 'Modo CONVERSACIÓN — system + historial completo en cada request')
+              }}
+              title="El cliente acumula messages[] y los reenvía en cada request."
+            >
+              Conversación
+              <span className="mode-seg-sub">cliente</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={persistentMode}
+              disabled={provider === 'anthropic'}
+              className={`mode-seg-btn mode-seg-persistent${persistentMode ? ' active' : ''}`}
+              onClick={() => {
+                if (persistentMode) return
+                setPersistentMode(true)
+                setRawMode(false)
+                appendLog('info', 'Modo PERSISTENTE — el contexto vive en OpenAI (/v1/responses)')
+              }}
+              title={provider === 'anthropic'
+                ? 'Solo OpenAI — Claude no tiene Conversations API'
+                : 'OpenAI guarda el historial. El cliente solo manda el último mensaje.'}
+            >
+              Persistente
+              <span className="mode-seg-sub">
+                {provider === 'anthropic' ? 'solo OpenAI' : 'servidor'}
+              </span>
+            </button>
+            {persistentMode && (
+              <button
+                onClick={handleNewConversation}
+                className="mode-seg-aux"
+                type="button"
+                title="Descarta el conversation_id actual y crea uno nuevo en el próximo envío"
+              >
+                ↻ nueva conv. servidor
+              </button>
+            )}
+          </div>
+
           <div className="chat" ref={chatRef}>
             {visibleMessages.length === 0 && (
               <div className="empty">Escribe un mensaje para comenzar.</div>

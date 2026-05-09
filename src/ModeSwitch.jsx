@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Switch de modos del header. Reutilizable entre Chat / Editor / Agente / Docs.
- * "Docs" es un dropdown con submenú a las páginas auxiliares.
+ * "Docs" es un dropdown con la página principal + anexos (contexto / proveedores / criollo).
  *
- * @param {string} active - "chat" | "editor" | "agente" | "docs"
+ * @param {string} active - "chat" | "editor" | "agente" | "agents-md" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [docsOpen, setDocsOpen] = useState(false)
@@ -55,15 +55,16 @@ export default function ModeSwitch({ active }) {
               <span className="app-mode-menu-sub">resumen de los 3 modos</span>
             </a>
             <div className="app-mode-menu-divider" />
-            <a href="/contexto" target="_blank" rel="noreferrer" className="app-mode-menu-item" role="menuitem">
+            <div className="app-mode-menu-section">Anexos</div>
+            <a href="/contexto" className="app-mode-menu-item" role="menuitem">
               <b>🧠 /contexto</b>
               <span className="app-mode-menu-sub">vista en vivo del array messages</span>
             </a>
-            <a href="/proveedores" target="_blank" rel="noreferrer" className="app-mode-menu-item" role="menuitem">
+            <a href="/proveedores" className="app-mode-menu-item" role="menuitem">
               <b>⚖️ /proveedores</b>
               <span className="app-mode-menu-sub">OpenAI vs Anthropic</span>
             </a>
-            <a href="/criollo" target="_blank" rel="noreferrer" className="app-mode-menu-item" role="menuitem">
+            <a href="/criollo" className="app-mode-menu-item" role="menuitem">
               <b>🧉 /criollo</b>
               <span className="app-mode-menu-sub">la API en argentino</span>
             </a>

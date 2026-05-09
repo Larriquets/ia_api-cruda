@@ -65,6 +65,7 @@ const SUGGESTED_PROMPTS = [
   'Agregá un método transferir(destino, monto) que retire de esta cuenta y deposite en otra.',
   'Agregá validación al método depositar para que rechace montos inválidos.',
   'Agregá una clase Cliente con campos privados nombre, dni y email, su constructor y getters. Después agregá un campo cliente a CuentaBancaria con su getter.',
+  'Agregá una clase Movimiento con campos privados tipo, monto y fecha. Después agregá una lista de movimientos a CuentaBancaria y registrá un movimiento cada vez que se deposita.',
 ]
 
 const DEFAULT_COLS = [0.32, 0.42, 0.26]
