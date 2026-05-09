@@ -10,7 +10,7 @@
 // - Resultado: nuevo mensaje con role 'tool', tool_call_id, content (string).
 // - Termina cuando finish_reason !== 'tool_calls' (típicamente 'stop').
 
-import { AGENT_SYSTEM_PROMPT, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
 
 const CHAT_URL = 'https://api.openai.com/v1/chat/completions'
 
@@ -19,7 +19,7 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
@@ -45,9 +45,12 @@ export async function runOpenAIAgent(
       if (typeof onAwaitApproval !== 'function') return true
       return await onAwaitApproval(payload)
     },
+    skills,
+    loadedSkillIds: new Set(),
   }
+  const skillsAvailable = useSkills && skills.length > 0
   // Adaptamos las defs neutras al shape de OpenAI.
-  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval }).map((t) => ({
+  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval, includeSkills: skillsAvailable }).map((t) => ({
     type: 'function',
     function: {
       name: t.name,
@@ -56,9 +59,14 @@ export async function runOpenAIAgent(
     },
   }))
 
-  const fullSystem = extraSystem
-    ? `${AGENT_SYSTEM_PROMPT}\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
-    : AGENT_SYSTEM_PROMPT
+  const skillsIndex = skillsAvailable ? buildSkillsIndex(skills) : ''
+  let fullSystem = AGENT_SYSTEM_PROMPT
+  if (extraSystem) {
+    fullSystem += `\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
+  }
+  if (skillsIndex) {
+    fullSystem += `\n\n${skillsIndex}`
+  }
 
   // OpenAI mete el system prompt como primer mensaje (no aparte como Anthropic).
   const messages = [

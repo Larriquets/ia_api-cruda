@@ -1,6 +1,8 @@
 // Definiciones compartidas por los wrappers agénticos (Anthropic + OpenAI).
 // La idea: un único set de "herramientas" que el modelo puede llamar sobre el código.
 
+import { hasSkillTest, runSkillTest } from './skill-tests.js'
+
 export const AGENT_SYSTEM_PROMPT = `Sos un asistente de programación que edita código a través de herramientas.
 Tenés un único archivo virtual con el código actual. Para modificarlo:
 
@@ -88,14 +90,72 @@ const EDIT_CODE_WITH_IMPACT_TOOL_DEF = {
     'primero llamá a assess_impact.',
 }
 
-// Schema "neutro" — cada wrapper lo adapta al shape de su API.
-export function getAgentToolDefs({ includeImpact = false } = {}) {
-  return includeImpact
-    ? [READ_CODE_TOOL_DEF, ASSESS_IMPACT_TOOL_DEF, EDIT_CODE_WITH_IMPACT_TOOL_DEF]
-    : [READ_CODE_TOOL_DEF, EDIT_CODE_TOOL_DEF]
+// load_skill — patrón "lazy" de carga de instrucciones extra.
+// El AGENTS.md solo lista los skills disponibles (id + descripción corta).
+// Las reglas detalladas de cada skill NO viajan en el system prompt: la IA
+// las trae a contexto solo cuando decide que un skill aplica, llamando a
+// load_skill(id). Esto simula el comportamiento de Claude (skills) y de los
+// editores tipo Cursor (rules) — y se ve clarito en el panel Raw cómo el
+// contexto crece recién cuando el skill se carga.
+const LOAD_SKILL_TOOL_DEF = {
+  name: 'load_skill',
+  description:
+    'Trae a contexto las reglas detalladas de un skill listado en AGENTS.md. ' +
+    'Llamá a esta herramienta cuando, leyendo la sección "Skills disponibles" del AGENTS.md, ' +
+    'detectes que un skill aplica al cambio que estás por hacer. ' +
+    'Devuelve el cuerpo completo (markdown) del skill — leélo y seguí sus reglas. ' +
+    'No cargues skills que no apliquen: cada carga gasta tokens.',
+  parameters: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del skill, tal como aparece en la sección "Skills disponibles" del AGENTS.md.',
+      },
+    },
+    required: ['id'],
+  },
 }
 
-export const AGENT_TOOL_DEFS = getAgentToolDefs({ includeImpact: true })
+// run_skill_test — chequeo determinístico en código JS.
+// Es la parte VERIFICABLE del skill: corre regex sobre el código actual y
+// devuelve PASS o lista concreta de violaciones. Pedagógicamente importa
+// que esté separada de load_skill (que es solo prompt) para mostrar la
+// diferencia entre "instrucciones que la IA lee" e "instrucciones que la IA
+// ejecuta y obedece bajo penalidad de FAIL".
+const RUN_SKILL_TEST_TOOL_DEF = {
+  name: 'run_skill_test',
+  description:
+    'Corre el TEST determinístico de un skill sobre el código actual y devuelve PASS o ' +
+    'una lista de violaciones concretas (no es un prompt — es código JS que evalúa el código). ' +
+    'OBLIGATORIO: después de cada edit_code y SIEMPRE antes de terminar, llamá a run_skill_test ' +
+    'para cada skill listado. Si devuelve violaciones, corregí con más edit_code y volvé a correr ' +
+    'el test hasta que diga PASS.',
+  parameters: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del skill cuyo test querés correr.',
+      },
+    },
+    required: ['id'],
+  },
+}
+
+// Schema "neutro" — cada wrapper lo adapta al shape de su API.
+export function getAgentToolDefs({ includeImpact = false, includeSkills = false } = {}) {
+  const tools = [READ_CODE_TOOL_DEF]
+  if (includeImpact) tools.push(ASSESS_IMPACT_TOOL_DEF)
+  tools.push(includeImpact ? EDIT_CODE_WITH_IMPACT_TOOL_DEF : EDIT_CODE_TOOL_DEF)
+  if (includeSkills) {
+    tools.push(LOAD_SKILL_TOOL_DEF)
+    tools.push(RUN_SKILL_TEST_TOOL_DEF)
+  }
+  return tools
+}
+
+export const AGENT_TOOL_DEFS = getAgentToolDefs({ includeImpact: true, includeSkills: true })
 
 // Ejecuta una herramienta sobre el "estado mundo".
 // `state` es un objeto compartido entre llamadas con campos:
@@ -128,6 +188,61 @@ export async function runAgentTool(name, input, state) {
     }
     return {
       result: `Humano CANCELÓ el plan. NO apliques ningún edit_code. Terminá la corrida con un mensaje breve.`,
+      isError: false,
+    }
+  }
+  if (name === 'load_skill') {
+    const id = typeof input?.id === 'string' ? input.id.trim() : ''
+    if (!id) {
+      return { result: 'Error: load_skill requiere un id (string).', isError: true }
+    }
+    const skill = state.skills?.find((s) => s.id === id)
+    if (!skill) {
+      const available = (state.skills || []).map((s) => s.id).join(', ') || '(ninguno)'
+      return {
+        result: `Error: no existe ningún skill con id="${id}". Skills disponibles: ${available}.`,
+        isError: true,
+      }
+    }
+    state.loadedSkillIds = state.loadedSkillIds || new Set()
+    state.loadedSkillIds.add(id)
+    return {
+      result: `# Skill cargado: ${skill.name} (id=${skill.id})\n\n${skill.body}\n\n— Aplicá estas reglas en los próximos edit_code y antes de terminar.`,
+      isError: false,
+    }
+  }
+  if (name === 'run_skill_test') {
+    const id = typeof input?.id === 'string' ? input.id.trim() : ''
+    if (!id) {
+      return { result: 'Error: run_skill_test requiere un id (string).', isError: true }
+    }
+    const skill = state.skills?.find((s) => s.id === id)
+    if (!skill) {
+      const available = (state.skills || []).map((s) => s.id).join(', ') || '(ninguno)'
+      return {
+        result: `Error: no existe ningún skill con id="${id}". Skills disponibles: ${available}.`,
+        isError: true,
+      }
+    }
+    if (!hasSkillTest(id)) {
+      return {
+        result: `Error: el skill "${id}" no tiene un test determinístico implementado. Solo podés guiarte por su body (load_skill).`,
+        isError: true,
+      }
+    }
+    const violations = runSkillTest(id, state.getCode())
+    state.lastTestRun = { id, violations, at: Date.now() }
+    if (!violations || violations.length === 0) {
+      return {
+        result: `✓ PASS — el test del skill "${id}" no encontró violaciones.`,
+        isError: false,
+      }
+    }
+    const body = violations.map((v, i) => `  ${i + 1}. [${v.rule}] ${v.message}`).join('\n')
+    return {
+      result:
+        `✗ FAIL — el test del skill "${id}" encontró ${violations.length} violación(es):\n${body}\n\n` +
+        'Corregí cada una con edit_code y volvé a correr run_skill_test hasta que pase.',
       isError: false,
     }
   }
@@ -167,4 +282,26 @@ export async function runAgentTool(name, input, state) {
     }
   }
   return { result: `Error: tool desconocida "${name}".`, isError: true }
+}
+
+// Helper que arma la sección "Skills disponibles" inyectada en el system prompt
+// junto con el AGENTS.md. Mostrar acá solo el id + descripción corta es la clave
+// de la economía de contexto: el body completo de cada skill viaja recién cuando
+// la IA lo pide con load_skill(id). Si el skill tiene test determinístico, lo
+// marcamos con [test] para que la IA sepa que puede correr run_skill_test.
+export function buildSkillsIndex(skills) {
+  if (!skills || skills.length === 0) return ''
+  const lines = skills.map((s) => {
+    const testFlag = hasSkillTest(s.id) ? ' [test ✓]' : ''
+    return `- \`${s.id}\`${testFlag} — ${s.description}`
+  })
+  return [
+    '## Skills disponibles',
+    'Estos skills NO están cargados todavía. Si alguno aplica al cambio que vas a hacer,',
+    'llamá a `load_skill(id)` para traer su contenido a contexto y seguir sus reglas.',
+    'Los marcados con [test ✓] tienen además un chequeo determinístico — DEBÉS correrlo',
+    'con `run_skill_test(id)` después de cada edit_code y antes de terminar la corrida.',
+    '',
+    ...lines,
+  ].join('\n')
 }

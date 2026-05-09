@@ -2,7 +2,7 @@
 // Pedagógico: cada iteración llama a la API; los onStep / onCodeChange permiten
 // ver desde la UI cómo la IA llama N herramientas en un solo prompt.
 
-import { AGENT_SYSTEM_PROMPT, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
 
 const MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
 const ANTHROPIC_VERSION = '2023-06-01'
@@ -16,7 +16,7 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
@@ -45,9 +45,12 @@ export async function runClaudeAgent(
       }
       return await onAwaitApproval(payload)
     },
+    skills,
+    loadedSkillIds: new Set(),
   }
+  const skillsAvailable = useSkills && skills.length > 0
   // Adaptamos las defs neutras al shape de Anthropic (input_schema en lugar de parameters).
-  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval }).map((t) => ({
+  const tools = getAgentToolDefs({ includeImpact: requireImpactApproval, includeSkills: skillsAvailable }).map((t) => ({
     name: t.name,
     description: t.description,
     input_schema: t.parameters,
@@ -69,11 +72,17 @@ export async function runClaudeAgent(
     onStep?.({ n: iter, type: 'iteration_start' })
     onLog?.('info', `— Iteración #${iter} (Claude) — enviando ${messages.length} mensaje(s)`)
 
-    // Si hay extraSystem (ej: AGENTS.md), se concatena después del prompt base
-    // — la IA lo lee como si fuera parte de las instrucciones del proyecto.
-    const fullSystem = extraSystem
-      ? `${AGENT_SYSTEM_PROMPT}\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
-      : AGENT_SYSTEM_PROMPT
+    // System prompt = base + (opcional) AGENTS.md + (opcional) índice de skills.
+    // Los bodies de skills NO viajan acá: viajan recién cuando la IA llama
+    // load_skill — así el contexto arranca chico y crece bajo demanda.
+    const skillsIndex = skillsAvailable ? buildSkillsIndex(skills) : ''
+    let fullSystem = AGENT_SYSTEM_PROMPT
+    if (extraSystem) {
+      fullSystem += `\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
+    }
+    if (skillsIndex) {
+      fullSystem += `\n\n${skillsIndex}`
+    }
 
     const body = {
       model,

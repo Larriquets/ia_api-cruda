@@ -201,6 +201,34 @@ body {
   line-height: 1.5;
 }
 
+.welcome-substeps {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  border-left: 2px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.welcome-substep {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0 4px 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.welcome-substep b {
+  color: #e2e8f0;
+}
+
+.welcome-substep-emoji {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 .welcome-footer {
   display: flex;
   align-items: center;
@@ -1633,6 +1661,28 @@ body {
   border-radius: 6px;
   padding: 3px;
   gap: 2px;
+  align-items: center;
+}
+
+/* Separador entre los modos principales y el botón Docs.
+   Docs es material auxiliar de la clase, no un modo más — el divider
+   y el gap extra lo apartan visualmente del grupo principal.
+   Se aplica solo al dropdown de Docs (.app-mode-dropdown-divided),
+   no a otros dropdowns como AGENTS.md que pertenecen al grupo principal. */
+.app-mode-switch .app-mode-dropdown-divided {
+  margin-left: 10px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.app-mode-switch .app-mode-dropdown-divided::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: #334155;
 }
 
 .app-mode-btn {
@@ -2590,4 +2640,179 @@ body {
   max-height: 200px;
   border: 1px solid #1e293b;
   border-radius: 4px;
+}
+
+/* ── Sub-menú Skills (dentro del panel AGENTS.md) ───────────────────────── */
+.skills-collapsible {
+  border-top: 1px solid #334155;
+  border-bottom: 1px solid #334155;
+}
+
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.skill-card {
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.skill-card-expanded {
+  border-color: #475569;
+}
+
+.skill-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.skill-card-header:hover:not(:disabled) {
+  background: #111c2f;
+}
+
+.skill-card-header:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.skill-card-chev {
+  font-size: 10px;
+  color: #94a3b8;
+  width: 10px;
+  flex-shrink: 0;
+}
+
+.skill-card-id code {
+  background: #1e293b;
+  color: #93c5fd;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.skill-card-name {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.skill-card-body {
+  padding: 10px;
+  border-top: 1px solid #1e293b;
+  background: #0a1322;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.skill-field-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.skill-field-input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 5px 8px;
+  resize: vertical;
+}
+
+.skill-field-input:focus {
+  outline: none;
+  border-color: #475569;
+}
+
+.skill-field-textarea-sm {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  min-height: 40px;
+}
+
+.skill-field-textarea-lg {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  min-height: 160px;
+}
+
+.skill-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.skill-delete-btn {
+  color: #f87171;
+}
+
+.skills-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed #1e293b;
+}
+
+/* ── Sub-toggle "skills" del modo AGENTS.md ─────────────────────────────── */
+.skill-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 10px;
+  margin: 8px 0 6px;
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.skill-toggle:has(input:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.skill-toggle input[type='checkbox'] {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.skill-toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: #cbd5e1;
+}
+
+.skill-toggle-label b {
+  color: #e2e8f0;
+}
+
+.skill-toggle-meta {
+  font-size: 11px;
+  color: #94a3b8;
 }

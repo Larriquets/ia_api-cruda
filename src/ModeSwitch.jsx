@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Switch de modos del header. Reutilizable entre Chat / Editor / Agente / Docs.
- * "Docs" es un dropdown con la página principal + anexos (contexto / proveedores / criollo).
+ * "AGENTS.md" y "Docs" son dropdowns. AGENTS.md tiene dos variantes: solo y con Skills.
  *
- * @param {string} active - "chat" | "editor" | "agente" | "agents-md" | "docs"
+ * @param {string} active - "chat" | "editor" | "agente" | "agents-md" | "agents-md-skills" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [docsOpen, setDocsOpen] = useState(false)
+  const [agentsOpen, setAgentsOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const agentsDropdownRef = useRef(null)
 
   // Cierra el dropdown al hacer click afuera.
   useEffect(() => {
@@ -27,8 +29,26 @@ export default function ModeSwitch({ active }) {
     }
   }, [docsOpen])
 
+  useEffect(() => {
+    if (!agentsOpen) return
+    const onDocClick = (e) => {
+      if (agentsDropdownRef.current && !agentsDropdownRef.current.contains(e.target)) {
+        setAgentsOpen(false)
+      }
+    }
+    const onEsc = (e) => { if (e.key === 'Escape') setAgentsOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [agentsOpen])
+
   const cls = (mode) => `app-mode-btn${active === mode ? ' active' : ''}`
   const aria = (mode) => (active === mode ? { 'aria-current': 'page' } : {})
+  const agentsActive = active === 'agents-md' || active === 'agents-md-skills'
+  const agentsClsBase = `app-mode-btn${agentsActive ? ' active' : ''}`
 
   return (
     <div className="app-mode-switch">
@@ -56,16 +76,43 @@ export default function ModeSwitch({ active }) {
       >
         🤖 Agente
       </a>
-      <a
-        href="/agents-md"
-        className={cls('agents-md')}
-        {...aria('agents-md')}
-        title="AGENTS.md: instrucciones persistentes que el agente sigue siempre (estilo, restricciones, convenciones del proyecto)."
-      >
-        📋 AGENTS.md
-      </a>
+      <div className="app-mode-dropdown" ref={agentsDropdownRef}>
+        <button
+          type="button"
+          className={`${agentsClsBase} app-mode-dropdown-btn`}
+          {...(agentsActive ? { 'aria-current': 'page' } : {})}
+          onClick={() => setAgentsOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={agentsOpen}
+          title="AGENTS.md: instrucciones persistentes que el agente sigue siempre. Elegí solo AGENTS.md o sumá Skills."
+        >
+          📋 AGENTS.md <span className="app-mode-dropdown-chev">{agentsOpen ? '▴' : '▾'}</span>
+        </button>
+        {agentsOpen && (
+          <div className="app-mode-menu" role="menu">
+            <a
+              href="/agents-md"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('agents-md')}
+            >
+              <b>📋 Solo AGENTS.md</b>
+              <span className="app-mode-menu-sub">reglas en el system prompt</span>
+            </a>
+            <a
+              href="/agents-md-skills"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('agents-md-skills')}
+            >
+              <b>📋 AGENTS.md + 🧪 Skills</b>
+              <span className="app-mode-menu-sub">suma load_skill / run_skill_test</span>
+            </a>
+          </div>
+        )}
+      </div>
 
-      <div className="app-mode-dropdown" ref={dropdownRef}>
+      <div className="app-mode-dropdown app-mode-dropdown-divided" ref={dropdownRef}>
         <button
           type="button"
           className={`${cls('docs')} app-mode-dropdown-btn`}

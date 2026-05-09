@@ -62,6 +62,7 @@ export default function App() {
     if (window.location.pathname === '/editor') return 'editor'
     if (window.location.pathname === '/editor-agente') return 'editor-agente'
     if (window.location.pathname === '/agents-md') return 'agents-md'
+    if (window.location.pathname === '/agents-md-skills') return 'agents-md-skills'
     if (window.location.pathname === '/docs') return 'docs'
     return 'chat'
   })
@@ -262,7 +263,10 @@ export default function App() {
     return <><WelcomeModal /><EditorAgente /></>
   }
   if (page === 'agents-md') {
-    return <><WelcomeModal /><EditorAgentsMd /></>
+    return <><WelcomeModal /><EditorAgentsMd withSkills={false} /></>
+  }
+  if (page === 'agents-md-skills') {
+    return <><WelcomeModal /><EditorAgentsMd withSkills={true} /></>
   }
   if (page === 'docs') {
     return <><WelcomeModal /><Docs /></>

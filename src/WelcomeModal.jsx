@@ -26,6 +26,13 @@ const STEPS = [
     title: 'AGENTS.md',
     desc: 'Instrucciones persistentes que el agente sigue siempre (estilo, restricciones, convenciones del proyecto).',
     href: '/agents-md',
+    subSteps: [
+      {
+        emoji: '🧪',
+        title: 'Skills',
+        desc: 'Sub-tema de AGENTS.md. Una vez que entendés cómo funciona AGENTS.md, probá los Skills: instrucciones cargadas bajo demanda + un test determinístico que la IA corre después de editar.',
+      },
+    ],
   },
 ]
 
@@ -94,6 +101,19 @@ export default function WelcomeModal() {
                   <b>{step.title}</b>
                 </div>
                 <div className="welcome-step-desc">{step.desc}</div>
+                {step.subSteps && (
+                  <ul className="welcome-substeps">
+                    {step.subSteps.map((sub) => (
+                      <li key={sub.title} className="welcome-substep">
+                        <span className="welcome-substep-emoji">{sub.emoji}</span>
+                        <div>
+                          <b>{sub.title}</b>
+                          <div className="welcome-step-desc">{sub.desc}</div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </li>
           ))}

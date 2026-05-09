@@ -30,8 +30,8 @@ const DEFAULT_AGENTS_MD = `# AGENTS.md
 
 ## Reglas obligatorias
 - NO se pueden hacer cambios sin medir antes el impacto del cambio en el código usando \`assess_impact\`.
-- Toda clase, función/método o propiedad/campo que se cree debe tener sí o sí el prefijo \`_bco\` en su nombre.
-  Ejemplos: \`_bcoCuentaBancaria\`, \`_bcoRetirar\`, \`_bcoSaldo\`.
+- Toda clase, función/método o propiedad/campo que se cree debe tener sí o sí el prefijo \`bco_\` en su nombre.
+  Ejemplos: \`bco_CuentaBancaria\`, \`bco_Retirar\`, \`bco_Saldo\`.
 
 ## Niveles de impacto
 - \`low\`: cambio puntual de bajo riesgo, sin tocar firmas públicas ni crear tipos nuevos.
@@ -42,11 +42,55 @@ const DEFAULT_AGENTS_MD = `# AGENTS.md
 const LEGACY_AGENTS_MD_MARKERS = [
   '# Convenciones del proyecto Banco',
   'SaldoInsuficienteException',
+  'arch_check',
+  'Skills disponibles',
 ]
 const REQUIRED_AGENTS_MD_MARKERS = [
   'assess_impact',
-  'prefijo `_bco`',
+  'prefijo `bco_`',
 ]
+
+const SKILLS_KEY = 'agentmd_skills_v1'
+
+const DEFAULT_SKILLS = [
+  {
+    id: 'arch-check',
+    name: 'Test de arquitectura',
+    description: 'Reglas de arquitectura para clases Java: sin strings hardcoded, métodos cortos, sin refs fantasma.',
+    body: `# Skill: arch-check (test de arquitectura)
+
+Aplicá estas tres reglas al código actual. Después de cada \`edit_code\`, releé el código con \`read_code\` y verificá que cada regla siga cumpliéndose. Si encontrás una violación, corregila con otro \`edit_code\`.
+
+## Reglas
+
+1. **Sin strings hardcodeados.** Todo literal \`"..."\` con más de 1 carácter debe vivir en una constante \`private static final String\` declarada al tope de la clase. Ejemplo: en vez de \`throw new IllegalArgumentException("Monto inválido")\`, declarar \`private static final String ERR_MONTO_INVALIDO = "Monto inválido"\` y usar la constante.
+
+2. **Métodos cortos.** Ningún método debe pasar de 15 líneas (sin contar la firma ni la llave de cierre). Si un método queda largo, extraé sub-métodos privados con nombres descriptivos.
+
+3. **Sin referencias fantasma.** No usés \`this.X\` ni \`X(...)\` (siendo X un nombre simple) si \`X\` no está declarado como campo o método en la clase actual. Si necesitás un campo nuevo, declaralo primero. Si te equivocaste de nombre, corregilo.
+
+## Cómo aplicarlo
+
+- Antes de hacer \`edit_code\`, mirá si tu cambio podría introducir una violación de las 3 reglas. Si sí, prevenila desde el primer edit (ej: declarar la constante antes que el throw que la usa).
+- Después de cada \`edit_code\`, hacé \`read_code\` y revisá las 3 reglas mentalmente sobre el código completo.
+- Antes de terminar la corrida, hacé un último \`read_code\` y confirmá que las 3 reglas se cumplen. Si no, corregí.`,
+  },
+]
+
+function loadInitialSkills() {
+  if (typeof window === 'undefined') return DEFAULT_SKILLS
+  try {
+    const raw = localStorage.getItem(SKILLS_KEY)
+    if (!raw) return DEFAULT_SKILLS
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_SKILLS
+    // Validación básica de shape — si no, reset al default.
+    const ok = parsed.every((s) => s && typeof s.id === 'string' && typeof s.body === 'string')
+    return ok ? parsed : DEFAULT_SKILLS
+  } catch {
+    return DEFAULT_SKILLS
+  }
+}
 
 function loadInitialAgentsMd() {
   if (typeof window === 'undefined') return DEFAULT_AGENTS_MD
@@ -72,7 +116,7 @@ const SUGGESTED_PROMPTS = [
 const DEFAULT_COLS = [0.32, 0.42, 0.26]
 const MIN_COL = 0.12
 
-export default function EditorAgentsMd() {
+export default function EditorAgentsMd({ withSkills = true }) {
   const [code, setCode] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_CODE
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
@@ -80,6 +124,9 @@ export default function EditorAgentsMd() {
   const [agentsMd, setAgentsMd] = useState(() => {
     return loadInitialAgentsMd()
   })
+  const [skills, setSkills] = useState(() => loadInitialSkills())
+  const [expandedSkillId, setExpandedSkillId] = useState(null)
+  const [skillsMenuOpen, setSkillsMenuOpen] = useState(false)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'anthropic'
     return localStorage.getItem(PROVIDER_KEY) || 'anthropic'
@@ -92,7 +139,11 @@ export default function EditorAgentsMd() {
   const [rawHistory, setRawHistory] = useState([])
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [iterCount, setIterCount] = useState(0)
-  const [lastMode, setLastMode] = useState(null) // 'with' | 'without' | null
+  // lastMode codifica la corrida pasada: 'with' | 'without' | null.
+  // El subtoggle de skill se trackea aparte (se mantiene entre corridas).
+  const [lastMode, setLastMode] = useState(null)
+  const [lastWithSkill, setLastWithSkill] = useState(false)
+  const [skillEnabled, setSkillEnabled] = useState(true)
   // Aprobación humana del plan que la IA propone vía assess_impact.
   // pending: { level, summary, plan, resolve } cuando hay un assess_impact en vuelo.
   const [pendingApproval, setPendingApproval] = useState(null)
@@ -130,6 +181,9 @@ export default function EditorAgentsMd() {
   useEffect(() => {
     try { localStorage.setItem(AGENTS_KEY, agentsMd) } catch { /* noop */ }
   }, [agentsMd])
+  useEffect(() => {
+    try { localStorage.setItem(SKILLS_KEY, JSON.stringify(skills)) } catch { /* noop */ }
+  }, [skills])
   useEffect(() => {
     try {
       const trimmed = logs.slice(-LOGS_MAX)
@@ -214,6 +268,9 @@ export default function EditorAgentsMd() {
   // En la primera corrida respetamos lo que el usuario tenga en el editor.
   const handleSend = async (withAgents) => {
     if (!instruction.trim() || loading) return
+    // El skill solo aplica si AGENTS.md está activo (skill es sub-tema de AGENTS.md)
+    // y si esta página tiene la sección de Skills habilitada (modo "AGENTS.md + Skills").
+    const withSkill = withAgents && withSkills && skillEnabled
     setLoading(true)
     setError(null)
     setFinalText('')
@@ -235,10 +292,14 @@ export default function EditorAgentsMd() {
       appendLog('info', `Reset: ya hubo una corrida previa, vuelvo el código al ejemplo base (${DEFAULT_CODE.length} chars) para arrancar limpio.`)
     }
     setLastMode(withAgents ? 'with' : 'without')
+    setLastWithSkill(withSkill)
 
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
     appendLog('info', `Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`)
     appendLog('info', `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`)
+    if (withAgents && withSkills) {
+      appendLog('info', `Skills: ${withSkill ? `${skills.length} skill(s) disponibles vía load_skill / run_skill_test` : 'DESHABILITADOS (toggle off)'}`)
+    }
     appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
 
     try {
@@ -251,6 +312,8 @@ export default function EditorAgentsMd() {
           maxIterations: 8,
           extraSystem: withAgents ? agentsMd : '',
           requireImpactApproval: withAgents,
+          skills: withSkill ? skills : [],
+          useSkills: withSkill,
         },
         buildHooks(setCode),
       )
@@ -268,11 +331,40 @@ export default function EditorAgentsMd() {
   const handleResetAll = () => {
     setCode(DEFAULT_CODE)
     setAgentsMd(DEFAULT_AGENTS_MD)
+    setSkills(DEFAULT_SKILLS)
+    setExpandedSkillId(null)
     setSteps([])
     setFinalText('')
     setRawHistory([])
     setLastMode(null)
     appendLog('info', 'Todo reseteado al ejemplo')
+  }
+
+  const handleUpdateSkill = (id, patch) => {
+    setSkills((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
+  }
+  const handleDeleteSkill = (id) => {
+    setSkills((prev) => prev.filter((s) => s.id !== id))
+    setExpandedSkillId((curr) => (curr === id ? null : curr))
+    appendLog('info', `Skill "${id}" eliminado`)
+  }
+  const handleAddSkill = () => {
+    let newId = 'nuevo-skill'
+    let i = 1
+    while (skills.some((s) => s.id === newId)) {
+      i += 1
+      newId = `nuevo-skill-${i}`
+    }
+    const blank = {
+      id: newId,
+      name: 'Skill nuevo',
+      description: 'Descripción corta — esto es lo único que ve la IA en el AGENTS.md.',
+      body: '# Skill nuevo\n\nReglas detalladas que la IA recibe cuando llama a load_skill.',
+    }
+    setSkills((prev) => [...prev, blank])
+    setExpandedSkillId(newId)
+    setSkillsMenuOpen(true)
+    appendLog('info', `Skill "${newId}" creado`)
   }
 
   const handleClearLogs = () => {
@@ -328,10 +420,10 @@ export default function EditorAgentsMd() {
       <header className="header">
         <h1>
           <span className="brand">API a la vista</span>
-          <span className="brand-subtitle">— modo <span className="brand-mode">AGENTS.md</span></span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">{withSkills ? 'AGENTS.md + Skills' : 'AGENTS.md'}</span></span>
         </h1>
         <div className="header-actions">
-          <ModeSwitch active="agents-md" />
+          <ModeSwitch active={withSkills ? 'agents-md-skills' : 'agents-md'} />
         </div>
       </header>
 
@@ -402,6 +494,125 @@ export default function EditorAgentsMd() {
             estas reglas todas las veces. Es la única forma porque la IA es
             <b> virgen en cada llamada</b>.
           </div>
+
+          {withSkills && (
+          <details
+            className="docs-collapsible skills-collapsible"
+            open={skillsMenuOpen}
+            onToggle={(e) => setSkillsMenuOpen(e.currentTarget.open)}
+          >
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>📚 Skills disponibles ({skills.length})</span>
+            </summary>
+            <div className="docs-collapsible-body">
+              <div className="ctx-tip" style={{ marginTop: 0 }}>
+                💡 Los skills <b>NO viajan en el system prompt</b>. Solo se inyecta una lista corta
+                <i> (id + descripción)</i> debajo del AGENTS.md. La IA decide cuándo aplica un skill
+                y lo carga llamando a <code>load_skill(id)</code> — recién ahí su contenido entra al
+                contexto. Mirá el panel <b>Historial Request/Response</b>: vas a ver el system prompt
+                inicial chico, y cómo aparece un <code>tool_result</code> con el body del skill cuando
+                la IA lo trae a contexto.
+              </div>
+              <div className="skills-list">
+                {skills.length === 0 && (
+                  <div className="empty" style={{ padding: 8 }}>
+                    Sin skills definidos. Tocá <b>+ skill</b> para crear uno.
+                  </div>
+                )}
+                {skills.map((skill) => {
+                  const isExpanded = expandedSkillId === skill.id
+                  return (
+                    <div key={skill.id} className={`skill-card ${isExpanded ? 'skill-card-expanded' : ''}`}>
+                      <button
+                        type="button"
+                        className="skill-card-header"
+                        onClick={() => setExpandedSkillId(isExpanded ? null : skill.id)}
+                        disabled={loading}
+                      >
+                        <span className="skill-card-chev">{isExpanded ? '▾' : '▸'}</span>
+                        <span className="skill-card-id"><code>{skill.id}</code></span>
+                        <span className="skill-card-name">{skill.name}</span>
+                      </button>
+                      {isExpanded && (
+                        <div className="skill-card-body">
+                          <label className="skill-field">
+                            <span className="skill-field-label">id</span>
+                            <input
+                              type="text"
+                              className="skill-field-input"
+                              value={skill.id}
+                              onChange={(e) => handleUpdateSkill(skill.id, { id: e.target.value })}
+                              disabled={loading}
+                            />
+                          </label>
+                          <label className="skill-field">
+                            <span className="skill-field-label">nombre</span>
+                            <input
+                              type="text"
+                              className="skill-field-input"
+                              value={skill.name}
+                              onChange={(e) => handleUpdateSkill(skill.id, { name: e.target.value })}
+                              disabled={loading}
+                            />
+                          </label>
+                          <label className="skill-field">
+                            <span className="skill-field-label">descripción (esto va al AGENTS.md)</span>
+                            <textarea
+                              className="skill-field-input skill-field-textarea-sm"
+                              value={skill.description}
+                              onChange={(e) => handleUpdateSkill(skill.id, { description: e.target.value })}
+                              disabled={loading}
+                              rows={2}
+                            />
+                          </label>
+                          <label className="skill-field">
+                            <span className="skill-field-label">body (lo que recibe la IA cuando hace load_skill)</span>
+                            <textarea
+                              className="skill-field-input skill-field-textarea-lg"
+                              value={skill.body}
+                              onChange={(e) => handleUpdateSkill(skill.id, { body: e.target.value })}
+                              disabled={loading}
+                              rows={10}
+                            />
+                          </label>
+                          <div className="skill-card-actions">
+                            <button
+                              type="button"
+                              className="docs-link skill-delete-btn"
+                              onClick={() => handleDeleteSkill(skill.id)}
+                              disabled={loading}
+                            >
+                              eliminar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="skills-actions">
+                <button
+                  type="button"
+                  className="docs-link"
+                  onClick={handleAddSkill}
+                  disabled={loading}
+                >
+                  + skill
+                </button>
+                <button
+                  type="button"
+                  className="docs-link"
+                  onClick={() => { setSkills(DEFAULT_SKILLS); setExpandedSkillId(null); appendLog('info', 'Skills reseteados al ejemplo de fábrica') }}
+                  disabled={loading}
+                >
+                  ejemplo
+                </button>
+              </div>
+            </div>
+          </details>
+          )}
 
           <details className="docs-collapsible base-prompt-collapsible">
             <summary>
@@ -479,22 +690,54 @@ export default function EditorAgentsMd() {
               disabled={loading}
               style={{ minHeight: 60 }}
             />
+            {/*
+              Toggle del sub-tema "skill" del AGENTS.md.
+              Solo modula el botón CON AGENTS.md (sin AGENTS.md no hay skills, igual
+              que en el resto de la conceptualización: skill es subtema de AGENTS.md).
+            */}
+            {withSkills && (
+              <label className="skill-toggle" title="Si está activo, la IA recibe las tools load_skill y run_skill_test cuando enviás CON AGENTS.md.">
+                <input
+                  type="checkbox"
+                  checked={skillEnabled}
+                  onChange={(e) => setSkillEnabled(e.target.checked)}
+                  disabled={loading}
+                />
+                <span className="skill-toggle-label">
+                  <b>🧪 Skills</b>
+                  <span className="skill-toggle-meta">
+                    {skillEnabled
+                      ? `activos (${skills.length}) — solo cuando enviás CON AGENTS.md`
+                      : 'apagados — la IA va a usar AGENTS.md pero sin tools de skill'}
+                  </span>
+                </span>
+              </label>
+            )}
+
             <div className="instr-actions">
               <button
                 type="button"
                 onClick={() => handleSend(true)}
                 disabled={loading || !instruction.trim()}
                 className="instr-send-btn"
-                title="Manda la instrucción incluyendo el AGENTS.md en el system prompt"
+                title={
+                  withSkills
+                    ? (skillEnabled
+                      ? 'AGENTS.md inyectado + tools de skill (load_skill, run_skill_test) habilitadas. La IA debería autoverificar después de editar.'
+                      : 'AGENTS.md inyectado, pero el toggle de skills está apagado: la IA no recibe tools de skill.')
+                    : 'AGENTS.md inyectado en el system prompt. Sin skills (estás en el modo solo AGENTS.md).'
+                }
               >
-                {loading && lastMode === 'with' ? 'Trabajando…' : '✅ Enviar CON AGENTS.md'}
+                {loading && lastMode === 'with'
+                  ? 'Trabajando…'
+                  : `✅ Enviar CON AGENTS.md${withSkills && skillEnabled ? ' + 🧪 skill' : ''}`}
               </button>
               <button
                 type="button"
                 onClick={() => handleSend(false)}
                 disabled={loading || !instruction.trim()}
                 className="instr-apply-btn"
-                title="Manda la instrucción sin incluir el AGENTS.md — solo el system base del agente"
+                title="Manda la instrucción sin incluir el AGENTS.md — solo el system base del agente. Los skills tampoco aplican (son sub-tema de AGENTS.md)."
               >
                 {loading && lastMode === 'without' ? 'Trabajando…' : '❌ Enviar SIN AGENTS.md'}
               </button>
@@ -539,9 +782,17 @@ export default function EditorAgentsMd() {
 
             {lastMode && !loading && (
               <div className="ctx-tip" style={{ marginTop: 8 }}>
-                💡 Última corrida: <b>{lastMode === 'with' ? 'CON AGENTS.md' : 'SIN AGENTS.md'}</b>.
-                El código del editor ya fue actualizado por el agente. Probá ahora la otra opción
-                con la misma instrucción para ver la diferencia.
+                💡 Última corrida: <b>
+                  {lastMode === 'with'
+                    ? lastWithSkill ? 'CON AGENTS.md + 🧪 skill' : 'CON AGENTS.md (sin skill)'
+                    : 'SIN AGENTS.md'}
+                </b>.
+                El código del editor ya fue actualizado. Probá la otra opción con la misma instrucción
+                {lastMode === 'with' && withSkills && (
+                  <> — y, dentro de CON AGENTS.md, prendé/apagá el toggle <b>🧪 Skills</b> para ver
+                  cómo la IA llama (o no) a <code>run_skill_test</code> después de editar</>
+                )}
+                .
               </div>
             )}
 
