@@ -40,6 +40,34 @@ body {
   gap: 12px;
 }
 
+/* === Sub-barra de configuración (debajo del header) === */
+.config-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 20px;
+  background: #0a0f1a;
+  border-bottom: 1px solid #1e293b;
+  flex-wrap: wrap;
+}
+
+.config-bar-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.config-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
 .clear-btn {
   background: transparent;
   color: #94a3b8;

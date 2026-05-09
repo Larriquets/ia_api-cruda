@@ -14,6 +14,7 @@ import EditorAgente from './EditorAgente.jsx'
 import EditorAgentsMd from './EditorAgentsMd.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
+import ConfigBar from './ConfigBar.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
@@ -272,31 +273,33 @@ export default function App() {
         <h1>Chat IA — debug</h1>
         <div className="header-actions">
           <ModeSwitch active="chat" />
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Proveedor</span>
-            <select
-              value={provider}
-              onChange={(e) => {
-                const next = e.target.value
-                setProvider(next)
-                localStorage.setItem(PROVIDER_KEY, next)
-                if (next === 'anthropic' && persistentMode) {
-                  setPersistentMode(false)
-                  appendLog('info', 'Modo persistente desactivado (Claude no soporta Conversations API)')
-                }
-                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
-              }}
-              className={`hdr-select-input provider-select-${provider}`}
-            >
-              <option value="openai">🟢 OpenAI</option>
-              <option value="anthropic">🟠 Claude (Anthropic)</option>
-            </select>
-          </label>
-
-          <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
         </div>
       </header>
+
+      <ConfigBar>
+        <label className="hdr-select">
+          <span className="hdr-select-label">Proveedor</span>
+          <select
+            value={provider}
+            onChange={(e) => {
+              const next = e.target.value
+              setProvider(next)
+              localStorage.setItem(PROVIDER_KEY, next)
+              if (next === 'anthropic' && persistentMode) {
+                setPersistentMode(false)
+                appendLog('info', 'Modo persistente desactivado (Claude no soporta Conversations API)')
+              }
+              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+            }}
+            className={`hdr-select-input provider-select-${provider}`}
+          >
+            <option value="openai">🟢 OpenAI</option>
+            <option value="anthropic">🟠 Claude (Anthropic)</option>
+          </select>
+        </label>
+
+        <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
+      </ConfigBar>
 
       <div className="layout">
         {/* Panel 1 — Chat */}

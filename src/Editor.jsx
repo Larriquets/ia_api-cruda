@@ -3,6 +3,7 @@ import MonacoEditor from '@monaco-editor/react'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ConfigBar from './ConfigBar.jsx'
 
 const CODE_KEY = 'editor_code_snapshot'
 const LANG_KEY = 'editor_language'
@@ -287,64 +288,66 @@ export default function Editor({ onBack }) {
         <h1>Editor de código + IA</h1>
         <div className="header-actions">
           <ModeSwitch active="editor" />
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Proveedor</span>
-            <select
-              value={provider}
-              onChange={(e) => {
-                const next = e.target.value
-                setProvider(next)
-                localStorage.setItem(PROVIDER_KEY, next)
-                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
-              }}
-              className={`hdr-select-input provider-select-${provider}`}
-            >
-              <option value="openai">🟢 OpenAI</option>
-              <option value="anthropic">🟠 Claude (Anthropic)</option>
-            </select>
-          </label>
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Modo</span>
-            <select
-              value={keepContext ? 'with' : 'without'}
-              onChange={(e) => {
-                const next = e.target.value === 'with'
-                setKeepContext(next)
-                appendLog('info', next
-                  ? 'Modo CON CONTEXTO activado — los próximos requests incluirán el historial'
-                  : 'Modo SIN CONTEXTO activado — cada request será independiente')
-              }}
-              className={`hdr-select-input mode-select-${keepContext ? 'persistent' : 'conversation'}`}
-              title="Sin contexto: cada instrucción es independiente. Con contexto: la IA recuerda las instrucciones anteriores."
-            >
-              <option value="without">Sin contexto</option>
-              <option value="with">Con contexto</option>
-            </select>
-          </label>
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Lenguaje</span>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="hdr-select-input"
-            >
-              {LANGUAGES.map((l) => (
-                <option key={l.id} value={l.id}>{l.label}</option>
-              ))}
-            </select>
-          </label>
-
-          <button onClick={handleResetCode} className="clear-btn" type="button" title="Volver al código de ejemplo">
-            Reset
-          </button>
-          <button onClick={handleClearCode} className="clear-btn" type="button">
-            Vaciar editor
-          </button>
         </div>
       </header>
+
+      <ConfigBar>
+        <label className="hdr-select">
+          <span className="hdr-select-label">Proveedor</span>
+          <select
+            value={provider}
+            onChange={(e) => {
+              const next = e.target.value
+              setProvider(next)
+              localStorage.setItem(PROVIDER_KEY, next)
+              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+            }}
+            className={`hdr-select-input provider-select-${provider}`}
+          >
+            <option value="openai">🟢 OpenAI</option>
+            <option value="anthropic">🟠 Claude (Anthropic)</option>
+          </select>
+        </label>
+
+        <label className="hdr-select">
+          <span className="hdr-select-label">Modo</span>
+          <select
+            value={keepContext ? 'with' : 'without'}
+            onChange={(e) => {
+              const next = e.target.value === 'with'
+              setKeepContext(next)
+              appendLog('info', next
+                ? 'Modo CON CONTEXTO activado — los próximos requests incluirán el historial'
+                : 'Modo SIN CONTEXTO activado — cada request será independiente')
+            }}
+            className={`hdr-select-input mode-select-${keepContext ? 'persistent' : 'conversation'}`}
+            title="Sin contexto: cada instrucción es independiente. Con contexto: la IA recuerda las instrucciones anteriores."
+          >
+            <option value="without">Sin contexto</option>
+            <option value="with">Con contexto</option>
+          </select>
+        </label>
+
+        <label className="hdr-select">
+          <span className="hdr-select-label">Lenguaje</span>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="hdr-select-input"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <button onClick={handleResetCode} className="clear-btn" type="button" title="Volver al código de ejemplo">
+          Reset
+        </button>
+        <button onClick={handleClearCode} className="clear-btn" type="button">
+          Vaciar editor
+        </button>
+      </ConfigBar>
 
       <div
         className="layout editor-layout editor-layout-resizable"

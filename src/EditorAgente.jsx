@@ -3,6 +3,7 @@ import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ConfigBar from './ConfigBar.jsx'
 
 const CODE_KEY = 'agente_code_snapshot'
 const LANG_KEY = 'agente_language'
@@ -244,42 +245,45 @@ export default function EditorAgente() {
         <h1>Editor agéntico (Claude tool-use)</h1>
         <div className="header-actions">
           <ModeSwitch active="agente" />
-          <label className="hdr-select">
-            <span className="hdr-select-label">Proveedor</span>
-            <select
-              value={provider}
-              onChange={(e) => {
-                const next = e.target.value
-                setProvider(next)
-                localStorage.setItem(PROVIDER_KEY, next)
-                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
-              }}
-              className={`hdr-select-input provider-select-${provider}`}
-              disabled={loading}
-              title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use. Mismo concepto, distinto shape."
-            >
-              <option value="anthropic">🟠 Claude (Anthropic)</option>
-              <option value="openai">🟢 OpenAI</option>
-            </select>
-          </label>
-
-          <label className="hdr-select">
-            <span className="hdr-select-label">Lenguaje</span>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="hdr-select-input"
-            >
-              {LANGUAGES.map((l) => (
-                <option key={l.id} value={l.id}>{l.label}</option>
-              ))}
-            </select>
-          </label>
-          <button onClick={handleResetCode} className="clear-btn" type="button">
-            Reset código
-          </button>
         </div>
       </header>
+
+      <ConfigBar>
+        <label className="hdr-select">
+          <span className="hdr-select-label">Proveedor</span>
+          <select
+            value={provider}
+            onChange={(e) => {
+              const next = e.target.value
+              setProvider(next)
+              localStorage.setItem(PROVIDER_KEY, next)
+              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+            }}
+            className={`hdr-select-input provider-select-${provider}`}
+            disabled={loading}
+            title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use. Mismo concepto, distinto shape."
+          >
+            <option value="anthropic">🟠 Claude (Anthropic)</option>
+            <option value="openai">🟢 OpenAI</option>
+          </select>
+        </label>
+
+        <label className="hdr-select">
+          <span className="hdr-select-label">Lenguaje</span>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="hdr-select-input"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
+          </select>
+        </label>
+        <button onClick={handleResetCode} className="clear-btn" type="button">
+          Reset código
+        </button>
+      </ConfigBar>
 
       <div
         className="layout editor-layout editor-layout-resizable"

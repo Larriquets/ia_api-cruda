@@ -4,6 +4,7 @@ import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ConfigBar from './ConfigBar.jsx'
 
 const CODE_KEY = 'agentmd_code_snapshot'
 const AGENTS_KEY = 'agentmd_agents_md_v4'
@@ -328,28 +329,31 @@ export default function EditorAgentsMd() {
         <h1>📋 AGENTS.md — instrucciones persistentes para el agente</h1>
         <div className="header-actions">
           <ModeSwitch active="agents-md" />
-          <label className="hdr-select">
-            <span className="hdr-select-label">Proveedor</span>
-            <select
-              value={provider}
-              onChange={(e) => {
-                const next = e.target.value
-                setProvider(next)
-                localStorage.setItem(PROVIDER_KEY, next)
-                appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
-              }}
-              className={`hdr-select-input provider-select-${provider}`}
-              disabled={loading}
-            >
-              <option value="anthropic">🟠 Claude (Anthropic)</option>
-              <option value="openai">🟢 OpenAI</option>
-            </select>
-          </label>
-          <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
-            Reset todo
-          </button>
         </div>
       </header>
+
+      <ConfigBar>
+        <label className="hdr-select">
+          <span className="hdr-select-label">Proveedor</span>
+          <select
+            value={provider}
+            onChange={(e) => {
+              const next = e.target.value
+              setProvider(next)
+              localStorage.setItem(PROVIDER_KEY, next)
+              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+            }}
+            className={`hdr-select-input provider-select-${provider}`}
+            disabled={loading}
+          >
+            <option value="anthropic">🟠 Claude (Anthropic)</option>
+            <option value="openai">🟢 OpenAI</option>
+          </select>
+        </label>
+        <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
+          Reset todo
+        </button>
+      </ConfigBar>
 
       <div
         className="layout editor-layout editor-layout-resizable"
