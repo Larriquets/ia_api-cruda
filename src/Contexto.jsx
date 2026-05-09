@@ -147,7 +147,7 @@ export default function Contexto({ onBack }) {
             <div className="snapshot-empty">
               <p><b>Todavía no hay nada guardado.</b></p>
               <ol>
-                <li>Andá a la pestaña del chat (la que dice "Chat IA — debug")</li>
+                <li>Andá a la pestaña del chat (la que dice "API a la vista — modo Chat")</li>
                 <li>Escribí cualquier mensaje y mandalo</li>
                 <li>Volvé acá: si tenés "Live" activado, aparece solo</li>
               </ol>

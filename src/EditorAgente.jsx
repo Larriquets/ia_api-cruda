@@ -242,7 +242,10 @@ export default function EditorAgente() {
   return (
     <div className="app editor-page">
       <header className="header">
-        <h1>Editor agéntico (Claude tool-use)</h1>
+        <h1>
+          <span className="brand">API a la vista</span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">Agente</span></span>
+        </h1>
         <div className="header-actions">
           <ModeSwitch active="agente" />
         </div>

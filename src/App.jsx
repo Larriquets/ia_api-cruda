@@ -272,7 +272,10 @@ export default function App() {
     <div className="app">
       <WelcomeModal />
       <header className="header">
-        <h1>Chat IA — request, response y contexto a la vista</h1>
+        <h1>
+          <span className="brand">API a la vista</span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">Chat</span></span>
+        </h1>
         <div className="header-actions">
           <ModeSwitch active="chat" />
         </div>

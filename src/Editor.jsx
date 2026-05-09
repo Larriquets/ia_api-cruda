@@ -285,7 +285,10 @@ export default function Editor({ onBack }) {
   return (
     <div className="app editor-page">
       <header className="header">
-        <h1>Editor de código + IA</h1>
+        <h1>
+          <span className="brand">API a la vista</span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">Editor</span></span>
+        </h1>
         <div className="header-actions">
           <ModeSwitch active="editor" />
         </div>

@@ -4,7 +4,10 @@ export default function Docs() {
   return (
     <div className="criollo">
       <header className="header">
-        <h1>📚 Docs — qué hace cada modo de la app</h1>
+        <h1>
+          <span className="brand">API a la vista</span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">📚 Docs</span> · qué hace cada modo</span>
+        </h1>
         <div className="header-actions">
           <ModeSwitch active="docs" />
         </div>

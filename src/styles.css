@@ -32,6 +32,37 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* === Marca "API a la vista" (reutilizable en headers y modal) === */
+.brand {
+  color: #93c5fd;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.brand-mode {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .header-actions {
@@ -85,6 +116,10 @@ body {
   font-size: 17px;
   font-weight: 600;
   color: #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .welcome-close {
@@ -1622,9 +1657,15 @@ body {
 }
 
 .app-mode-btn.active {
-  background: #1e293b;
-  color: #e2e8f0;
-  box-shadow: 0 0 0 1px #475569;
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+  box-shadow: 0 0 0 1px #3b82f6, 0 0 12px rgba(59, 130, 246, 0.25);
+  font-weight: 700;
+}
+
+.app-mode-btn.active:hover {
+  background: rgba(59, 130, 246, 0.22);
+  color: #dbeafe;
 }
 
 /* === Dropdown de Docs en el switch === */

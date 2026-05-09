@@ -326,7 +326,10 @@ export default function EditorAgentsMd() {
   return (
     <div className="app editor-page">
       <header className="header">
-        <h1>📋 AGENTS.md — instrucciones persistentes para el agente</h1>
+        <h1>
+          <span className="brand">API a la vista</span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">AGENTS.md</span></span>
+        </h1>
         <div className="header-actions">
           <ModeSwitch active="agents-md" />
         </div>

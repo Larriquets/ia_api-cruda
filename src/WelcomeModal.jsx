@@ -64,7 +64,10 @@ export default function WelcomeModal() {
     <div className="welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
       <div className="welcome-modal">
         <div className="welcome-header">
-          <h2 id="welcome-title">Bienvenido — esta app tiene 4 modos</h2>
+          <h2 id="welcome-title">
+            <span className="brand">API a la vista</span>
+            <span className="brand-subtitle">— request, response y contexto, todo crudo</span>
+          </h2>
           <button
             type="button"
             className="welcome-close"
@@ -76,8 +79,9 @@ export default function WelcomeModal() {
         </div>
 
         <p className="welcome-intro">
-          Cada modo muestra una capa distinta de cómo se trabaja con la API de un LLM.
-          Recorrelos en orden para entender de qué va la cosa.
+          Esta app no esconde nada: ves el JSON que sale, el JSON que vuelve, y cómo se acumula el
+          contexto entre llamadas. Tiene 4 modos — cada uno muestra una capa distinta de cómo se
+          trabaja con la API de un LLM. Recorrelos en orden.
         </p>
 
         <ol className="welcome-steps">
