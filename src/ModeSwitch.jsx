@@ -32,10 +32,38 @@ export default function ModeSwitch({ active }) {
 
   return (
     <div className="app-mode-switch">
-      <a href="/" className={cls('chat')} {...aria('chat')}>💬 Chat</a>
-      <a href="/editor" className={cls('editor')} {...aria('editor')}>💻 Editor</a>
-      <a href="/editor-agente" className={cls('agente')} {...aria('agente')}>🤖 Agente</a>
-      <a href="/agents-md" className={cls('agents-md')} {...aria('agents-md')}>📋 AGENTS.md</a>
+      <a
+        href="/"
+        className={cls('chat')}
+        {...aria('chat')}
+        title="Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente."
+      >
+        💬 Chat
+      </a>
+      <a
+        href="/editor"
+        className={cls('editor')}
+        {...aria('editor')}
+        title="Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto."
+      >
+        💻 Editor
+      </a>
+      <a
+        href="/editor-agente"
+        className={cls('agente')}
+        {...aria('agente')}
+        title="Agente con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola."
+      >
+        🤖 Agente
+      </a>
+      <a
+        href="/agents-md"
+        className={cls('agents-md')}
+        {...aria('agents-md')}
+        title="AGENTS.md: instrucciones persistentes que el agente sigue siempre (estilo, restricciones, convenciones del proyecto)."
+      >
+        📋 AGENTS.md
+      </a>
 
       <div className="app-mode-dropdown" ref={dropdownRef}>
         <button
@@ -45,6 +73,7 @@ export default function ModeSwitch({ active }) {
           onClick={() => setDocsOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={docsOpen}
+          title="Material de la clase: resumen de los modos y anexos pedagógicos (contexto en vivo, OpenAI vs Claude, la API en argentino)."
         >
           📚 Docs <span className="app-mode-dropdown-chev">{docsOpen ? '▴' : '▾'}</span>
         </button>

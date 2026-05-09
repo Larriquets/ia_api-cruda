@@ -15,6 +15,7 @@ import EditorAgentsMd from './EditorAgentsMd.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import WelcomeModal from './WelcomeModal.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
@@ -246,31 +247,32 @@ export default function App() {
 
   const goHome = () => { window.location.href = '/' }
   if (page === 'criollo') {
-    return <Criollo onBack={goHome} />
+    return <><WelcomeModal /><Criollo onBack={goHome} /></>
   }
   if (page === 'contexto') {
-    return <Contexto onBack={goHome} />
+    return <><WelcomeModal /><Contexto onBack={goHome} /></>
   }
   if (page === 'proveedores') {
-    return <Proveedores onBack={goHome} />
+    return <><WelcomeModal /><Proveedores onBack={goHome} /></>
   }
   if (page === 'editor') {
-    return <Editor onBack={goHome} />
+    return <><WelcomeModal /><Editor onBack={goHome} /></>
   }
   if (page === 'editor-agente') {
-    return <EditorAgente />
+    return <><WelcomeModal /><EditorAgente /></>
   }
   if (page === 'agents-md') {
-    return <EditorAgentsMd />
+    return <><WelcomeModal /><EditorAgentsMd /></>
   }
   if (page === 'docs') {
-    return <Docs />
+    return <><WelcomeModal /><Docs /></>
   }
 
   return (
     <div className="app">
+      <WelcomeModal />
       <header className="header">
-        <h1>Chat IA — debug</h1>
+        <h1>Chat IA — request, response y contexto a la vista</h1>
         <div className="header-actions">
           <ModeSwitch active="chat" />
         </div>
