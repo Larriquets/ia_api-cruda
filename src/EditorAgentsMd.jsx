@@ -6,6 +6,7 @@ import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 
 const CODE_KEY = 'agentmd_code_snapshot'
 const AGENTS_KEY = 'agentmd_agents_md_v4'
@@ -464,6 +465,9 @@ export default function EditorAgentsMd({ withSkills = true }) {
             <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
+
+        {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
+
         <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
           Reset todo
         </button>

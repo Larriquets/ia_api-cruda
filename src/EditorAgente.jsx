@@ -5,6 +5,7 @@ import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 
 const CODE_KEY = 'agente_code_snapshot'
 const LANG_KEY = 'agente_language'
@@ -289,6 +290,8 @@ export default function EditorAgente() {
             <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
+
+        {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <label className="hdr-select">
           <span className="hdr-select-label">Lenguaje</span>

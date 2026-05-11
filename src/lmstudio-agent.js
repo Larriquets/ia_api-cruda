@@ -7,10 +7,16 @@
 // texto plano de la IA. En la UI lo verás como "finish_reason=stop" sin pasos intermedios.
 
 import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { getLmStudioHost as getHost, getLmStudioModel as getModel } from './lmstudio.js'
 
-const getHost = () =>
-  (import.meta.env.VITE_LMSTUDIO_HOST || 'http://localhost:1234').replace(/\/$/, '')
-const getModel = () => import.meta.env.VITE_LMSTUDIO_MODEL || 'google/gemma-4-e4b'
+// LM Studio devuelve {"error":"Model reloaded."} cuando recarga el modelo en mitad de
+// un request (Auto-Evict, cambio de modelo, etc.). Reintentamos 1 vez por iteración.
+const isModelReloadedError = (data) => {
+  const msg = data?.error?.message || data?.error || ''
+  return typeof msg === 'string' && /model\s+reloaded/i.test(msg)
+}
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export async function runLmStudioAgent(
   { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
@@ -19,6 +25,12 @@ export async function runLmStudioAgent(
   const host = getHost()
   const model = getModel()
   const chatUrl = `${host}/v1/chat/completions`
+
+  if (!model) {
+    const msg = 'No hay modelo configurado para LM Studio. Elegilo en la ConfigBar (botón "Detectar") o seteá VITE_LMSTUDIO_MODEL.'
+    onLog?.('error', msg)
+    throw new Error(msg)
+  }
 
   onLog?.('info', `Modo AGENTE (LM Studio local) — modelo: ${model}`)
   onLog?.('info', `Host: ${host} (sin API key real). Si el modelo no soporta tools, el loop termina en 1 iter.`)
@@ -93,32 +105,51 @@ export async function runLmStudioAgent(
     })
     onLog?.('send', `POST ${chatUrl} (iter ${iter})`)
 
-    const t0 = performance.now()
-    let response
-    try {
-      response = await fetch(chatUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer lm-studio',
-        },
-        body: JSON.stringify(body),
-      })
-    } catch (networkErr) {
-      onLog?.('error', `Error de red: ${networkErr.message}`)
-      onLog?.('error', `¿Está corriendo el server de LM Studio? Developer → Status: Running. Habilitá CORS en Server Settings si lo bloquea el browser.`)
-      throw networkErr
-    }
-    const elapsed = (performance.now() - t0).toFixed(0)
-    onLog?.('info', `HTTP ${response.status} en ${elapsed} ms`)
+    const MAX_ATTEMPTS = 2
+    let response, data
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const t0 = performance.now()
+      try {
+        response = await fetch(chatUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer lm-studio',
+          },
+          body: JSON.stringify(body),
+        })
+      } catch (networkErr) {
+        onLog?.('error', `Error de red: ${networkErr.message}`)
+        onLog?.('error', `¿Está corriendo el server de LM Studio? Developer → Status: Running. Habilitá CORS en Server Settings si lo bloquea el browser.`)
+        throw networkErr
+      }
+      const elapsed = (performance.now() - t0).toFixed(0)
+      onLog?.('info', `HTTP ${response.status} en ${elapsed} ms`)
 
-    const data = await response.json().catch(() => ({}))
+      data = await response.json().catch(() => ({}))
+
+      if (isModelReloadedError(data) && attempt < MAX_ATTEMPTS) {
+        onLog?.('info', `LM Studio recargó el modelo — reintentando iter ${iter} en 1.5s (intento ${attempt}/${MAX_ATTEMPTS})`)
+        await wait(1500)
+        continue
+      }
+      break
+    }
+
     onRawResponse?.(data)
 
     if (!response.ok) {
       const detail = data?.error?.message || data?.error || `HTTP ${response.status}`
       onLog?.('error', `LM Studio rechazó la solicitud: ${detail}`)
+      if (isModelReloadedError(data)) {
+        onLog?.('error', `Persistió "Model reloaded" tras reintento. Desactivá Auto-Evict en Developer → Idle TTL.`)
+      }
       throw new Error(`LM Studio: ${detail}`)
+    }
+
+    if (isModelReloadedError(data)) {
+      onLog?.('error', `LM Studio devolvió "Model reloaded" incluso con HTTP 200 tras reintento. Desactivá Auto-Evict.`)
+      throw new Error('LM Studio: Model reloaded')
     }
 
     if (data.usage) {

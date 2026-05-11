@@ -17,6 +17,7 @@ import EditorAgentsMd from './EditorAgentsMd.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
@@ -333,6 +334,8 @@ export default function App() {
             <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
+
+        {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
       </ConfigBar>

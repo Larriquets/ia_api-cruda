@@ -5,6 +5,7 @@ import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 
 const CODE_KEY = 'editor_code_snapshot'
 const LANG_KEY = 'editor_language'
@@ -330,6 +331,8 @@ export default function Editor({ onBack }) {
             <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
+
+        {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <label className="hdr-select">
           <span className="hdr-select-label">Modo</span>

@@ -2849,3 +2849,52 @@ body {
   font-size: 11px;
   color: #94a3b8;
 }
+
+/* Selector de modelo de LM Studio en la ConfigBar (solo visible con provider=lmstudio) */
+.lmstudio-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border: 1px dashed #1e40af;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.lmstudio-host-input {
+  min-width: 170px;
+}
+
+.lmstudio-model-input {
+  min-width: 230px;
+}
+
+.lmstudio-detect-btn {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid #1e40af;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.lmstudio-detect-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.25);
+  color: #dbeafe;
+}
+
+.lmstudio-detect-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.lmstudio-picker-error {
+  font-size: 11px;
+  color: #fca5a5;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
