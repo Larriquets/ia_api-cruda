@@ -6,6 +6,8 @@ import {
   fetchConversationItems,
 } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
+import { sendOllamaMessage } from './ollama.js'
+import { sendLmStudioMessage } from './lmstudio.js'
 import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
@@ -189,8 +191,23 @@ export default function App() {
           appendLog('info', `Modo conversación — enviando ${payload.length} mensaje(s) (system + historial + nuevo)`)
         }
 
-        const sendFn = provider === 'anthropic' ? sendClaudeMessage : sendChatMessage
-        appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+        const sendFn =
+          provider === 'anthropic'
+            ? sendClaudeMessage
+            : provider === 'ollama'
+              ? sendOllamaMessage
+              : provider === 'lmstudio'
+                ? sendLmStudioMessage
+                : sendChatMessage
+        const providerLabel =
+          provider === 'anthropic'
+            ? 'Anthropic (Claude)'
+            : provider === 'ollama'
+              ? 'Ollama (local)'
+              : provider === 'lmstudio'
+                ? 'LM Studio (local)'
+                : 'OpenAI'
+        appendLog('info', `Proveedor: ${providerLabel}`)
 
         const reply = await sendFn(payload, {
           onLog: appendLog,
@@ -210,7 +227,7 @@ export default function App() {
         appendLog('success', 'Mensaje agregado al chat')
       }
     } catch (err) {
-      setError(err.message || 'Error al contactar OpenAI')
+      setError(err.message || 'Error al contactar al proveedor')
       appendLog('error', err.message || 'Error desconocido')
     } finally {
       setLoading(false)
@@ -294,16 +311,26 @@ export default function App() {
               const next = e.target.value
               setProvider(next)
               localStorage.setItem(PROVIDER_KEY, next)
-              if (next === 'anthropic' && persistentMode) {
+              if (next !== 'openai' && persistentMode) {
                 setPersistentMode(false)
-                appendLog('info', 'Modo persistente desactivado (Claude no soporta Conversations API)')
+                appendLog('info', `Modo persistente desactivado (solo OpenAI tiene Conversations API)`)
               }
-              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+              const label =
+                next === 'anthropic'
+                  ? 'Anthropic (Claude)'
+                  : next === 'ollama'
+                    ? 'Ollama (local)'
+                    : next === 'lmstudio'
+                      ? 'LM Studio (local)'
+                      : 'OpenAI'
+              appendLog('info', `Proveedor cambiado a ${label}`)
             }}
             className={`hdr-select-input provider-select-${provider}`}
           >
             <option value="openai">🟢 OpenAI</option>
             <option value="anthropic">🟠 Claude (Anthropic)</option>
+            <option value="ollama">🟣 Ollama (local)</option>
+            <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
 
@@ -317,7 +344,13 @@ export default function App() {
             <span>Chat</span>
             <span className="panel-provider">
               <span className={`provider-badge provider-badge-${provider}`}>
-                {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+                {provider === 'anthropic'
+                  ? '🟠 Claude'
+                  : provider === 'ollama'
+                    ? '🟣 Ollama'
+                    : provider === 'lmstudio'
+                      ? '🔵 LM Studio'
+                      : '🟢 OpenAI'}
               </span>
               <a
                 href="/proveedores"
@@ -369,7 +402,7 @@ export default function App() {
               type="button"
               role="tab"
               aria-selected={persistentMode}
-              disabled={provider === 'anthropic'}
+              disabled={provider !== 'openai'}
               className={`mode-seg-btn mode-seg-persistent${persistentMode ? ' active' : ''}`}
               onClick={() => {
                 if (persistentMode) return
@@ -377,13 +410,13 @@ export default function App() {
                 setRawMode(false)
                 appendLog('info', 'Modo PERSISTENTE — el contexto vive en OpenAI (/v1/responses)')
               }}
-              title={provider === 'anthropic'
-                ? 'Solo OpenAI — Claude no tiene Conversations API'
+              title={provider !== 'openai'
+                ? 'Solo OpenAI — los demás proveedores no tienen Conversations API'
                 : 'OpenAI guarda el historial. El cliente solo manda el último mensaje.'}
             >
               Persistente
               <span className="mode-seg-sub">
-                {provider === 'anthropic' ? 'solo OpenAI' : 'servidor'}
+                {provider !== 'openai' ? 'solo OpenAI' : 'servidor'}
               </span>
             </button>
             {persistentMode && (

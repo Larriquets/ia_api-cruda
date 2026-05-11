@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
+import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -300,10 +301,21 @@ export default function EditorAgentsMd({ withSkills = true }) {
     if (withAgents && withSkills) {
       appendLog('info', `Skills: ${withSkill ? `${skills.length} skill(s) disponibles vía load_skill / run_skill_test` : 'DESHABILITADOS (toggle off)'}`)
     }
-    appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+    const providerLabel =
+      provider === 'anthropic'
+        ? 'Anthropic (Claude)'
+        : provider === 'lmstudio'
+          ? 'LM Studio (local)'
+          : 'OpenAI'
+    appendLog('info', `Proveedor: ${providerLabel}`)
 
     try {
-      const runFn = provider === 'anthropic' ? runClaudeAgent : runOpenAIAgent
+      const runFn =
+        provider === 'anthropic'
+          ? runClaudeAgent
+          : provider === 'lmstudio'
+            ? runLmStudioAgent
+            : runOpenAIAgent
       const { finalText: ft, code: finalCode, iterations } = await runFn(
         {
           userInstruction: instruction,
@@ -436,13 +448,20 @@ export default function EditorAgentsMd({ withSkills = true }) {
               const next = e.target.value
               setProvider(next)
               localStorage.setItem(PROVIDER_KEY, next)
-              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+              const label =
+                next === 'anthropic'
+                  ? 'Anthropic (Claude)'
+                  : next === 'lmstudio'
+                    ? 'LM Studio (local)'
+                    : 'OpenAI'
+              appendLog('info', `Proveedor cambiado a ${label}`)
             }}
             className={`hdr-select-input provider-select-${provider}`}
             disabled={loading}
           >
             <option value="anthropic">🟠 Claude (Anthropic)</option>
             <option value="openai">🟢 OpenAI</option>
+            <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
         <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
@@ -644,7 +663,11 @@ export default function EditorAgentsMd({ withSkills = true }) {
           <div className="panel-title">
             <span>Código + instrucción</span>
             <span className={`provider-badge provider-badge-${provider}`}>
-              {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+              {provider === 'anthropic'
+                ? '🟠 Claude'
+                : provider === 'lmstudio'
+                  ? '🔵 LM Studio'
+                  : '🟢 OpenAI'}
             </span>
           </div>
           <div style={{ flex: '0 0 38%', minHeight: 0, display: 'flex', flexDirection: 'column', borderBottom: '1px solid #334155' }}>

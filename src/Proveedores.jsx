@@ -309,6 +309,66 @@ anthropic-version: 2023-06-01
         </section>
 
         <section className="criollo-section">
+          <h2>🟣 Y el tercer caso: Ollama (modelo local)</h2>
+          <p>
+            Esta app también soporta un tercer "proveedor" que es radicalmente distinto:
+            <b> el modelo corre en tu propia máquina</b>. No hay servers de nadie en el medio.
+          </p>
+          <p>
+            <a href="https://ollama.com" target="_blank" rel="noopener noreferrer">Ollama</a> es un
+            runtime local que descarga y corre modelos open-weight (Gemma de Google, Llama de Meta,
+            Mistral, etc.). Lo arrancás con <code>ollama serve</code> y queda escuchando en
+            <code>http://localhost:11434</code>.
+          </p>
+
+          <h3 className="prov-h3">El request en este caso</h3>
+          <div className="criollo-quote">
+            {`POST http://localhost:11434/api/chat
+(sin Authorization — el server es tuyo)
+
+{
+  "model": "gemma3:4b",
+  "messages": [
+    { "role": "system",    "content": "Eres útil" },
+    { "role": "user",      "content": "Hola" },
+    { "role": "assistant", "content": "Hola, ¿cómo estás?" },
+    { "role": "user",      "content": "¿Cómo me llamo?" }
+  ],
+  "stream": false,
+  "options": { "temperature": 0.7 }
+}`}
+          </div>
+
+          <h3 className="prov-h3">Qué cambia respecto a OpenAI/Claude</h3>
+          <ul>
+            <li><b>Sin API key:</b> el server es tuyo, no hay nada que autenticar.</li>
+            <li><b>Sin red:</b> el request va a localhost. Funciona offline.</li>
+            <li><b>Sin facturación:</b> usa tu CPU/GPU. Lo que pagás es luz y RAM.</li>
+            <li><b>Privacidad total:</b> el prompt nunca sale de tu máquina.</li>
+            <li><b>Sin Conversations API:</b> Ollama es stateless como Claude — el contexto lo armás vos.</li>
+            <li><b>Modelos:</b> elegís con <code>ollama pull gemma3:4b</code> (o el tag que prefieras).</li>
+          </ul>
+
+          <h3 className="prov-h3">El detalle de CORS (otra vez)</h3>
+          <p>
+            Por default, Ollama solo acepta llamadas desde <code>localhost</code>. Si el navegador
+            te tira CORS al llamar desde Vite, arrancá Ollama con:
+          </p>
+          <div className="criollo-quote">
+            {`# Windows (PowerShell)
+$env:OLLAMA_ORIGINS="*"; ollama serve
+
+# Mac/Linux
+OLLAMA_ORIGINS=* ollama serve`}
+          </div>
+          <p>
+            Para usarlo en esta app: descargá el modelo (<code>ollama pull gemma3:4b</code>), dejá
+            <code>ollama serve</code> corriendo, y elegí "🟣 Ollama (local)" en el selector de
+            proveedor.
+          </p>
+        </section>
+
+        <section className="criollo-section">
           <h2>Resumiendo todo</h2>
           <div className="prov-summary">
             <div className="prov-card prov-card-openai">
@@ -327,6 +387,15 @@ anthropic-version: 2023-06-01
                 <li>Stateless por diseño</li>
                 <li>Privacy-first, sin lock-in</li>
                 <li>Más laburo pero vos sos dueño total</li>
+              </ul>
+            </div>
+            <div className="prov-card prov-card-ollama">
+              <div className="prov-card-title">🟣 Ollama (local)</div>
+              <p>"El modelo corre en tu máquina. Ni siquiera salimos a internet."</p>
+              <ul>
+                <li>Sin API key, sin facturación, sin red</li>
+                <li>Privacidad absoluta (offline-capable)</li>
+                <li>Limitado por tu hardware</li>
               </ul>
             </div>
           </div>

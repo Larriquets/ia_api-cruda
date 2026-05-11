@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
+import { runLmStudioAgent } from './lmstudio-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 
@@ -134,10 +135,21 @@ export default function EditorAgente() {
 
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
     appendLog('info', `Lenguaje: ${language} · Tamaño código inicial: ${code.length} chars`)
-    appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+    const providerLabel =
+      provider === 'anthropic'
+        ? 'Anthropic (Claude)'
+        : provider === 'lmstudio'
+          ? 'LM Studio (local)'
+          : 'OpenAI'
+    appendLog('info', `Proveedor: ${providerLabel}`)
 
     try {
-      const runFn = provider === 'anthropic' ? runClaudeAgent : runOpenAIAgent
+      const runFn =
+        provider === 'anthropic'
+          ? runClaudeAgent
+          : provider === 'lmstudio'
+            ? runLmStudioAgent
+            : runOpenAIAgent
       const { finalText: ft, code: finalCode, iterations } = await runFn(
         {
           userInstruction: instruction,
@@ -260,14 +272,21 @@ export default function EditorAgente() {
               const next = e.target.value
               setProvider(next)
               localStorage.setItem(PROVIDER_KEY, next)
-              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+              const label =
+                next === 'anthropic'
+                  ? 'Anthropic (Claude)'
+                  : next === 'lmstudio'
+                    ? 'LM Studio (local)'
+                    : 'OpenAI'
+              appendLog('info', `Proveedor cambiado a ${label}`)
             }}
             className={`hdr-select-input provider-select-${provider}`}
             disabled={loading}
-            title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use. Mismo concepto, distinto shape."
+            title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use; LM Studio reusa el shape de OpenAI sobre tu modelo local. Mismo concepto, distinto shape."
           >
             <option value="anthropic">🟠 Claude (Anthropic)</option>
             <option value="openai">🟢 OpenAI</option>
+            <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
 
@@ -342,7 +361,11 @@ export default function EditorAgente() {
           <div className="panel-title">
             <span>Prompt → Loop agéntico</span>
             <span className={`provider-badge provider-badge-${provider}`}>
-              {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+              {provider === 'anthropic'
+                ? '🟠 Claude'
+                : provider === 'lmstudio'
+                  ? '🔵 LM Studio'
+                  : '🟢 OpenAI'}
             </span>
           </div>
           <div className="instr-body">

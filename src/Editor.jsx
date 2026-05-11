@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import MonacoEditor from '@monaco-editor/react'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
+import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 
@@ -227,8 +228,19 @@ export default function Editor({ onBack }) {
       : [{ role: 'system', content: SYSTEM_PROMPT }, userMsg]
 
     try {
-      const sendFn = provider === 'anthropic' ? sendClaudeMessage : sendChatMessage
-      appendLog('info', `Proveedor: ${provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+      const sendFn =
+        provider === 'anthropic'
+          ? sendClaudeMessage
+          : provider === 'lmstudio'
+            ? sendLmStudioMessage
+            : sendChatMessage
+      const providerLabel =
+        provider === 'anthropic'
+          ? 'Anthropic (Claude)'
+          : provider === 'lmstudio'
+            ? 'LM Studio (local)'
+            : 'OpenAI'
+      appendLog('info', `Proveedor: ${providerLabel}`)
 
       const result = await sendFn(messages, {
         onLog: appendLog,
@@ -303,12 +315,19 @@ export default function Editor({ onBack }) {
               const next = e.target.value
               setProvider(next)
               localStorage.setItem(PROVIDER_KEY, next)
-              appendLog('info', `Proveedor cambiado a ${next === 'anthropic' ? 'Anthropic (Claude)' : 'OpenAI'}`)
+              const label =
+                next === 'anthropic'
+                  ? 'Anthropic (Claude)'
+                  : next === 'lmstudio'
+                    ? 'LM Studio (local)'
+                    : 'OpenAI'
+              appendLog('info', `Proveedor cambiado a ${label}`)
             }}
             className={`hdr-select-input provider-select-${provider}`}
           >
             <option value="openai">🟢 OpenAI</option>
             <option value="anthropic">🟠 Claude (Anthropic)</option>
+            <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
 
@@ -400,7 +419,11 @@ export default function Editor({ onBack }) {
           <div className="panel-title">
             <span>Instrucción → IA</span>
             <span className={`provider-badge provider-badge-${provider}`}>
-              {provider === 'anthropic' ? '🟠 Claude' : '🟢 OpenAI'}
+              {provider === 'anthropic'
+                ? '🟠 Claude'
+                : provider === 'lmstudio'
+                  ? '🔵 LM Studio'
+                  : '🟢 OpenAI'}
             </span>
           </div>
           <div className="instr-body">
