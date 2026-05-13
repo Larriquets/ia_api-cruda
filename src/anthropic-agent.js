@@ -16,7 +16,7 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
@@ -57,6 +57,7 @@ export async function runClaudeAgent(
   }))
 
   const messages = [
+    ...previousMessages,
     {
       role: 'user',
       content: `Lenguaje: ${language}\n\nInstrucción:\n${userInstruction.trim()}\n\nCódigo inicial:\n\`\`\`${language}\n${initialCode}\n\`\`\`\n\nUsá las herramientas para inspeccionar y editar el código según lo pedido. Cuando termines, respondé con un texto breve.`,
@@ -180,5 +181,5 @@ export async function runClaudeAgent(
     onLog?.('error', `Cota de seguridad: alcanzadas ${maxIterations} iteraciones sin que la IA termine`)
   }
 
-  return { finalText: finalText.trim(), code, iterations: iter, stopReason }
+  return { finalText: finalText.trim(), code, iterations: iter, stopReason, messages }
 }

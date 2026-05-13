@@ -19,7 +19,7 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const apiKey = getApiKey()
@@ -71,6 +71,7 @@ export async function runOpenAIAgent(
   // OpenAI mete el system prompt como primer mensaje (no aparte como Anthropic).
   const messages = [
     { role: 'system', content: fullSystem },
+    ...previousMessages,
     {
       role: 'user',
       content: `Lenguaje: ${language}\n\nInstrucción:\n${userInstruction.trim()}\n\nCódigo inicial:\n\`\`\`${language}\n${initialCode}\n\`\`\`\n\nUsá las herramientas para inspeccionar y editar el código según lo pedido. Cuando termines, respondé con un texto breve.`,
@@ -190,5 +191,5 @@ export async function runOpenAIAgent(
     onLog?.('error', `Cota de seguridad: alcanzadas ${maxIterations} iteraciones sin que la IA termine`)
   }
 
-  return { finalText: finalText.trim(), code, iterations: iter, stopReason: finishReason }
+  return { finalText: finalText.trim(), code, iterations: iter, stopReason: finishReason, messages: messages.slice(1) }
 }

@@ -19,7 +19,7 @@ const isModelReloadedError = (data) => {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export async function runLmStudioAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
 ) {
   const host = getHost()
@@ -72,6 +72,7 @@ export async function runLmStudioAgent(
 
   const messages = [
     { role: 'system', content: fullSystem },
+    ...previousMessages,
     {
       role: 'user',
       content: `Lenguaje: ${language}\n\nInstrucción:\n${userInstruction.trim()}\n\nCódigo inicial:\n\`\`\`${language}\n${initialCode}\n\`\`\`\n\nUsá las herramientas para inspeccionar y editar el código según lo pedido. Cuando termines, respondé con un texto breve.`,
@@ -208,5 +209,5 @@ export async function runLmStudioAgent(
     onLog?.('error', `Cota de seguridad: alcanzadas ${maxIterations} iteraciones sin que la IA termine`)
   }
 
-  return { finalText: finalText.trim(), code, iterations: iter, stopReason: finishReason }
+  return { finalText: finalText.trim(), code, iterations: iter, stopReason: finishReason, messages: messages.slice(1) }
 }

@@ -2260,6 +2260,37 @@ body {
   border-style: solid;
 }
 
+.noise-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px dashed #475569;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+}
+
+.noise-toggle:hover {
+  border-color: #64748b;
+  color: #cbd5e1;
+}
+
+.noise-toggle.active {
+  border-color: #9d174d;
+  border-style: solid;
+  background: rgba(219, 39, 119, 0.12);
+  color: #f9a8d4;
+}
+
+.noise-toggle input[type='checkbox'] {
+  accent-color: #db2777;
+  cursor: pointer;
+}
 /* === Selector de Proveedor dentro del panel del Chat === */
 .panel-provider {
   display: inline-flex;
@@ -2341,6 +2372,17 @@ body {
   color: #e2e8f0;
 }
 
+.suggested-step-btn-noisy {
+  border-color: #9d174d;
+  background: rgba(219, 39, 119, 0.08);
+  color: #fbcfe8;
+}
+
+.suggested-step-btn-noisy:hover:not(:disabled) {
+  background: rgba(219, 39, 119, 0.14);
+  border-color: #db2777;
+  color: #fdf2f8;
+}
 .suggested-step-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -2596,6 +2638,60 @@ body {
 }
 
 /* === Historial de iteraciones (Request/Response apilados) === */
+.agent-context-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.context-dial {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.context-dial-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle closest-side, #0f172a 67%, transparent 68%),
+    conic-gradient(var(--ctx-color) var(--ctx-pct), #1e293b 0);
+  box-shadow: inset 0 0 0 1px #334155;
+}
+
+.context-dial-value {
+  color: #e2e8f0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.context-dial-label {
+  color: #64748b;
+}
+
+.context-dial-low {
+  --ctx-color: #22c55e;
+}
+
+.context-dial-medium {
+  --ctx-color: #f59e0b;
+}
+
+.context-dial-high {
+  --ctx-color: #ef4444;
+}
+
 .raw-history {
   flex: 1 1 auto;
   min-height: 100px;

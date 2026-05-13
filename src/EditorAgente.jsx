@@ -12,6 +12,7 @@ const LANG_KEY = 'agente_language'
 const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'agente_logs'
 const COLS_KEY = 'agente_cols'
+const AGENT_CONTEXT_KEY = 'agente_context_thread'
 const LOGS_MAX = 500
 
 const DEFAULT_CODE = `public class CuentaBancaria {
@@ -40,8 +41,20 @@ const SUGGESTED_PROMPTS = [
   'Agregá validación a depositar(): que ignore montos negativos.',
 ]
 
+const NOISY_SUGGESTED_PROMPTS = [
+  'No sé bien qué está mal, pero el saldo a veces queda raro. Cambiá lo mínimo, aunque si hace falta rearmá la clase. Que quede más profesional y no rompas nada.',
+  'Agregá retirar, transferir, validar negativos y algún log útil. Pero no quiero logs en producción. Ah, y mantené los nombres actuales salvo los que estén feos.',
+  'El usuario no debería poder sacar más plata de la que tiene, excepto cuando sea una cuenta especial. Todavía no existe cuenta especial, pero dejalo preparado sin complicarlo.',
+  'Hacé que depositar sea seguro, rápido y fácil de leer. Si ves getters/setters malos cambialos, pero no cambies la API porque hay tests viejos que no te paso.',
+  'Me dijeron que balance suena mejor que saldo, pero en español también está bien. Elegí vos. Lo importante es que después se entienda y compile.',
+  'Arreglá todo lo que parezca deuda técnica en esta clase. No agregues demasiadas cosas nuevas, salvo validaciones, errores claros, comentarios y compatibilidad futura.',
+]
+
+const CONTEXT_BUDGET_TOKENS = 8000
 const DEFAULT_COLS = [0.42, 0.32, 0.26]
 const MIN_COL = 0.12
+const estimateTokens = (value) => Math.ceil(JSON.stringify(value ?? '').length / 4)
+const EMPTY_AGENT_CONTEXT = { provider: null, language: null, messages: [] }
 
 export default function EditorAgente() {
   const [code, setCode] = useState(() => {
@@ -76,6 +89,18 @@ export default function EditorAgente() {
       return raw ? JSON.parse(raw) : []
     } catch {
       return []
+    }
+  })
+  const [noiseMode, setNoiseMode] = useState(false)
+  const [agentContext, setAgentContext] = useState(() => {
+    if (typeof window === 'undefined') return EMPTY_AGENT_CONTEXT
+    try {
+      const raw = localStorage.getItem(AGENT_CONTEXT_KEY)
+      const parsed = raw ? JSON.parse(raw) : null
+      if (!parsed || !Array.isArray(parsed.messages)) return EMPTY_AGENT_CONTEXT
+      return parsed
+    } catch {
+      return EMPTY_AGENT_CONTEXT
     }
   })
   const [cols, setCols] = useState(() => {
@@ -113,6 +138,9 @@ export default function EditorAgente() {
     try { localStorage.setItem(COLS_KEY, JSON.stringify(cols)) } catch { /* noop */ }
   }, [cols])
   useEffect(() => {
+    try { localStorage.setItem(AGENT_CONTEXT_KEY, JSON.stringify(agentContext)) } catch { /* noop */ }
+  }, [agentContext])
+  useEffect(() => {
     stepsRef.current?.scrollTo({ top: stepsRef.current.scrollHeight })
   }, [steps])
   useEffect(() => {
@@ -126,11 +154,12 @@ export default function EditorAgente() {
 
   const handleSend = async () => {
     if (!instruction.trim() || loading) return
+    const contextMatches = agentContext.provider === provider && agentContext.language === language
+    const previousMessages = contextMatches ? agentContext.messages : []
     setLoading(true)
     setError(null)
     setFinalText('')
     setSteps([])
-    setRawHistory([])
     setCollapsed(new Set())
     setIterCount(0)
 
@@ -143,6 +172,11 @@ export default function EditorAgente() {
           ? 'LM Studio (local)'
           : 'OpenAI'
     appendLog('info', `Proveedor: ${providerLabel}`)
+    if (previousMessages.length > 0) {
+      appendLog('info', `Contexto previo incluido: ${previousMessages.length} mensaje(s)`)
+    } else if (agentContext.messages.length > 0) {
+      appendLog('info', 'Contexto previo ignorado porque cambió el proveedor o el lenguaje')
+    }
 
     try {
       const runFn =
@@ -151,12 +185,13 @@ export default function EditorAgente() {
           : provider === 'lmstudio'
             ? runLmStudioAgent
             : runOpenAIAgent
-      const { finalText: ft, code: finalCode, iterations } = await runFn(
+      const { finalText: ft, code: finalCode, iterations, messages: resultMessages = [] } = await runFn(
         {
           userInstruction: instruction,
           initialCode: code,
           language,
           maxIterations: 8,
+          previousMessages,
         },
         {
           onLog: appendLog,
@@ -187,6 +222,7 @@ export default function EditorAgente() {
 
       setFinalText(ft)
       setIterCount(iterations)
+      setAgentContext({ provider, language, messages: resultMessages })
       appendLog('success', `Agente terminó. Código final: ${finalCode.length} chars, ${iterations} iteración(es).`)
     } catch (err) {
       setError(err.message || 'Error al ejecutar el agente')
@@ -200,12 +236,24 @@ export default function EditorAgente() {
     setCode(DEFAULT_CODE)
     setSteps([])
     setFinalText('')
-    appendLog('info', 'Editor reseteado al ejemplo')
+    setAgentContext(EMPTY_AGENT_CONTEXT)
+    setRawHistory([])
+    setCollapsed(new Set())
+    setIterCount(0)
+    appendLog('info', 'Editor reseteado al ejemplo y contexto del agente vaciado')
   }
 
   const handleClearLogs = () => {
     setLogs([])
     try { localStorage.removeItem(LOGS_KEY) } catch { /* noop */ }
+  }
+
+  const handleClearAgentContext = () => {
+    setAgentContext(EMPTY_AGENT_CONTEXT)
+    setRawHistory([])
+    setCollapsed(new Set())
+    setIterCount(0)
+    appendLog('info', 'Contexto del agente vaciado')
   }
 
   // Resizers
@@ -251,6 +299,27 @@ export default function EditorAgente() {
     acc[key].push(s)
     return acc
   }, {})
+  const suggestedPrompts = noiseMode
+    ? [
+        ...SUGGESTED_PROMPTS.map((prompt) => ({ prompt, noisy: false })),
+        ...NOISY_SUGGESTED_PROMPTS.map((prompt) => ({ prompt, noisy: true })),
+      ]
+    : SUGGESTED_PROMPTS.map((prompt) => ({ prompt, noisy: false }))
+  const activeContextMessages =
+    agentContext.provider === provider && agentContext.language === language
+      ? agentContext.messages
+      : []
+  const latestRequest = rawHistory[rawHistory.length - 1]?.request
+  const contextTokens = latestRequest
+    ? estimateTokens(latestRequest)
+    : activeContextMessages.length > 0
+      ? estimateTokens(activeContextMessages)
+      : 0
+  const contextPct = Math.min(100, Math.round((contextTokens / CONTEXT_BUDGET_TOKENS) * 100))
+  const contextState =
+    contextPct >= 80 ? 'high' :
+      contextPct >= 55 ? 'medium' :
+        'low'
 
   return (
     <div className="app editor-page">
@@ -305,6 +374,34 @@ export default function EditorAgente() {
             ))}
           </select>
         </label>
+        <label
+          className={`noise-toggle${noiseMode ? ' active' : ''}`}
+          title="Si está activo, aparecen instrucciones ambiguas y ruidosas como las que escribiría un usuario apurado."
+        >
+          <input
+            type="checkbox"
+            checked={noiseMode}
+            onChange={(e) => {
+              setNoiseMode(e.target.checked)
+              appendLog('info', e.target.checked
+                ? 'Modo RUIDO activado — se muestran instrucciones ambiguas de mal usuario'
+                : 'Modo RUIDO desactivado')
+            }}
+            disabled={loading}
+          />
+          <span>🔊 Ruido en instrucciones</span>
+        </label>
+
+        <button
+          onClick={handleClearAgentContext}
+          className="clear-btn"
+          type="button"
+          disabled={loading || (agentContext.messages.length === 0 && rawHistory.length === 0)}
+          title="Borra el thread guardado del agente y el historial raw visible"
+        >
+          Vaciar contexto
+        </button>
+
         <button onClick={handleResetCode} className="clear-btn" type="button">
           Reset código
         </button>
@@ -375,15 +472,16 @@ export default function EditorAgente() {
             <div className="suggested-steps">
               <div className="suggested-steps-title">Probá una de estas instrucciones:</div>
               <ol className="suggested-steps-list">
-                {SUGGESTED_PROMPTS.map((p, i) => (
+                {suggestedPrompts.map(({ prompt, noisy }, i) => (
                   <li key={i}>
                     <button
                       type="button"
-                      className="suggested-step-btn"
-                      onClick={() => setInstruction(p)}
+                      className={`suggested-step-btn${noisy ? ' suggested-step-btn-noisy' : ''}`}
+                      onClick={() => setInstruction(prompt)}
                       disabled={loading}
+                      title={noisy ? 'Instrucción ambigua o ruidosa, parecida a la de un usuario apurado' : undefined}
                     >
-                      {p}
+                      {prompt}
                     </button>
                   </li>
                 ))}
@@ -457,8 +555,24 @@ export default function EditorAgente() {
         <section className="panel raw-panel">
           <div className="panel-title">
             <span>Historial Request/Response</span>
-            <span className="context-meta">
-              {rawHistory.length === 0 ? 'sin actividad' : `${rawHistory.length} iteración(es)`}
+            <span className="agent-context-title">
+              <span className="context-meta">
+                {rawHistory.length === 0
+                  ? activeContextMessages.length > 0
+                    ? `${activeContextMessages.length} msg(s) guardado(s)`
+                    : 'sin actividad'
+                  : `${rawHistory.length} iteración(es) · ${activeContextMessages.length} msg(s) guardado(s)`}
+              </span>
+              <span
+                className={`context-dial context-dial-${contextState}`}
+                style={{ '--ctx-pct': `${contextPct}%` }}
+                title={`Último request: ≈${contextTokens} tokens de ${CONTEXT_BUDGET_TOKENS}`}
+              >
+                <span className="context-dial-ring">
+                  <span className="context-dial-value">{contextPct}%</span>
+                </span>
+                <span className="context-dial-label">contexto</span>
+              </span>
             </span>
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
@@ -475,6 +589,7 @@ export default function EditorAgente() {
             {rawHistory.map((entry) => {
               const isCollapsed = collapsed.has(entry.iter)
               const reqMsgCount = entry.request?.body?.messages?.length ?? '?'
+              const reqTokens = estimateTokens(entry.request)
               return (
                 <div key={entry.iter} className={`raw-iter ${isCollapsed ? 'raw-iter-collapsed' : ''}`}>
                   <button
@@ -493,7 +608,7 @@ export default function EditorAgente() {
                     <span className="raw-iter-chev">{isCollapsed ? '▸' : '▾'}</span>
                     <span className="raw-iter-label">Iteración #{entry.iter}</span>
                     <span className="raw-iter-meta">
-                      {reqMsgCount} msg(s) · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : 'esperando…'}
+                      {reqMsgCount} msg(s) · ≈{reqTokens}t · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : 'esperando…'}
                     </span>
                   </button>
                   {!isCollapsed && (
