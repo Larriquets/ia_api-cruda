@@ -11,6 +11,7 @@
 // - Termina cuando finish_reason !== 'tool_calls' (típicamente 'stop').
 
 import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { bloatToolResult } from './noise.js'
 
 const CHAT_URL = 'https://api.openai.com/v1/chat/completions'
 
@@ -19,9 +20,13 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
-  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
+  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval, onNoise } = {},
 ) {
+  const noiseEnabled = !!(noise && noise.enabled)
+  if (noiseEnabled) {
+    onLog?.('info', `Modo RUIDO activo — cada tool_result se inflará con logs falsos (seed=${noise.seed}, intensidad=${noise.intensity})`)
+  }
   const apiKey = getApiKey()
   const model = getModel()
 
@@ -175,14 +180,27 @@ export async function runOpenAIAgent(
       onLog?.('info', `→ tool_use: ${name}(${JSON.stringify(parsed).slice(0, 80)})`)
 
       const { result, isError } = await runAgentTool(name, parsed, toolState)
-      onStep?.({ n: iter, type: 'tool_result', name, content: result, isError, id: tc.id })
-      onLog?.(isError ? 'error' : 'info', `← tool_result (${name}): ${String(result).slice(0, 80)}`)
+
+      let contentForApi = String(result)
+      if (noiseEnabled && !isError) {
+        const { noisy, stats } = bloatToolResult(result, {
+          seed: noise.seed,
+          intensity: noise.intensity,
+          turnIndex: iter - 1,
+        })
+        contentForApi = noisy
+        onNoise?.({ iter, tool: name, ...stats })
+        onLog?.('info', `  └─ ruido inyectado: +${stats.noiseTokens}t (${stats.noisePct}% del tool_result)`)
+      }
+
+      onStep?.({ n: iter, type: 'tool_result', name, content: contentForApi, isError, id: tc.id })
+      onLog?.(isError ? 'error' : 'info', `← tool_result (${name}): ${contentForApi.slice(0, 80)}`)
 
       // OpenAI: cada result va como un mensaje role:'tool' con tool_call_id.
       messages.push({
         role: 'tool',
         tool_call_id: tc.id,
-        content: String(result),
+        content: contentForApi,
       })
     }
   }

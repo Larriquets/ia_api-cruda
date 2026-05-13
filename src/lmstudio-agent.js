@@ -7,6 +7,7 @@
 // texto plano de la IA. En la UI lo verás como "finish_reason=stop" sin pasos intermedios.
 
 import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { bloatToolResult } from './noise.js'
 import { getLmStudioHost as getHost, getLmStudioModel as getModel } from './lmstudio.js'
 
 // LM Studio devuelve {"error":"Model reloaded."} cuando recarga el modelo en mitad de
@@ -19,9 +20,13 @@ const isModelReloadedError = (data) => {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export async function runLmStudioAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
-  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
+  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval, onNoise } = {},
 ) {
+  const noiseEnabled = !!(noise && noise.enabled)
+  if (noiseEnabled) {
+    onLog?.('info', `Modo RUIDO activo — cada tool_result se inflará con logs falsos (seed=${noise.seed}, intensidad=${noise.intensity})`)
+  }
   const host = getHost()
   const model = getModel()
   const chatUrl = `${host}/v1/chat/completions`
@@ -194,13 +199,26 @@ export async function runLmStudioAgent(
       onLog?.('info', `→ tool_use: ${name}(${JSON.stringify(parsed).slice(0, 80)})`)
 
       const { result, isError } = await runAgentTool(name, parsed, toolState)
-      onStep?.({ n: iter, type: 'tool_result', name, content: result, isError, id: tc.id })
-      onLog?.(isError ? 'error' : 'info', `← tool_result (${name}): ${String(result).slice(0, 80)}`)
+
+      let contentForApi = String(result)
+      if (noiseEnabled && !isError) {
+        const { noisy, stats } = bloatToolResult(result, {
+          seed: noise.seed,
+          intensity: noise.intensity,
+          turnIndex: iter - 1,
+        })
+        contentForApi = noisy
+        onNoise?.({ iter, tool: name, ...stats })
+        onLog?.('info', `  └─ ruido inyectado: +${stats.noiseTokens}t (${stats.noisePct}% del tool_result)`)
+      }
+
+      onStep?.({ n: iter, type: 'tool_result', name, content: contentForApi, isError, id: tc.id })
+      onLog?.(isError ? 'error' : 'info', `← tool_result (${name}): ${contentForApi.slice(0, 80)}`)
 
       messages.push({
         role: 'tool',
         tool_call_id: tc.id,
-        content: String(result),
+        content: contentForApi,
       })
     }
   }

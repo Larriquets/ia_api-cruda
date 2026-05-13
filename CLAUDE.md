@@ -1,75 +1,81 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Propósito
+UI de chat pedagógica que habla directo a OpenAI, Anthropic, Ollama y LM Studio desde el browser.
+El objetivo es exponer JSON crudo de request/response, contexto acumulado, tokens y log de proceso.
+La app tiene cuatro modos navegables (Chat, Editor, Agente, AGENTS.md) más Docs.
+UI en castellano (registro argentino, incluye página `/criollo` que explica la API en lunfardo).
 
-## Project purpose
+## Setup crítico (no obvio)
+- Keys vía `import.meta.env` → van al bundle. NO deployar.
+- Ollama: requiere `ollama serve` + modelo pulleado; si el browser pega CORS, arrancar con `OLLAMA_ORIGINS=*`.
+- LM Studio: arrancar el server en LM Studio → Developer (puerto 1234 por defecto). El modelo se elige desde la UI (botón "Detectar" en la ConfigBar) o vía `VITE_LMSTUDIO_MODEL`. Si recarga modelo en mitad del request, el wrapper reintenta una vez.
+- Sin tests, lint, TS ni formatter configurados.
+- Editor de código basado en `@monaco-editor/react`.
 
-A pedagogical / debugging-focused chat UI that talks directly to **OpenAI**, **Anthropic**, and a local **Ollama** server from the browser. The point is not to be a polished chat — it's to expose what is actually being sent and received: raw request JSON, raw response JSON, accumulated context, token estimates, and a persisted process log. UI copy is in Spanish (Argentinian register, including a `/criollo` page that explains the API in slang).
+## Arquitectura
+React 18 + Vite, SPA sin router. Routing manual: `vite.config.js` tiene un `spaFallback` middleware
+y cada página decide a qué componente renderizar mirando `window.location.pathname`. Navegación entre
+modos via `<a href>` (mismo tab) usando [ModeSwitch.jsx](src/ModeSwitch.jsx) en el header.
 
-## Commands
+### Modos de la app
+| Ruta | Componente | Qué demuestra |
+|---|---|---|
+| `/` | [App.jsx](src/App.jsx) | Chat con 4 modos de contexto (ver abajo) |
+| `/editor` | [Editor.jsx](src/Editor.jsx) | Código + instrucción → respuesta, con/sin contexto acumulado |
+| `/editor-agente` | [EditorAgente.jsx](src/EditorAgente.jsx) | Agente con tool-use (loop de function-calling) |
+| `/agents-md` | [EditorAgentsMd.jsx](src/EditorAgentsMd.jsx) | Agente + `AGENTS.md` inyectado al system prompt |
+| `/agents-md-skills` | [EditorAgentsMd.jsx](src/EditorAgentsMd.jsx) | AGENTS.md + tools `load_skill` / `run_skill_test` |
+| `/docs`, `/contexto`, `/proveedores`, `/criollo` | páginas presentacionales | Material de clase |
 
-```
-npm run dev       # vite dev server on http://localhost:5173
-npm run build     # production build
-npm run preview   # preview built bundle
-```
+### Cuatro proveedores
+| Proveedor | Endpoint | Estado | Wrapper chat | Wrapper agente |
+|---|---|---|---|---|
+| OpenAI classic | `POST /v1/chat/completions` | full `messages[]` cada vez | [src/openai.js](src/openai.js) | [src/openai-agent.js](src/openai-agent.js) |
+| OpenAI persistent | `POST /v1/responses` + `/conversations` | server-side, ID en localStorage | [src/openai.js](src/openai.js) | — |
+| Anthropic | `POST /v1/messages` | stateless, browser-direct (`anthropic-dangerous-direct-browser-access`) | [src/anthropic.js](src/anthropic.js) | [src/anthropic-agent.js](src/anthropic-agent.js) |
+| Ollama | `POST /api/chat` con `stream:false` | stateless, local, sin auth | [src/ollama.js](src/ollama.js) | — |
+| LM Studio | `POST /v1/chat/completions` (shape OpenAI) | stateless, local, header `Authorization` placeholder | [src/lmstudio.js](src/lmstudio.js) | [src/lmstudio-agent.js](src/lmstudio-agent.js) |
 
-There is no test runner, linter, type-checker, or formatter configured.
+Formato canónico in-app: `messages[]` shape de OpenAI (`{role, content}` con `role: 'system'`).
+`toAnthropicPayload` en `src/anthropic.js` extrae el `system` y deja sólo user/assistant en `messages`.
+Ollama y LM Studio aceptan el shape tal cual.
 
-## Required env vars (Vite-prefixed, baked into client bundle)
+### Cuatro modos de contexto en el Chat (mutuamente excluyentes)
+Segmented control en [App.jsx](src/App.jsx) — solo uno activo a la vez.
+- **Crudo** — solo el último user message, sin system ni history.
+- **Conversación** — cliente acumula `messages[]` y lo reenvía completo cada request.
+- **Persistente** — `/v1/responses` + Conversations API; el contexto vive en OpenAI. Forzado a off cuando `provider !== 'openai'`.
+- **Ruido** — inyecta relleno determinista al final del último user message vía [applyNoise](src/noise.js). Controles de seed e intensidad en la UI. Demuestra cómo el contexto sucio degrada la respuesta.
 
-```
-VITE_OPENAI_API_KEY=...
-VITE_OPENAI_MODEL=gpt-4o-mini            # optional, default gpt-4o-mini
-VITE_ANTHROPIC_API_KEY=...
-VITE_ANTHROPIC_MODEL=claude-haiku-4-5-20251001   # optional
+### Agentes (loop function-calling)
+Cada wrapper agéntico (`*-agent.js`) implementa un loop sobre tools definidas en [agent-tools.js](src/agent-tools.js):
+- `read_code`, `edit_code` — siempre disponibles.
+- `assess_impact` — opt-in; pausa el loop y pide aprobación humana via sentinel `NEEDS_HUMAN_APPROVAL`.
+- `load_skill`, `run_skill_test` — solo en `/agents-md-skills`. Los tests deterministas viven en [skill-tests.js](src/skill-tests.js), indexados por id de skill.
+- En modo Ruido (agente), [bloatToolResult](src/noise.js) infla cada `tool_result` con logs falsos para mostrar context-bloat real.
 
-VITE_OLLAMA_HOST=http://localhost:11434          # optional, default localhost:11434
-VITE_OLLAMA_MODEL=gemma3:4b                       # optional, default gemma3:4b
-```
+### Wrappers exponen hooks de debug
+Todos los wrappers (`sendChatMessage`, `sendClaudeMessage`, `sendOllamaMessage`, `sendLmStudioMessage`, y `runClaudeAgent` / `runOpenAIAgent` / `runLmStudioAgent`) aceptan `{ onLog, onRawRequest, onRawResponse }`. Los paneles de la UI dependen de esto. `onRawRequest` lleva el header Authorization **enmascarado** vía `maskKey()` (el `fetch` real usa la key entera).
 
-Because the keys are exposed via `import.meta.env`, they ship to the browser. This is a local-dev tool — do not deploy as-is.
+### localStorage
+Claves activas (cada modo persiste su propio estado para no pisarse):
 
-Ollama has no API key — it's a local runtime. Requires `ollama serve` running and the model pulled (`ollama pull gemma3:4b`). If the browser hits CORS, start it with `OLLAMA_ORIGINS=*`.
+**Chat (`/`)**
+- `chat_context_snapshot` — `messages[]` actual; `/contexto` lo lee y escucha `storage` events para sync entre tabs.
+- `chat_logs` — log capado a `LOGS_MAX = 500`.
+- `openai_conversation_id` — ID de modo persistent.
+- `chat_provider` — `'openai' | 'anthropic' | 'ollama' | 'lmstudio'` (compartido entre todos los modos).
 
-## Architecture
+**Editor (`/editor`)** — claves propias (`code`, `lang`, `keep_context`, `history`, `cols`, logs).
+**Agente (`/editor-agente`)** — `agent_context_snapshot` para retomar conversación + claves propias.
+**AGENTS.md (`/agents-md*`)** — `agentmd_code_snapshot`, `agentmd_agents_md_v4`, `agentmd_skills_v1`, `agentmd_logs`, `agentmd_cols`.
+**LM Studio** — `lmstudio_host`, `lmstudio_model`.
 
-Single-page React 18 app, Vite-bundled, no router library. State lives entirely in [src/App.jsx](src/App.jsx); other files are either presentational pages or thin API wrappers.
-
-### Routing — DIY in vite.config.js + App.jsx
-- [vite.config.js](vite.config.js) defines an inline `spaFallback` middleware that rewrites any extensionless URL to `/` so deep links work in dev.
-- [src/App.jsx](src/App.jsx) reads `window.location.pathname` once on mount and switches between `<App>`, `<Criollo>`, `<Contexto>`, `<Proveedores>`. Navigation between these is by `<a target="_blank">` opening a new tab — no client-side router, no history API.
-
-### Three providers, four send flows
-The UI multiplexes between four distinct request flows:
-
-1. **OpenAI classic** — `POST /v1/chat/completions`. Full `messages[]` (system + history + new) sent every time. Implemented in [src/openai.js:11](src/openai.js#L11) `sendChatMessage`.
-2. **OpenAI persistent** — `POST /v1/responses` with a `conversation` ID. Only the new user message is sent; OpenAI keeps the history. Conversation is created lazily via `POST /v1/conversations` ([src/openai.js:80](src/openai.js#L80)) and the ID is persisted in `localStorage` under `openai_conversation_id`. History can be re-fetched with `GET /v1/conversations/{id}/items` ([src/openai.js:179](src/openai.js#L179)).
-3. **Anthropic** — `POST /v1/messages`. Stateless, browser-direct (uses the `anthropic-dangerous-direct-browser-access: true` header). Implemented in [src/anthropic.js:24](src/anthropic.js#L24).
-4. **Ollama (local)** — `POST http://localhost:11434/api/chat`. Stateless, no auth. Sends `stream: false` to get a single JSON response instead of NDJSON. Implemented in [src/ollama.js](src/ollama.js) `sendOllamaMessage`. Accepts the OpenAI-shaped `messages[]` (system/user/assistant) as-is.
-
-The OpenAI-shaped `messages[]` (with `role: 'system'`) is the canonical in-app format. [src/anthropic.js:13](src/anthropic.js#L13) `toAnthropicPayload` adapts it to Claude's format (system extracted out, only user/assistant in `messages`); Ollama needs no adapter.
-
-The two toggles `persistentMode` and `rawMode` are mutually exclusive in the UI; persistent mode is force-disabled whenever `provider !== 'openai'` because only OpenAI has a Conversations API. Raw mode sends only the current user message with no system and no history — useful for showing what a context-less call looks like.
-
-### API wrappers expose hooks, not just return values
-`sendChatMessage`, `sendClaudeMessage`, and `sendOllamaMessage` all accept `{ onLog, onRawRequest, onRawResponse }` callbacks. The wrappers stream debug events out as the request progresses (key masked, model chosen, request built, HTTP status, latency, token usage). Anything new added here should follow the same pattern — the three debug panels in `App.jsx` depend on it. The `onRawRequest` payload always carries a **masked** Authorization header (`maskKey()`) so the displayed JSON is safe to share/screenshot, while the actual `fetch` uses the real key.
-
-### Persisted state (localStorage keys)
-- `chat_context_snapshot` — current `messages[]` array, written on every change in [src/App.jsx:68](src/App.jsx#L68). The `/contexto` page reads this and listens for `storage` events to live-update across tabs.
-- `chat_logs` — process log, capped at `LOGS_MAX = 500` entries.
-- `openai_conversation_id` — persistent-mode conversation ID.
-- `chat_provider` — `'openai'`, `'anthropic'`, or `'ollama'`.
-
-### Pages
-- [src/App.jsx](src/App.jsx) — three-panel debug UI (chat / raw req-res / log).
-- [src/Criollo.jsx](src/Criollo.jsx) — explains the OpenAI API in Argentinian Spanish slang.
-- [src/Contexto.jsx](src/Contexto.jsx) — live view of the `chat_context_snapshot` localStorage entry.
-- [src/Proveedores.jsx](src/Proveedores.jsx) — comparison page: where context lives in OpenAI vs Anthropic vs Ollama (local).
-
-## Conventions when extending
-
-- All UI strings are in Spanish — keep new copy in Spanish.
-- Never log or display the full API key; use `maskKey()` from the relevant wrapper.
-- New API integrations should expose the same `{ onLog, onRawRequest, onRawResponse }` hook surface so the debug panels keep working.
-- Keep the OpenAI `messages[]` shape (`{role, content}`) as the canonical in-app representation and adapt at the wrapper boundary, the way `toAnthropicPayload` does.
+## Convenciones al extender
+- Copy en castellano rioplatense.
+- Nunca loguear/mostrar la key completa; usar `maskKey()` del wrapper correspondiente.
+- Integraciones nuevas (chat o agente) exponen el mismo `{ onLog, onRawRequest, onRawResponse }` para que los paneles sigan funcionando.
+- Mantener el shape OpenAI `{role, content}` como representación canónica; adaptar en el borde del wrapper, como hace `toAnthropicPayload`.
+- Si agregás un modo nuevo, sumalo a [ModeSwitch.jsx](src/ModeSwitch.jsx) y al switch de `page` en [App.jsx](src/App.jsx). No introducir react-router: el routing manual es deliberado para que el alumno vea el `pathname` crudo.
+- Si agregás un proveedor agéntico, seguí el contrato de [agent-tools.js](src/agent-tools.js) (defs neutras + `runAgentTool`) y respetá el sentinel `NEEDS_HUMAN_APPROVAL` para human-in-the-loop.

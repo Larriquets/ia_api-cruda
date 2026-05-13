@@ -2260,6 +2260,136 @@ body {
   border-style: solid;
 }
 
+/* Modo Ruido — tinte magenta para diferenciarlo de los otros tres */
+.mode-seg-noise.active {
+  border-color: #9d174d;
+  color: #f9a8d4;
+  background: rgba(219, 39, 119, 0.14);
+}
+
+.mode-seg-noise-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  border: 1px dashed #9d174d;
+  border-radius: 6px;
+  background: rgba(219, 39, 119, 0.06);
+  align-self: center;
+}
+
+.noise-ctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #f9a8d4;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.noise-ctl-input {
+  background: #0b1220;
+  border: 1px solid #9d174d;
+  color: #fbcfe8;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: 78px;
+}
+
+.noise-ctl-input:focus {
+  outline: none;
+  border-color: #ec4899;
+}
+
+/* Sección de contexto en modo Ruido */
+.context-noise {
+  border-top: 1px solid #9d174d;
+  background: linear-gradient(180deg, rgba(219, 39, 119, 0.06), transparent 60%);
+}
+
+.noise-meter {
+  display: flex;
+  height: 22px;
+  margin: 10px 12px 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.noise-meter-signal {
+  background: linear-gradient(90deg, #166534, #16a34a);
+  color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  transition: width 0.25s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.noise-meter-noise {
+  background: linear-gradient(90deg, #9d174d, #db2777);
+  color: #fdf2f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  transition: width 0.25s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.noise-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 4px 12px 8px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.noise-stats b {
+  color: #f9a8d4;
+  font-weight: 700;
+  margin-right: 3px;
+}
+
+.noise-injected {
+  margin: 4px 12px 10px;
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed #334155;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.noise-injected > summary {
+  cursor: pointer;
+  color: #f9a8d4;
+  font-weight: 600;
+  user-select: none;
+}
+
+.noise-injected ol {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  color: #94a3b8;
+}
+
+.noise-injected li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* Toggle de Ruido en la ConfigBar del Agente */
 .noise-toggle {
   display: inline-flex;
   align-items: center;
@@ -2291,6 +2421,7 @@ body {
   accent-color: #db2777;
   cursor: pointer;
 }
+
 /* === Selector de Proveedor dentro del panel del Chat === */
 .panel-provider {
   display: inline-flex;
@@ -2383,6 +2514,7 @@ body {
   border-color: #db2777;
   color: #fdf2f8;
 }
+
 .suggested-step-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

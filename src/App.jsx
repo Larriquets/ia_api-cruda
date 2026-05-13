@@ -8,6 +8,7 @@ import {
 import { sendClaudeMessage } from './anthropic.js'
 import { sendOllamaMessage } from './ollama.js'
 import { sendLmStudioMessage } from './lmstudio.js'
+import { applyNoise } from './noise.js'
 import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
@@ -48,6 +49,11 @@ export default function App() {
   })
   const [rawMode, setRawMode] = useState(true)
   const [persistentMode, setPersistentMode] = useState(false)
+  const [noiseMode, setNoiseMode] = useState(false)
+  const [noiseSeed, setNoiseSeed] = useState(42)
+  const [noiseIntensity, setNoiseIntensity] = useState(2)
+  const [lastNoiseStats, setLastNoiseStats] = useState(null)
+  const [lastNoiseInjected, setLastNoiseInjected] = useState([])
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'openai'
     return localStorage.getItem(PROVIDER_KEY) || 'openai'
@@ -176,9 +182,25 @@ export default function App() {
 
         refreshServerHistory(id)
       } else {
-        const payload = rawMode
+        const cleanPayload = rawMode
           ? [{ role: 'user', content: text }]
           : [...messages, { role: 'user', content: text }]
+
+        let payload = cleanPayload
+        let noiseStatsForLog = null
+        if (noiseMode) {
+          const { noisy, injected, stats } = applyNoise(cleanPayload, {
+            seed: noiseSeed,
+            intensity: noiseIntensity,
+          })
+          payload = noisy
+          noiseStatsForLog = stats
+          setLastNoiseStats(stats)
+          setLastNoiseInjected(injected)
+        } else {
+          setLastNoiseStats(null)
+          setLastNoiseInjected([])
+        }
 
         if (!rawMode) {
           setMessages([...messages, { role: 'user', content: text }])
@@ -188,6 +210,11 @@ export default function App() {
 
         if (rawMode) {
           appendLog('info', 'Modo CRUDO activo — enviando solo este mensaje, sin system ni historial')
+        } else if (noiseMode) {
+          appendLog(
+            'info',
+            `Modo RUIDO — payload de ${payload.length} mensaje(s), seed=${noiseSeed}, intensidad=${noiseIntensity}, ~${(noiseStatsForLog || {}).noisePct || 0}% de ruido inyectado`,
+          )
         } else {
           appendLog('info', `Modo conversación — enviando ${payload.length} mensaje(s) (system + historial + nuevo)`)
         }
@@ -377,6 +404,7 @@ export default function App() {
               onClick={() => {
                 if (rawMode) return
                 setPersistentMode(false)
+                setNoiseMode(false)
                 setRawMode(true)
                 appendLog('info', 'Modo CRUDO — sin system, sin historial')
               }}
@@ -388,11 +416,12 @@ export default function App() {
             <button
               type="button"
               role="tab"
-              aria-selected={!rawMode && !persistentMode}
-              className={`mode-seg-btn mode-seg-conversation${!rawMode && !persistentMode ? ' active' : ''}`}
+              aria-selected={!rawMode && !persistentMode && !noiseMode}
+              className={`mode-seg-btn mode-seg-conversation${!rawMode && !persistentMode && !noiseMode ? ' active' : ''}`}
               onClick={() => {
-                if (!rawMode && !persistentMode) return
+                if (!rawMode && !persistentMode && !noiseMode) return
                 setPersistentMode(false)
+                setNoiseMode(false)
                 setRawMode(false)
                 appendLog('info', 'Modo CONVERSACIÓN — system + historial completo en cada request')
               }}
@@ -410,6 +439,7 @@ export default function App() {
               onClick={() => {
                 if (persistentMode) return
                 setPersistentMode(true)
+                setNoiseMode(false)
                 setRawMode(false)
                 appendLog('info', 'Modo PERSISTENTE — el contexto vive en OpenAI (/v1/responses)')
               }}
@@ -422,6 +452,48 @@ export default function App() {
                 {provider !== 'openai' ? 'solo OpenAI' : 'servidor'}
               </span>
             </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={noiseMode}
+              className={`mode-seg-btn mode-seg-noise${noiseMode ? ' active' : ''}`}
+              onClick={() => {
+                if (noiseMode) return
+                setPersistentMode(false)
+                setRawMode(false)
+                setNoiseMode(true)
+                appendLog('info', `Modo RUIDO — se inyecta relleno determinista (seed=${noiseSeed}) al final del último user message`)
+              }}
+              title="Inyecta párrafos irrelevantes al payload para mostrar cómo el contexto se hincha y el modelo pierde precisión."
+            >
+              Ruido
+              <span className="mode-seg-sub">contexto sucio</span>
+            </button>
+            {noiseMode && (
+              <span className="mode-seg-noise-controls">
+                <label className="noise-ctl" title="Cambia el seed para variar el ruido manteniendo determinismo">
+                  seed
+                  <input
+                    type="number"
+                    value={noiseSeed}
+                    onChange={(e) => setNoiseSeed(Number(e.target.value) || 0)}
+                    className="noise-ctl-input"
+                  />
+                </label>
+                <label className="noise-ctl" title="1 = suave · 2 = medio · 3 = denso">
+                  intensidad
+                  <select
+                    value={noiseIntensity}
+                    onChange={(e) => setNoiseIntensity(Number(e.target.value))}
+                    className="noise-ctl-input"
+                  >
+                    <option value={1}>1 — suave</option>
+                    <option value={2}>2 — medio</option>
+                    <option value={3}>3 — denso</option>
+                  </select>
+                </label>
+              </span>
+            )}
             {persistentMode && (
               <button
                 onClick={handleNewConversation}
@@ -465,7 +537,7 @@ export default function App() {
             <button type="submit" disabled={loading || !input.trim()}>Enviar</button>
           </form>
 
-          {!rawMode && !persistentMode && (
+          {!rawMode && !persistentMode && !noiseMode && (
             <div className="context-section">
               <div className="context-header">
                 <span className="context-title">Contexto acumulado (cliente)</span>
@@ -495,6 +567,68 @@ export default function App() {
               </div>
               <div className="context-foot">
                 Esto es exactamente lo que se manda en <code>messages[]</code> en el próximo request.
+              </div>
+            </div>
+          )}
+
+          {noiseMode && (
+            <div className="context-section context-noise">
+              <div className="context-header">
+                <span className="context-title">Contexto con RUIDO inyectado</span>
+                <span className="context-header-right">
+                  <span className="context-meta">
+                    {messages.length} mensaje(s) real(es) · seed={noiseSeed} · intensidad={noiseIntensity}
+                  </span>
+                </span>
+              </div>
+
+              {lastNoiseStats ? (
+                <>
+                  <div className="noise-meter" aria-label="Proporción señal vs ruido">
+                    <div
+                      className="noise-meter-signal"
+                      style={{ width: `${100 - lastNoiseStats.noisePct}%` }}
+                      title={`Señal: ≈${lastNoiseStats.signalTokens} tokens`}
+                    >
+                      señal {100 - lastNoiseStats.noisePct}%
+                    </div>
+                    <div
+                      className="noise-meter-noise"
+                      style={{ width: `${lastNoiseStats.noisePct}%` }}
+                      title={`Ruido: ≈${lastNoiseStats.noiseTokens} tokens`}
+                    >
+                      ruido {lastNoiseStats.noisePct}%
+                    </div>
+                  </div>
+                  <div className="noise-stats">
+                    <span><b>≈{lastNoiseStats.signalTokens}t</b> señal</span>
+                    <span><b>≈{lastNoiseStats.noiseTokens}t</b> ruido</span>
+                    <span><b>≈{lastNoiseStats.totalTokens}t</b> total enviado</span>
+                    <span>{lastNoiseInjected.length} bloque(s) inyectado(s)</span>
+                  </div>
+                  {lastNoiseInjected.length > 0 && (
+                    <details className="noise-injected">
+                      <summary>Ver el relleno que se inyectó en este turno</summary>
+                      <ol>
+                        {lastNoiseInjected.map((line, i) => (
+                          <li key={i}>{line}</li>
+                        ))}
+                      </ol>
+                    </details>
+                  )}
+                </>
+              ) : (
+                <div className="context-foot">
+                  Mandá un mensaje para ver el ruido inyectado. El relleno se concatena al final
+                  del último <code>user</code> message; el resto del historial queda intacto.
+                </div>
+              )}
+
+              <div className="context-foot">
+                El modelo recibe <b>todo</b> esto como si fuera tu pregunta. A más turnos, más
+                ruido se acumula y la respuesta tiende a divagar, contradecirse o ignorar lo
+                relevante. Es el mismo efecto que sufrís cuando un agente arrastra contexto
+                viejo de más.
               </div>
             </div>
           )}

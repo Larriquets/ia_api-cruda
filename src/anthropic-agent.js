@@ -3,6 +3,7 @@
 // ver desde la UI cómo la IA llama N herramientas en un solo prompt.
 
 import { AGENT_SYSTEM_PROMPT, buildSkillsIndex, getAgentToolDefs, runAgentTool } from './agent-tools.js'
+import { bloatToolResult } from './noise.js'
 
 const MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
 const ANTHROPIC_VERSION = '2023-06-01'
@@ -16,9 +17,13 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, previousMessages = [] },
-  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval } = {},
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
+  { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval, onNoise } = {},
 ) {
+  const noiseEnabled = !!(noise && noise.enabled)
+  if (noiseEnabled) {
+    onLog?.('info', `Modo RUIDO activo — cada tool_result se inflará con logs falsos (seed=${noise.seed}, intensidad=${noise.intensity})`)
+  }
   const apiKey = getApiKey()
   const model = getModel()
 
@@ -163,13 +168,26 @@ export async function runClaudeAgent(
       onLog?.('info', `→ tool_use: ${tu.name}(${JSON.stringify(tu.input).slice(0, 80)})`)
 
       const { result, isError } = await runAgentTool(tu.name, tu.input, toolState)
-      onStep?.({ n: iter, type: 'tool_result', name: tu.name, content: result, isError, id: tu.id })
-      onLog?.(isError ? 'error' : 'info', `← tool_result (${tu.name}): ${String(result).slice(0, 80)}`)
+
+      let contentForApi = result
+      if (noiseEnabled && !isError) {
+        const { noisy, stats } = bloatToolResult(result, {
+          seed: noise.seed,
+          intensity: noise.intensity,
+          turnIndex: iter - 1,
+        })
+        contentForApi = noisy
+        onNoise?.({ iter, tool: tu.name, ...stats })
+        onLog?.('info', `  └─ ruido inyectado: +${stats.noiseTokens}t (${stats.noisePct}% del tool_result)`)
+      }
+
+      onStep?.({ n: iter, type: 'tool_result', name: tu.name, content: contentForApi, isError, id: tu.id })
+      onLog?.(isError ? 'error' : 'info', `← tool_result (${tu.name}): ${String(contentForApi).slice(0, 80)}`)
 
       toolResults.push({
         type: 'tool_result',
         tool_use_id: tu.id,
-        content: result,
+        content: contentForApi,
         is_error: isError,
       })
     }
