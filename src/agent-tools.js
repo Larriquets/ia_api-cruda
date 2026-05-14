@@ -101,10 +101,11 @@ const LOAD_SKILL_TOOL_DEF = {
   name: 'load_skill',
   description:
     'Trae a contexto las reglas detalladas de un skill listado en AGENTS.md. ' +
-    'Llamá a esta herramienta cuando, leyendo la sección "Skills disponibles" del AGENTS.md, ' +
-    'detectes que un skill aplica al cambio que estás por hacer. ' +
     'Devuelve el cuerpo completo (markdown) del skill — leélo y seguí sus reglas. ' +
-    'No cargues skills que no apliquen: cada carga gasta tokens.',
+    'REGLA: para CADA skill listado en "Skills disponibles" SIN la marca [test ✓], ' +
+    'DEBÉS llamar a load_skill al menos una vez antes de terminar la corrida si su descripción ' +
+    'sugiere que podría aplicar al pedido del usuario. Para skills CON [test ✓] solo cargá load_skill ' +
+    'si necesitás ver sus reglas — el test ya las verifica determinísticamente.',
   parameters: {
     type: 'object',
     properties: {
@@ -129,8 +130,10 @@ const RUN_SKILL_TEST_TOOL_DEF = {
     'Corre el TEST determinístico de un skill sobre el código actual y devuelve PASS o ' +
     'una lista de violaciones concretas (no es un prompt — es código JS que evalúa el código). ' +
     'OBLIGATORIO: después de cada edit_code y SIEMPRE antes de terminar, llamá a run_skill_test ' +
-    'para cada skill listado. Si devuelve violaciones, corregí con más edit_code y volvé a correr ' +
-    'el test hasta que diga PASS.',
+    'para cada skill marcado con [test ✓] en la lista de "Skills disponibles". ' +
+    'NO llames a run_skill_test sobre skills sin [test ✓] — esos no tienen test, ' +
+    'cargalos con load_skill y seguí su contenido manualmente. ' +
+    'Si run_skill_test devuelve violaciones, corregí con más edit_code y volvé a correr el test hasta que diga PASS.',
   parameters: {
     type: 'object',
     properties: {
@@ -297,10 +300,15 @@ export function buildSkillsIndex(skills) {
   })
   return [
     '## Skills disponibles',
-    'Estos skills NO están cargados todavía. Si alguno aplica al cambio que vas a hacer,',
-    'llamá a `load_skill(id)` para traer su contenido a contexto y seguir sus reglas.',
-    'Los marcados con [test ✓] tienen además un chequeo determinístico — DEBÉS correrlo',
-    'con `run_skill_test(id)` después de cada edit_code y antes de terminar la corrida.',
+    'Estos skills NO están cargados todavía. Cada uno tiene reglas que se aplican al trabajo que estás por hacer.',
+    '',
+    'REGLAS de uso (OBLIGATORIO):',
+    '- Skills marcados con `[test ✓]`: corré `run_skill_test(id)` después de cada `edit_code` y antes de terminar.',
+    '  Si querés ver las reglas del skill para no violarlas, podés también `load_skill(id)`.',
+    '- Skills SIN `[test ✓]`: antes de terminar la corrida, llamá a `load_skill(id)` al menos una vez si su',
+    '  descripción sugiere que podría aplicar al pedido del usuario. NO corras `run_skill_test` sobre estos —',
+    '  no tienen test, fallaría. Cargá el skill y seguí su contenido manualmente.',
+    '- Si después de leer el body de un skill ves que no aplica, decilo brevemente en tu respuesta final y seguí.',
     '',
     ...lines,
   ].join('\n')
