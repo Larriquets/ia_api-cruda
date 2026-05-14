@@ -17,7 +17,7 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
  * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', systemOverride = null, requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval, onNoise } = {},
 ) {
   const noiseEnabled = !!(noise && noise.enabled)
@@ -82,7 +82,7 @@ export async function runClaudeAgent(
     // Los bodies de skills NO viajan acá: viajan recién cuando la IA llama
     // load_skill — así el contexto arranca chico y crece bajo demanda.
     const skillsIndex = skillsAvailable ? buildSkillsIndex(skills) : ''
-    let fullSystem = AGENT_SYSTEM_PROMPT
+    let fullSystem = systemOverride && systemOverride.trim() ? systemOverride : AGENT_SYSTEM_PROMPT
     if (extraSystem) {
       fullSystem += `\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
     }

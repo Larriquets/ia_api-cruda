@@ -3,6 +3,7 @@ import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
+import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
@@ -13,6 +14,8 @@ const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'agente_logs'
 const COLS_KEY = 'agente_cols'
 const AGENT_CONTEXT_KEY = 'agente_context_thread'
+const SYSTEM_KEY = 'agente_system_override'
+const SYSTEM_OPEN_KEY = 'agente_system_open'
 const LOGS_MAX = 500
 
 const DEFAULT_CODE = `public class CuentaBancaria {
@@ -92,6 +95,14 @@ export default function EditorAgente() {
     }
   })
   const [noiseMode, setNoiseMode] = useState(false)
+  const [systemPrompt, setSystemPrompt] = useState(() => {
+    if (typeof window === 'undefined') return AGENT_SYSTEM_PROMPT
+    return localStorage.getItem(SYSTEM_KEY) ?? AGENT_SYSTEM_PROMPT
+  })
+  const [systemOpen, setSystemOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(SYSTEM_OPEN_KEY) === '1'
+  })
   const [agentContext, setAgentContext] = useState(() => {
     if (typeof window === 'undefined') return EMPTY_AGENT_CONTEXT
     try {
@@ -141,6 +152,12 @@ export default function EditorAgente() {
     try { localStorage.setItem(AGENT_CONTEXT_KEY, JSON.stringify(agentContext)) } catch { /* noop */ }
   }, [agentContext])
   useEffect(() => {
+    try { localStorage.setItem(SYSTEM_KEY, systemPrompt) } catch { /* noop */ }
+  }, [systemPrompt])
+  useEffect(() => {
+    try { localStorage.setItem(SYSTEM_OPEN_KEY, systemOpen ? '1' : '0') } catch { /* noop */ }
+  }, [systemOpen])
+  useEffect(() => {
     stepsRef.current?.scrollTo({ top: stepsRef.current.scrollHeight })
   }, [steps])
   useEffect(() => {
@@ -185,6 +202,10 @@ export default function EditorAgente() {
           : provider === 'lmstudio'
             ? runLmStudioAgent
             : runOpenAIAgent
+      const systemOverride = systemPrompt.trim() && systemPrompt !== AGENT_SYSTEM_PROMPT ? systemPrompt : null
+      if (systemOverride) {
+        appendLog('info', `System prompt personalizado (${systemPrompt.length} chars)`)
+      }
       const { finalText: ft, code: finalCode, iterations, messages: resultMessages = [] } = await runFn(
         {
           userInstruction: instruction,
@@ -192,6 +213,7 @@ export default function EditorAgente() {
           language,
           maxIterations: 8,
           previousMessages,
+          systemOverride,
         },
         {
           onLog: appendLog,
@@ -469,6 +491,50 @@ export default function EditorAgente() {
             </span>
           </div>
           <div className="instr-body">
+            <div className={`system-editor${systemOpen ? ' system-editor-open' : ''}`}>
+              <button
+                type="button"
+                className="system-editor-toggle"
+                onClick={() => setSystemOpen((v) => !v)}
+                title="El system prompt es la instrucción base que recibe el modelo antes de tu prompt. Editalo para ver cómo cambia el comportamiento del agente."
+              >
+                <span className="system-editor-chev">{systemOpen ? '▾' : '▸'}</span>
+                <span className="system-editor-label">
+                  <code>"role": "system"</code> · {systemPrompt.length} chars
+                </span>
+                <span className={`system-editor-flag${systemPrompt !== AGENT_SYSTEM_PROMPT ? ' system-editor-flag-dirty' : ''}`}>
+                  {systemPrompt === AGENT_SYSTEM_PROMPT ? 'default' : 'editado'}
+                </span>
+              </button>
+              {systemOpen && (
+                <>
+                  <textarea
+                    className="system-editor-textarea"
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    disabled={loading}
+                    spellCheck={false}
+                    rows={10}
+                  />
+                  <div className="system-editor-actions">
+                    <button
+                      type="button"
+                      className="docs-link"
+                      onClick={() => {
+                        setSystemPrompt(AGENT_SYSTEM_PROMPT)
+                        appendLog('info', 'System prompt restaurado al default')
+                      }}
+                      disabled={loading || systemPrompt === AGENT_SYSTEM_PROMPT}
+                    >
+                      Restaurar default
+                    </button>
+                    <span className="system-editor-hint">
+                      Reemplaza el system base que viaja en cada request. Si lo dejás vacío o igual al default, se manda el original.
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
             <div className="suggested-steps">
               <div className="suggested-steps-title">Probá una de estas instrucciones:</div>
               <ol className="suggested-steps-list">

@@ -20,7 +20,7 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export async function runOpenAIAgent(
-  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
+  { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', systemOverride = null, requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },
   { onLog, onRawRequest, onRawResponse, onStep, onCodeChange, onAwaitApproval, onNoise } = {},
 ) {
   const noiseEnabled = !!(noise && noise.enabled)
@@ -65,7 +65,7 @@ export async function runOpenAIAgent(
   }))
 
   const skillsIndex = skillsAvailable ? buildSkillsIndex(skills) : ''
-  let fullSystem = AGENT_SYSTEM_PROMPT
+  let fullSystem = systemOverride && systemOverride.trim() ? systemOverride : AGENT_SYSTEM_PROMPT
   if (extraSystem) {
     fullSystem += `\n\n## Instrucciones específicas del proyecto (AGENTS.md):\n${extraSystem}`
   }

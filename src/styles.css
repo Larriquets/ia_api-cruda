@@ -3245,3 +3245,106 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* === Editor agéntico: editor del system prompt (colapsable) === */
+.system-editor {
+  margin: 0 0 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0b1220;
+  overflow: hidden;
+}
+
+.system-editor-open {
+  border-color: #475569;
+}
+
+.system-editor-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.system-editor-toggle:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.system-editor-chev {
+  color: #64748b;
+  width: 12px;
+  display: inline-block;
+}
+
+.system-editor-label {
+  color: #93c5fd;
+}
+
+.system-editor-label code {
+  background: transparent;
+  color: #fbbf24;
+  font-family: 'Consolas', 'Monaco', monospace;
+  padding: 0;
+}
+
+.system-editor-flag {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+}
+
+.system-editor-flag-dirty {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+}
+
+.system-editor-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: #050a14;
+  border: none;
+  border-top: 1px solid #1e293b;
+  color: #e2e8f0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  resize: vertical;
+  min-height: 140px;
+}
+
+.system-editor-textarea:focus {
+  outline: none;
+  background: #0a1525;
+}
+
+.system-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-top: 1px solid #1e293b;
+  background: #0b1220;
+}
+
+.system-editor-hint {
+  font-size: 11px;
+  color: #64748b;
+  flex: 1;
+}
