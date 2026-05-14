@@ -2909,6 +2909,11 @@ body {
   border-bottom: 1px solid #334155;
 }
 
+.skills-collapsible[open] > .docs-collapsible-body {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
 .skills-list {
   display: flex;
   flex-direction: column;
