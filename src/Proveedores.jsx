@@ -1,3 +1,5 @@
+import DocsNav from './DocsNav.jsx'
+
 export default function Proveedores({ onBack }) {
   return (
     <div className="criollo">
@@ -7,6 +9,8 @@ export default function Proveedores({ onBack }) {
       </header>
 
       <div className="criollo-content">
+        <DocsNav current="proveedores" />
+
         <section className="criollo-section">
           <h2>El concepto en una frase</h2>
           <div className="prov-callout">

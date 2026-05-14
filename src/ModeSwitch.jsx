@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Switch de modos del header. Reutilizable entre Chat / Editor / Agente / Docs.
+ * Switch de modos del header. Reutilizable entre Chat / Editor / Loop Agéntico / Docs.
  * "AGENTS.md" y "Docs" son dropdowns. AGENTS.md tiene dos variantes: solo y con Skills.
  *
- * @param {string} active - "chat" | "editor" | "agente" | "agents-md" | "agents-md-skills" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [docsOpen, setDocsOpen] = useState(false)
@@ -69,12 +69,12 @@ export default function ModeSwitch({ active }) {
         💻 Editor
       </a>
       <a
-        href="/editor-agente"
-        className={cls('agente')}
-        {...aria('agente')}
-        title="Agente con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola."
+        href="/loop-agentico"
+        className={cls('loop-agentico')}
+        {...aria('loop-agentico')}
+        title="Loop agéntico con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola."
       >
-        🤖 Agente
+        🤖 Loop Agéntico
       </a>
       <div className="app-mode-dropdown" ref={agentsDropdownRef}>
         <button

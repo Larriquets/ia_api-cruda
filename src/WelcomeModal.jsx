@@ -17,9 +17,9 @@ const STEPS = [
   },
   {
     emoji: '🤖',
-    title: 'Agente',
-    desc: 'Agente con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
-    href: '/editor-agente',
+    title: 'Loop Agéntico',
+    desc: 'Loop con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
+    href: '/loop-agentico',
   },
   {
     emoji: '📋',

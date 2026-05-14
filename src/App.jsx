@@ -12,7 +12,7 @@ import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
 import Editor from './Editor.jsx'
-import EditorAgente from './EditorAgente.jsx'
+import LoopAgentico from './LoopAgentico.jsx'
 import EditorAgentsMd from './EditorAgentsMd.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
@@ -63,7 +63,7 @@ export default function App() {
     if (window.location.pathname === '/contexto') return 'contexto'
     if (window.location.pathname === '/proveedores') return 'proveedores'
     if (window.location.pathname === '/editor') return 'editor'
-    if (window.location.pathname === '/editor-agente') return 'editor-agente'
+    if (window.location.pathname === '/loop-agentico') return 'loop-agentico'
     if (window.location.pathname === '/agents-md') return 'agents-md'
     if (window.location.pathname === '/agents-md-skills') return 'agents-md-skills'
     if (window.location.pathname === '/docs') return 'docs'
@@ -277,8 +277,8 @@ export default function App() {
   if (page === 'editor') {
     return <><WelcomeModal /><Editor onBack={goHome} /></>
   }
-  if (page === 'editor-agente') {
-    return <><WelcomeModal /><EditorAgente /></>
+  if (page === 'loop-agentico') {
+    return <><WelcomeModal /><LoopAgentico /></>
   }
   if (page === 'agents-md') {
     return <><WelcomeModal /><EditorAgentsMd withSkills={false} /></>

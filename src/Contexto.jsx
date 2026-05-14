@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import DocsNav from './DocsNav.jsx'
 
 const STORAGE_KEY = 'chat_context_snapshot'
 
@@ -49,6 +50,8 @@ export default function Contexto({ onBack }) {
       </header>
 
       <div className="criollo-content">
+        <DocsNav current="contexto" />
+
         <section className="criollo-section">
           <h2>¿Qué es el "contexto"?</h2>
           <p>

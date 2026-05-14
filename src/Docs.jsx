@@ -1,4 +1,5 @@
 import ModeSwitch from './ModeSwitch.jsx'
+import DocsNav from './DocsNav.jsx'
 
 export default function Docs() {
   return (
@@ -16,24 +17,7 @@ export default function Docs() {
       <div className="criollo-content">
 
         {/* ============== MENÚ DE DOCS ============== */}
-        <nav className="docs-nav" aria-label="Páginas de documentación">
-          <div className="docs-nav-title">Más docs:</div>
-          <a href="/contexto" target="_blank" rel="noreferrer" className="docs-nav-link">
-            <span className="docs-nav-emoji">🧠</span>
-            <span className="docs-nav-name">/contexto</span>
-            <span className="docs-nav-desc">vista en vivo del array messages del chat</span>
-          </a>
-          <a href="/proveedores" target="_blank" rel="noreferrer" className="docs-nav-link">
-            <span className="docs-nav-emoji">⚖️</span>
-            <span className="docs-nav-name">/proveedores</span>
-            <span className="docs-nav-desc">OpenAI vs Anthropic — dónde vive el contexto</span>
-          </a>
-          <a href="/criollo" target="_blank" rel="noreferrer" className="docs-nav-link">
-            <span className="docs-nav-emoji">🧉</span>
-            <span className="docs-nav-name">/criollo</span>
-            <span className="docs-nav-desc">la API explicada en argentino bien jerga</span>
-          </a>
-        </nav>
+        <DocsNav current="docs" />
 
         {/* ============== LA IA ES VIRGEN ============== */}
         <section className="criollo-section">
@@ -139,13 +123,13 @@ export default function Docs() {
                 o en el historial — pero eso lo cargás <b>vos</b>, cada vez.
               </p>
 
-              <h4>5) Por qué el modo Agente funciona</h4>
+              <h4>5) Por qué el Loop Agéntico funciona</h4>
               <p>
                 Justamente porque la IA es virgen, vos podés <b>fabricar</b> una historia
                 conversacional que incluya tool calls que ella "hizo" y tool results que tu código
                 generó. La IA, al recibir ese historial, lo toma como suyo y sigue desde ahí.
                 Esto es <i>literalmente</i> lo que ves en el panel "Historial Request/Response"
-                del modo Agente.
+                del Loop Agéntico.
               </p>
             </div>
           </details>
@@ -187,7 +171,7 @@ export default function Docs() {
           <ol>
             <li><b>💬 Chat</b> — cómo funciona una conversación con LLM y qué es el "contexto".</li>
             <li><b>💻 Editor</b> — cómo se le pide a una IA que modifique código (un solo turno).</li>
-            <li><b>🤖 Agente</b> — cómo la IA puede usar <i>herramientas</i> y encadenar acciones.</li>
+            <li><b>🤖 Loop Agéntico</b> — cómo la IA puede usar <i>herramientas</i> y encadenar acciones.</li>
             <li><b>📋 AGENTS.md</b> — cómo "enseñarle" a la IA las convenciones de tu proyecto.</li>
           </ol>
           <div className="prov-callout">
@@ -296,7 +280,7 @@ export default function Docs() {
           <p>
             Mandás → recibís → aplicás (o no) → fin. La IA <b>no puede</b> volver a ver tu
             código después de responder, ni hacer dos cambios en una sola operación. Si querés
-            otro cambio, mandás otra instrucción. Esa limitación es la que rompe el modo Agente.
+            otro cambio, mandás otra instrucción. Esa limitación es la que rompe el Loop Agéntico.
           </p>
 
           <h3>Qué mirar</h3>
@@ -307,11 +291,11 @@ export default function Docs() {
           </ul>
         </section>
 
-        {/* ============== AGENTE ============== */}
+        {/* ============== LOOP AGÉNTICO ============== */}
         <section className="criollo-section">
-          <h2>3) 🤖 Agente — IA con herramientas (loop)</h2>
+          <h2>3) 🤖 Loop Agéntico — IA con herramientas (loop)</h2>
           <p>
-            <a href="/editor-agente" target="_blank" rel="noreferrer"><code>http://localhost:5173/editor-agente</code></a>
+            <a href="/loop-agentico" target="_blank" rel="noreferrer"><code>http://localhost:5173/loop-agentico</code></a>
           </p>
           <h3>Qué hace</h3>
           <p>
@@ -353,7 +337,7 @@ export default function Docs() {
                 <tr>
                   <th>Aspecto</th>
                   <th className="prov-col-openai">💻 Editor</th>
-                  <th className="prov-col-claude">🤖 Agente</th>
+                  <th className="prov-col-claude">🤖 Loop Agéntico</th>
                 </tr>
               </thead>
               <tbody>
@@ -413,7 +397,7 @@ export default function Docs() {
           </p>
           <h3>Qué hace</h3>
           <p>
-            Es el modo Agente, pero con una columna extra: un editor para un archivo
+            Es el Loop Agéntico, pero con una columna extra: un editor para un archivo
             <code> AGENTS.md</code>. Lo que escribís ahí se inyecta en el <code>system</code>
             prompt del agente <b>en cada request</b> del loop. Y hay un botón
             <b> "Comparar con/sin"</b> que corre la misma instrucción dos veces — una con el

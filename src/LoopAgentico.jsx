@@ -59,7 +59,7 @@ const MIN_COL = 0.12
 const estimateTokens = (value) => Math.ceil(JSON.stringify(value ?? '').length / 4)
 const EMPTY_AGENT_CONTEXT = { provider: null, language: null, messages: [] }
 
-export default function EditorAgente() {
+export default function LoopAgentico() {
   const [code, setCode] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_CODE
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
@@ -348,10 +348,10 @@ export default function EditorAgente() {
       <header className="header">
         <h1>
           <span className="brand">API a la vista</span>
-          <span className="brand-subtitle">— modo <span className="brand-mode">Agente</span></span>
+          <span className="brand-subtitle">— modo <span className="brand-mode">Loop Agéntico</span></span>
         </h1>
         <div className="header-actions">
-          <ModeSwitch active="agente" />
+          <ModeSwitch active="loop-agentico" />
         </div>
       </header>
 

@@ -14,7 +14,7 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 /**
  * Loop agéntico Claude.
- * Ver doc en EditorAgente.jsx — devuelve {finalText, code, iterations, stopReason}.
+ * Ver doc en LoopAgentico.jsx — devuelve {finalText, code, iterations, stopReason}.
  */
 export async function runClaudeAgent(
   { userInstruction, initialCode, language, maxIterations = 8, extraSystem = '', systemOverride = null, requireImpactApproval = false, skills = [], useSkills = false, noise = null, previousMessages = [] },

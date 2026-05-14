@@ -1,3 +1,5 @@
+import DocsNav from './DocsNav.jsx'
+
 export default function Criollo({ onBack }) {
   return (
     <div className="criollo">
@@ -7,6 +9,8 @@ export default function Criollo({ onBack }) {
       </header>
 
       <div className="criollo-content">
+        <DocsNav current="criollo" />
+
         <section className="criollo-section">
           <h2>De qué carajo estamos hablando</h2>
           <p>
@@ -268,7 +272,7 @@ data: [DONE]`}</pre>
             <code>input_schema</code> (no <code>parameters</code>).
           </p>
           <p>
-            En esta app, los modos <code>/editor-agente</code>, <code>/agents-md</code> y
+            En esta app, los modos <code>/loop-agentico</code>, <code>/agents-md</code> y
             <code>/agents-md-skills</code> implementan este loop. Las defs neutras viven en
             <code>src/agent-tools.js</code> y cada wrapper agéntico (<code>openai-agent.js</code>,
             <code>anthropic-agent.js</code>, <code>lmstudio-agent.js</code>) las adapta al shape de

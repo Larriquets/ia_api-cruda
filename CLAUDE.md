@@ -23,7 +23,7 @@ modos via `<a href>` (mismo tab) usando [ModeSwitch.jsx](src/ModeSwitch.jsx) en 
 |---|---|---|
 | `/` | [App.jsx](src/App.jsx) | Chat con 4 modos de contexto (ver abajo) |
 | `/editor` | [Editor.jsx](src/Editor.jsx) | Código + instrucción → respuesta, con/sin contexto acumulado |
-| `/editor-agente` | [EditorAgente.jsx](src/EditorAgente.jsx) | Agente con tool-use (loop de function-calling) |
+| `/loop-agentico` | [LoopAgentico.jsx](src/LoopAgentico.jsx) | Loop agéntico con tool-use (function-calling) |
 | `/agents-md` | [EditorAgentsMd.jsx](src/EditorAgentsMd.jsx) | Agente + `AGENTS.md` inyectado al system prompt |
 | `/agents-md-skills` | [EditorAgentsMd.jsx](src/EditorAgentsMd.jsx) | AGENTS.md + tools `load_skill` / `run_skill_test` |
 | `/docs`, `/contexto`, `/proveedores`, `/criollo` | páginas presentacionales | Material de clase |
@@ -68,7 +68,7 @@ Claves activas (cada modo persiste su propio estado para no pisarse):
 - `chat_provider` — `'openai' | 'anthropic' | 'ollama' | 'lmstudio'` (compartido entre todos los modos).
 
 **Editor (`/editor`)** — claves propias (`code`, `lang`, `keep_context`, `history`, `cols`, logs).
-**Agente (`/editor-agente`)** — `agent_context_snapshot` para retomar conversación + claves propias.
+**Loop Agéntico (`/loop-agentico`)** — `agente_context_thread` para retomar la conversación + claves propias (`agente_code_snapshot`, `agente_language`, `agente_logs`, `agente_cols`, `agente_system_override`, `agente_system_open`).
 **AGENTS.md (`/agents-md*`)** — `agentmd_code_snapshot`, `agentmd_agents_md_v4`, `agentmd_skills_v1`, `agentmd_logs`, `agentmd_cols`.
 **LM Studio** — `lmstudio_host`, `lmstudio_model`.
 
