@@ -14,6 +14,14 @@ export default function Criollo({ onBack }) {
         <section className="criollo-section">
           <h2>De qué carajo estamos hablando</h2>
           <p>
+            Arranquemos por lo importante: <b>toda interacción humano↔IA pasa por una API</b>.
+            ChatGPT, Claude.ai, Copilot, Cursor, el chat de tu banco — son <b>UIs</b> que por debajo
+            le pegan HTTP al mismo endpoint que vas a usar vos en este curso. La única diferencia es
+            de capas: esos productos te esconden el JSON, te ponen markdown lindo y manejan la sesión
+            por vos. Acá lo ves crudo. Si entendés este POST, entendés cómo funciona
+            <i>cualquier</i> producto de IA del mercado por dentro.
+          </p>
+          <p>
             Una "API de chat" es un endpoint HTTP que recibe un JSON con una lista de mensajes y te
             devuelve otro JSON con la próxima respuesta del modelo. Punto. No hay sesión, no hay
             websocket, no hay magia: es <code>POST</code> y listo. Toda la estructura conversacional
