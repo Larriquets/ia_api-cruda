@@ -2932,6 +2932,56 @@ body {
   border-style: dashed;
 }
 
+.skill-card-draft {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.04);
+  opacity: 1;
+}
+
+.skill-card-draft.skill-card-disabled {
+  opacity: 0.55;
+}
+
+.skill-card-draft-badge {
+  margin-left: auto;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0f172a;
+  background: #fbbf24;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.skill-draft-tip {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+  margin: 4px 0 0 0 !important;
+}
+
+.skill-confirm-btn {
+  background: #22c55e;
+  color: #052e16;
+  border: 1px solid #4ade80;
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.skill-confirm-btn:hover:not(:disabled) {
+  background: #4ade80;
+}
+
+.skill-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .skill-card-header-row {
   display: flex;
   align-items: stretch;

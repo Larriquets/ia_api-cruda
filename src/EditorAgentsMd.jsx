@@ -302,15 +302,21 @@ export default function EditorAgentsMd({ withSkills = true }) {
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
     appendLog('info', `Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`)
     appendLog('info', `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`)
-    const enabledSkills = skills.filter((s) => s.enabled !== false)
+    const confirmedSkills = skills.filter((s) => !s.draft)
+    const enabledSkills = confirmedSkills.filter((s) => s.enabled !== false)
+    const draftCount = skills.length - confirmedSkills.length
     if (withAgents && withSkills) {
       if (!withSkill) {
         appendLog('info', 'Skills: DESHABILITADOS (toggle off)')
       } else if (enabledSkills.length === 0) {
-        appendLog('info', `Skills: toggle ON pero NINGÚN skill tildado (${skills.length} definido(s)) — la IA no recibe load_skill / run_skill_test`)
+        const detail = draftCount > 0
+          ? `(${confirmedSkills.length} confirmado(s) tildado(s)=0, ${draftCount} en borrador sin agregar)`
+          : `(${skills.length} definido(s), 0 tildado(s))`
+        appendLog('info', `Skills: toggle ON pero NINGÚN skill listo para viajar ${detail} — la IA no recibe load_skill / run_skill_test`)
       } else {
         const ids = enabledSkills.map((s) => s.id).join(', ')
-        appendLog('info', `Skills: ${enabledSkills.length}/${skills.length} tildado(s) disponibles vía load_skill / run_skill_test → [${ids}]`)
+        const draftNote = draftCount > 0 ? ` (${draftCount} borrador(es) ignorado(s))` : ''
+        appendLog('info', `Skills: ${enabledSkills.length}/${confirmedSkills.length} tildado(s) viajan vía load_skill / run_skill_test → [${ids}]${draftNote}`)
       }
     }
     const providerLabel =
@@ -388,11 +394,23 @@ export default function EditorAgentsMd({ withSkills = true }) {
       description: 'Descripción corta — esto es lo único que ve la IA en el AGENTS.md.',
       body: '# Skill nuevo\n\nReglas detalladas que la IA recibe cuando llama a load_skill.',
       enabled: true,
+      draft: true,
     }
     setSkills((prev) => [...prev, blank])
     setExpandedSkillId(newId)
     setSkillsMenuOpen(true)
-    appendLog('info', `Skill "${newId}" creado y tildado — editalo y se va a incluir en la próxima corrida CON AGENTS.md`)
+    appendLog('info', `Skill "${newId}" en borrador — editalo y tocá "Agregar a la lista" para que viaje a la API`)
+  }
+
+  const handleConfirmDraftSkill = (id) => {
+    setSkills((prev) => prev.map((s) => (s.id === id ? { ...s, draft: false } : s)))
+    appendLog('success', `Skill "${id}" agregado — va a viajar al prompt en la próxima corrida CON AGENTS.md (si está tildado)`)
+  }
+
+  const handleDiscardDraftSkill = (id) => {
+    setSkills((prev) => prev.filter((s) => s.id !== id))
+    setExpandedSkillId((curr) => (curr === id ? null : curr))
+    appendLog('info', `Borrador de skill "${id}" descartado`)
   }
 
   const handleClearLogs = () => {
@@ -541,15 +559,15 @@ export default function EditorAgentsMd({ withSkills = true }) {
           >
             <summary>
               <span className="docs-collapsible-chev">▸</span>
-              <span>📚 Skills disponibles ({skills.filter((s) => s.enabled !== false).length}/{skills.length} tildado{skills.length === 1 ? '' : 's'})</span>
+              <span>📚 Skills disponibles ({skills.filter((s) => !s.draft && s.enabled !== false).length}/{skills.filter((s) => !s.draft).length} tildado{skills.filter((s) => !s.draft).length === 1 ? '' : 's'}{skills.some((s) => s.draft) ? ` · ${skills.filter((s) => s.draft).length} borrador` : ''})</span>
             </summary>
             <div className="docs-collapsible-body">
               <div className="ctx-tip" style={{ marginTop: 0 }}>
                 💡 Los skills <b>NO viajan en el system prompt</b>. Solo se inyecta una lista corta
-                <i> (id + descripción)</i> debajo del AGENTS.md — y <b>solo de los skills tildados</b>.
-                La IA decide cuándo aplica un skill y lo carga llamando a <code>load_skill(id)</code> —
-                recién ahí su contenido entra al contexto. Destildá un skill para que <b>directamente
-                no exista</b> para la IA en la próxima corrida.
+                <i> (id + descripción)</i> debajo del AGENTS.md — y <b>solo de los skills tildados y agregados</b>.
+                Los <b>borradores</b> no viajan hasta que toques <b>Agregar a la lista</b>. La IA decide cuándo
+                aplica un skill y lo carga llamando a <code>load_skill(id)</code> — recién ahí su contenido
+                entra al contexto.
               </div>
               <div className="skills-list">
                 {skills.length === 0 && (
@@ -560,14 +578,17 @@ export default function EditorAgentsMd({ withSkills = true }) {
                 {skills.map((skill) => {
                   const isExpanded = expandedSkillId === skill.id
                   const isEnabled = skill.enabled !== false
+                  const isDraft = !!skill.draft
                   return (
-                    <div key={skill.id} className={`skill-card ${isExpanded ? 'skill-card-expanded' : ''} ${isEnabled ? '' : 'skill-card-disabled'}`}>
+                    <div key={skill.id} className={`skill-card ${isExpanded ? 'skill-card-expanded' : ''} ${isEnabled ? '' : 'skill-card-disabled'} ${isDraft ? 'skill-card-draft' : ''}`}>
                       <div className="skill-card-header-row">
                         <label
                           className="skill-card-checkbox"
-                          title={isEnabled
-                            ? 'Tildado: este skill se inyecta en el AGENTS.md y la IA puede hacer load_skill.'
-                            : 'Destildado: la IA no ve este skill — no aparece en la lista que va al system prompt.'}
+                          title={isDraft
+                            ? 'Skill en borrador: no viaja al prompt hasta que toques "Agregar a la lista".'
+                            : isEnabled
+                              ? 'Tildado: este skill se inyecta en el AGENTS.md y la IA puede hacer load_skill.'
+                              : 'Destildado: la IA no ve este skill — no aparece en la lista que va al system prompt.'}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <input
@@ -577,7 +598,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                               handleUpdateSkill(skill.id, { enabled: e.target.checked })
                               appendLog('info', `Skill "${skill.id}" ${e.target.checked ? 'TILDADO' : 'destildado'} — se aplica en la próxima corrida`)
                             }}
-                            disabled={loading}
+                            disabled={loading || isDraft}
                           />
                         </label>
                         <button
@@ -589,7 +610,8 @@ export default function EditorAgentsMd({ withSkills = true }) {
                           <span className="skill-card-chev">{isExpanded ? '▾' : '▸'}</span>
                           <span className="skill-card-id"><code>{skill.id}</code></span>
                           <span className="skill-card-name">{skill.name}</span>
-                          {!isEnabled && <span className="skill-card-off-badge">apagado</span>}
+                          {isDraft && <span className="skill-card-draft-badge">borrador</span>}
+                          {!isDraft && !isEnabled && <span className="skill-card-off-badge">apagado</span>}
                         </button>
                       </div>
                       {isExpanded && (
@@ -634,16 +656,44 @@ export default function EditorAgentsMd({ withSkills = true }) {
                               rows={10}
                             />
                           </label>
-                          <div className="skill-card-actions">
-                            <button
-                              type="button"
-                              className="docs-link skill-delete-btn"
-                              onClick={() => handleDeleteSkill(skill.id)}
-                              disabled={loading}
-                            >
-                              eliminar
-                            </button>
-                          </div>
+                          {isDraft ? (
+                            <>
+                              <div className="ctx-tip skill-draft-tip">
+                                💡 Este skill está en <b>borrador</b>: <b>no viaja al prompt</b> todavía.
+                                Terminá de editar id/nombre/descripción/body y tocá <b>Agregar a la lista</b>.
+                              </div>
+                              <div className="skill-card-actions">
+                                <button
+                                  type="button"
+                                  className="docs-link skill-delete-btn"
+                                  onClick={() => handleDiscardDraftSkill(skill.id)}
+                                  disabled={loading}
+                                >
+                                  descartar
+                                </button>
+                                <button
+                                  type="button"
+                                  className="skill-confirm-btn"
+                                  onClick={() => handleConfirmDraftSkill(skill.id)}
+                                  disabled={loading}
+                                  title="Confirma el skill y lo agrega a la lista. A partir de acá, si está tildado, viaja al system prompt en la próxima corrida CON AGENTS.md."
+                                >
+                                  ✓ Agregar a la lista
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="skill-card-actions">
+                              <button
+                                type="button"
+                                className="docs-link skill-delete-btn"
+                                onClick={() => handleDeleteSkill(skill.id)}
+                                disabled={loading}
+                              >
+                                eliminar
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -656,9 +706,9 @@ export default function EditorAgentsMd({ withSkills = true }) {
                   className="skill-add-btn"
                   onClick={handleAddSkill}
                   disabled={loading}
-                  title="Crea un skill vacío y lo deja tildado. Editalo abajo (id, nombre, descripción, body) y se va a aplicar la próxima vez que envíes CON AGENTS.md."
+                  title="Crea un skill en BORRADOR. Editá id/nombre/descripción/body y tocá 'Agregar a la lista' para confirmarlo. Hasta entonces no viaja al prompt."
                 >
-                  + Agregar skill
+                  + Nuevo skill (borrador)
                 </button>
                 <button
                   type="button"
@@ -769,9 +819,15 @@ export default function EditorAgentsMd({ withSkills = true }) {
                 <span className="skill-toggle-label">
                   <b>🧪 Skills</b>
                   <span className="skill-toggle-meta">
-                    {skillEnabled
-                      ? `activos (${skills.length}) — solo cuando enviás CON AGENTS.md`
-                      : 'apagados — la IA va a usar AGENTS.md pero sin tools de skill'}
+                    {(() => {
+                      if (!skillEnabled) return 'apagados — la IA va a usar AGENTS.md pero sin tools de skill'
+                      const confirmados = skills.filter((s) => !s.draft)
+                      const tildados = confirmados.filter((s) => s.enabled !== false).length
+                      const borradores = skills.length - confirmados.length
+                      const borradorNote = borradores > 0 ? ` · ${borradores} borrador no agregado` : ''
+                      if (tildados === 0) return `0 tildados de ${confirmados.length}${borradorNote} — tildá un skill en el panel AGENTS.md para que viaje al prompt`
+                      return `${tildados} tildado(s) de ${confirmados.length}${borradorNote} — solo los tildados viajan al prompt cuando enviás CON AGENTS.md`
+                    })()}
                   </span>
                 </span>
               </label>
