@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Switch de modos del header. Reutilizable entre Chat / Editor / Loop Agéntico / Docs.
- * "AGENTS.md" y "Docs" son dropdowns. AGENTS.md tiene dos variantes: solo y con Skills.
+ * "Agente + reglas" y "Docs" son dropdowns. El primero tiene dos variantes: solo reglas o con Skills.
  *
  * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "docs"
  */
@@ -84,9 +84,9 @@ export default function ModeSwitch({ active }) {
           onClick={() => setAgentsOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={agentsOpen}
-          title="AGENTS.md: instrucciones persistentes que el agente sigue siempre. Elegí solo AGENTS.md o sumá Skills."
+          title="Agente con reglas persistentes (AGENTS.md) inyectadas al system prompt. Elegí solo reglas o sumá Skills."
         >
-          📋 AGENTS.md <span className="app-mode-dropdown-chev">{agentsOpen ? '▴' : '▾'}</span>
+          📋 Agente + reglas <span className="app-mode-dropdown-chev">{agentsOpen ? '▴' : '▾'}</span>
         </button>
         {agentsOpen && (
           <div className="app-mode-menu" role="menu">
@@ -96,8 +96,8 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('agents-md')}
             >
-              <b>📋 Solo AGENTS.md</b>
-              <span className="app-mode-menu-sub">reglas en el system prompt</span>
+              <b>📋 Agente + reglas</b>
+              <span className="app-mode-menu-sub">AGENTS.md en el system prompt</span>
             </a>
             <a
               href="/agents-md-skills"
@@ -105,7 +105,7 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('agents-md-skills')}
             >
-              <b>📋 AGENTS.md + 🧪 Skills</b>
+              <b>📋 Agente + 🧪 skills</b>
               <span className="app-mode-menu-sub">suma load_skill / run_skill_test</span>
             </a>
           </div>

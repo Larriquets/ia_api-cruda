@@ -172,7 +172,7 @@ export default function Docs() {
             <li><b>💬 Chat</b> — cómo funciona una conversación con LLM y qué es el "contexto".</li>
             <li><b>💻 Editor</b> — cómo se le pide a una IA que modifique código (un solo turno).</li>
             <li><b>🤖 Loop Agéntico</b> — cómo la IA puede usar <i>herramientas</i> y encadenar acciones.</li>
-            <li><b>📋 AGENTS.md</b> — cómo "enseñarle" a la IA las convenciones de tu proyecto.</li>
+            <li><b>📋 Agente + reglas</b> — cómo "enseñarle" a la IA las convenciones de tu proyecto vía <code>AGENTS.md</code>.</li>
           </ol>
           <div className="prov-callout">
             <p>

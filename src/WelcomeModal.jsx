@@ -23,14 +23,14 @@ const STEPS = [
   },
   {
     emoji: '📋',
-    title: 'AGENTS.md',
-    desc: 'Instrucciones persistentes que el agente sigue siempre (estilo, restricciones, convenciones del proyecto).',
+    title: 'Agente + reglas',
+    desc: 'Agente con un archivo AGENTS.md inyectado en el system prompt: instrucciones persistentes que sigue siempre (estilo, restricciones, convenciones del proyecto).',
     href: '/agents-md',
     subSteps: [
       {
         emoji: '🧪',
-        title: 'Skills',
-        desc: 'Sub-tema de AGENTS.md. Una vez que entendés cómo funciona AGENTS.md, probá los Skills: instrucciones cargadas bajo demanda + un test determinístico que la IA corre después de editar.',
+        title: 'Agente + skills',
+        desc: 'Sub-tema del modo anterior. Una vez que entendés cómo funciona AGENTS.md, probá los Skills: instrucciones cargadas bajo demanda + un test determinístico que la IA corre después de editar.',
       },
     ],
   },
