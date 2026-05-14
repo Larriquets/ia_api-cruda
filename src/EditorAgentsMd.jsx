@@ -58,6 +58,7 @@ const DEFAULT_SKILLS = [
   {
     id: 'arch-check',
     name: 'Test de arquitectura',
+    enabled: true,
     description: 'Reglas de arquitectura para clases Java: sin strings hardcoded, métodos cortos, sin refs fantasma.',
     body: `# Skill: arch-check (test de arquitectura)
 
@@ -88,7 +89,9 @@ function loadInitialSkills() {
     if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_SKILLS
     // Validación básica de shape — si no, reset al default.
     const ok = parsed.every((s) => s && typeof s.id === 'string' && typeof s.body === 'string')
-    return ok ? parsed : DEFAULT_SKILLS
+    if (!ok) return DEFAULT_SKILLS
+    // Migración: skills viejos sin `enabled` se asumen habilitados (retro-compat).
+    return parsed.map((s) => ({ ...s, enabled: s.enabled !== false }))
   } catch {
     return DEFAULT_SKILLS
   }
@@ -299,8 +302,16 @@ export default function EditorAgentsMd({ withSkills = true }) {
     appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
     appendLog('info', `Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`)
     appendLog('info', `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`)
+    const enabledSkills = skills.filter((s) => s.enabled !== false)
     if (withAgents && withSkills) {
-      appendLog('info', `Skills: ${withSkill ? `${skills.length} skill(s) disponibles vía load_skill / run_skill_test` : 'DESHABILITADOS (toggle off)'}`)
+      if (!withSkill) {
+        appendLog('info', 'Skills: DESHABILITADOS (toggle off)')
+      } else if (enabledSkills.length === 0) {
+        appendLog('info', `Skills: toggle ON pero NINGÚN skill tildado (${skills.length} definido(s)) — la IA no recibe load_skill / run_skill_test`)
+      } else {
+        const ids = enabledSkills.map((s) => s.id).join(', ')
+        appendLog('info', `Skills: ${enabledSkills.length}/${skills.length} tildado(s) disponibles vía load_skill / run_skill_test → [${ids}]`)
+      }
     }
     const providerLabel =
       provider === 'anthropic'
@@ -325,7 +336,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
           maxIterations: 8,
           extraSystem: withAgents ? agentsMd : '',
           requireImpactApproval: withAgents,
-          skills: withSkill ? skills : [],
+          skills: withSkill ? enabledSkills : [],
           useSkills: withSkill,
         },
         buildHooks(setCode),
@@ -376,11 +387,12 @@ export default function EditorAgentsMd({ withSkills = true }) {
       name: 'Skill nuevo',
       description: 'Descripción corta — esto es lo único que ve la IA en el AGENTS.md.',
       body: '# Skill nuevo\n\nReglas detalladas que la IA recibe cuando llama a load_skill.',
+      enabled: true,
     }
     setSkills((prev) => [...prev, blank])
     setExpandedSkillId(newId)
     setSkillsMenuOpen(true)
-    appendLog('info', `Skill "${newId}" creado`)
+    appendLog('info', `Skill "${newId}" creado y tildado — editalo y se va a incluir en la próxima corrida CON AGENTS.md`)
   }
 
   const handleClearLogs = () => {
@@ -529,37 +541,57 @@ export default function EditorAgentsMd({ withSkills = true }) {
           >
             <summary>
               <span className="docs-collapsible-chev">▸</span>
-              <span>📚 Skills disponibles ({skills.length})</span>
+              <span>📚 Skills disponibles ({skills.filter((s) => s.enabled !== false).length}/{skills.length} tildado{skills.length === 1 ? '' : 's'})</span>
             </summary>
             <div className="docs-collapsible-body">
               <div className="ctx-tip" style={{ marginTop: 0 }}>
                 💡 Los skills <b>NO viajan en el system prompt</b>. Solo se inyecta una lista corta
-                <i> (id + descripción)</i> debajo del AGENTS.md. La IA decide cuándo aplica un skill
-                y lo carga llamando a <code>load_skill(id)</code> — recién ahí su contenido entra al
-                contexto. Mirá el panel <b>Historial Request/Response</b>: vas a ver el system prompt
-                inicial chico, y cómo aparece un <code>tool_result</code> con el body del skill cuando
-                la IA lo trae a contexto.
+                <i> (id + descripción)</i> debajo del AGENTS.md — y <b>solo de los skills tildados</b>.
+                La IA decide cuándo aplica un skill y lo carga llamando a <code>load_skill(id)</code> —
+                recién ahí su contenido entra al contexto. Destildá un skill para que <b>directamente
+                no exista</b> para la IA en la próxima corrida.
               </div>
               <div className="skills-list">
                 {skills.length === 0 && (
                   <div className="empty" style={{ padding: 8 }}>
-                    Sin skills definidos. Tocá <b>+ skill</b> para crear uno.
+                    Sin skills definidos. Tocá <b>+ Agregar skill</b> para crear uno.
                   </div>
                 )}
                 {skills.map((skill) => {
                   const isExpanded = expandedSkillId === skill.id
+                  const isEnabled = skill.enabled !== false
                   return (
-                    <div key={skill.id} className={`skill-card ${isExpanded ? 'skill-card-expanded' : ''}`}>
-                      <button
-                        type="button"
-                        className="skill-card-header"
-                        onClick={() => setExpandedSkillId(isExpanded ? null : skill.id)}
-                        disabled={loading}
-                      >
-                        <span className="skill-card-chev">{isExpanded ? '▾' : '▸'}</span>
-                        <span className="skill-card-id"><code>{skill.id}</code></span>
-                        <span className="skill-card-name">{skill.name}</span>
-                      </button>
+                    <div key={skill.id} className={`skill-card ${isExpanded ? 'skill-card-expanded' : ''} ${isEnabled ? '' : 'skill-card-disabled'}`}>
+                      <div className="skill-card-header-row">
+                        <label
+                          className="skill-card-checkbox"
+                          title={isEnabled
+                            ? 'Tildado: este skill se inyecta en el AGENTS.md y la IA puede hacer load_skill.'
+                            : 'Destildado: la IA no ve este skill — no aparece en la lista que va al system prompt.'}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isEnabled}
+                            onChange={(e) => {
+                              handleUpdateSkill(skill.id, { enabled: e.target.checked })
+                              appendLog('info', `Skill "${skill.id}" ${e.target.checked ? 'TILDADO' : 'destildado'} — se aplica en la próxima corrida`)
+                            }}
+                            disabled={loading}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="skill-card-header"
+                          onClick={() => setExpandedSkillId(isExpanded ? null : skill.id)}
+                          disabled={loading}
+                        >
+                          <span className="skill-card-chev">{isExpanded ? '▾' : '▸'}</span>
+                          <span className="skill-card-id"><code>{skill.id}</code></span>
+                          <span className="skill-card-name">{skill.name}</span>
+                          {!isEnabled && <span className="skill-card-off-badge">apagado</span>}
+                        </button>
+                      </div>
                       {isExpanded && (
                         <div className="skill-card-body">
                           <label className="skill-field">
@@ -621,11 +653,12 @@ export default function EditorAgentsMd({ withSkills = true }) {
               <div className="skills-actions">
                 <button
                   type="button"
-                  className="docs-link"
+                  className="skill-add-btn"
                   onClick={handleAddSkill}
                   disabled={loading}
+                  title="Crea un skill vacío y lo deja tildado. Editalo abajo (id, nombre, descripción, body) y se va a aplicar la próxima vez que envíes CON AGENTS.md."
                 >
-                  + skill
+                  + Agregar skill
                 </button>
                 <button
                   type="button"
@@ -633,7 +666,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                   onClick={() => { setSkills(DEFAULT_SKILLS); setExpandedSkillId(null); appendLog('info', 'Skills reseteados al ejemplo de fábrica') }}
                   disabled={loading}
                 >
-                  ejemplo
+                  reset al ejemplo
                 </button>
               </div>
             </div>
