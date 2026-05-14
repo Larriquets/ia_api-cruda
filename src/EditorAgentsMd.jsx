@@ -355,6 +355,9 @@ export default function EditorAgentsMd({ withSkills = true }) {
 
   const handleUpdateSkill = (id, patch) => {
     setSkills((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
+    if (patch.id !== undefined && patch.id !== id) {
+      setExpandedSkillId((curr) => (curr === id ? patch.id : curr))
+    }
   }
   const handleDeleteSkill = (id) => {
     setSkills((prev) => prev.filter((s) => s.id !== id))
