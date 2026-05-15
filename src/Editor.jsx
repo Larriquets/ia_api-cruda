@@ -36,15 +36,6 @@ const DEFAULT_CODE = `public class CuentaBancaria {
 
 const LANGUAGES = [
   { id: 'java', label: 'Java' },
-  { id: 'javascript', label: 'JavaScript' },
-  { id: 'typescript', label: 'TypeScript' },
-  { id: 'python', label: 'Python' },
-  { id: 'html', label: 'HTML' },
-  { id: 'css', label: 'CSS' },
-  { id: 'json', label: 'JSON' },
-  { id: 'markdown', label: 'Markdown' },
-  { id: 'sql', label: 'SQL' },
-  { id: 'shell', label: 'Shell' },
 ]
 
 const SUGGESTED_STEPS = [
