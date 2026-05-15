@@ -6,8 +6,11 @@ export default function Docs() {
     <div className="criollo">
       <header className="header">
         <h1>
-          <span className="brand">API a la vista</span>
-          <span className="brand-subtitle">— modo <span className="brand-mode">📚 Docs</span> · qué hace cada modo</span>
+          <img src="/logo.png" alt="" className="brand-logo" />
+          <span className="brand-braces">{'{'}</span>
+          <span className="brand">La IA Cruda</span>
+          <span className="brand-braces">{'}'}</span>
+          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">📚 Docs</span> · qué hace cada modo</span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active="docs" />
@@ -61,6 +64,13 @@ export default function Docs() {
               <b>📋 Agente + reglas</b> — el truco del <code>AGENTS.md</code> / <code>CLAUDE.md</code>
               / <code>.cursorrules</code>: un archivo de texto que se concatena al system prompt
               en cada request. Acá lo ves inyectarse en vivo.
+            </li>
+            <li>
+              <b>📋 Agente + 🧪 skills</b> — el mismo agente con <code>AGENTS.md</code>, pero le
+              sumás dos tools: <code>load_skill</code> (carga una skill on-demand al contexto) y
+              <code>run_skill_test</code> (corre un test determinista para validar). Es el patrón
+              de Claude Code skills / Cursor rules cargables: la IA decide cuándo necesita el
+              detalle, no se lo metés todo de entrada.
             </li>
           </ol>
           <p>
@@ -216,13 +226,14 @@ export default function Docs() {
             que la IA puede llamar.
           </p>
           <p>
-            Hay <b>cuatro modos</b>, cada uno enseña un concepto distinto:
+            Hay <b>cinco modos</b>, cada uno enseña un concepto distinto:
           </p>
           <ol>
             <li><b>💬 Chat</b> — cómo funciona una conversación con LLM y qué es el "contexto".</li>
             <li><b>💻 Editor</b> — cómo se le pide a una IA que modifique código (un solo turno).</li>
             <li><b>🤖 Loop Agéntico</b> — cómo la IA puede usar <i>herramientas</i> y encadenar acciones.</li>
             <li><b>📋 Agente + reglas</b> — cómo "enseñarle" a la IA las convenciones de tu proyecto vía <code>AGENTS.md</code>.</li>
+            <li><b>📋 Agente + 🧪 skills</b> — cómo la IA carga "skills" on-demand (<code>load_skill</code> + <code>run_skill_test</code>) en vez de cargarle todo de entrada.</li>
           </ol>
           <div className="prov-callout">
             <p>

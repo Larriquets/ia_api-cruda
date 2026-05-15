@@ -72,8 +72,11 @@ export default function WelcomeModal() {
       <div className="welcome-modal">
         <div className="welcome-header">
           <h2 id="welcome-title">
-            <span className="brand">API a la vista</span>
-            <span className="brand-subtitle">— request, response y contexto, todo crudo</span>
+            <img src="/logo.png" alt="" className="brand-logo" />
+            <span className="brand-braces">{'{'}</span>
+            <span className="brand">La IA Cruda</span>
+            <span className="brand-braces">{'}'}</span>
+            <span className="brand-subtitle">// todo es contexto — request, response y contexto, todo crudo</span>
           </h2>
           <button
             type="button"

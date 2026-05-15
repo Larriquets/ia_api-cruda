@@ -536,8 +536,11 @@ export default function EditorAgentsMd({ withSkills = true }) {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <span className="brand">API a la vista</span>
-          <span className="brand-subtitle">— modo <span className="brand-mode">{withSkills ? 'Agente + skills' : 'Agente + reglas'}</span></span>
+          <img src="/logo.png" alt="" className="brand-logo" />
+          <span className="brand-braces">{'{'}</span>
+          <span className="brand">La IA Cruda</span>
+          <span className="brand-braces">{'}'}</span>
+          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">{withSkills ? 'Agente + skills' : 'Agente + reglas'}</span></span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active={withSkills ? 'agents-md-skills' : 'agents-md'} />

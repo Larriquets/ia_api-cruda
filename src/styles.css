@@ -34,11 +34,24 @@ body {
   color: #e2e8f0;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
-/* === Marca "API a la vista" (reutilizable en headers y modal) === */
+/* === Marca "{ La IA Cruda } // todo es contexto" (reutilizable en headers y modal) === */
+.brand-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+  margin-right: 4px;
+  flex-shrink: 0;
+  transition: filter 220ms ease;
+}
+
+.brand-logo:hover {
+  filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.55));
+}
+
 .brand {
   color: #93c5fd;
   font-weight: 700;
@@ -49,10 +62,18 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.brand-braces {
+  color: #475569;
+  font-weight: 500;
+  margin: 0 4px;
+}
+
 .brand-subtitle {
   font-size: 12px;
   font-weight: 400;
-  color: #64748b;
+  color: #475569;
+  opacity: 0.85;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .brand-mode {
@@ -3255,6 +3276,10 @@ body {
   .header h1 {
     font-size: 14px;
     gap: 6px;
+  }
+
+  .brand-logo {
+    height: 22px;
   }
 
   .header-actions {
