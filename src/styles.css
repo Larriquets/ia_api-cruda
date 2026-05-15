@@ -818,12 +818,18 @@ body {
 .criollo-content {
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge legacy */
   padding: 32px 24px;
   max-width: 820px;
   width: 100%;
   margin: 0 auto;
   line-height: 1.65;
   font-size: 15px;
+}
+
+.criollo-content::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari/WebKit */
 }
 
 .criollo-section {
@@ -913,6 +919,25 @@ body {
 .docs-collapsible-body > p:first-child,
 .docs-collapsible-body > h4:first-child {
   margin-top: 10px;
+}
+
+/* Plegables grandes — las 5 secciones numeradas de /docs.
+   Mismo mecanismo que .docs-collapsible pero con tamaño/peso tipo <h2>. */
+.docs-section-collapsible > summary {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e2e8f0;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.docs-section-collapsible > summary .docs-collapsible-chev {
+  font-size: 16px;
+  width: 14px;
+}
+
+.docs-section-collapsible[open] > summary {
+  border-bottom: 1px solid #1e293b;
 }
 
 .criollo-section p {

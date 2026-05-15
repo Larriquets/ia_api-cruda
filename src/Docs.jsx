@@ -246,7 +246,12 @@ export default function Docs() {
 
         {/* ============== CHAT ============== */}
         <section className="criollo-section">
-          <h2>1) 💬 Chat — el modo clásico</h2>
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>1) 💬 Chat — el modo clásico</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             <a href="/" target="_blank" rel="noreferrer"><code>http://localhost:5173/</code></a>
           </p>
@@ -297,11 +302,18 @@ export default function Docs() {
             <li><b>Panel derecho (Log):</b> timestamps, latencia, tokens, errores.</li>
             <li><b>Páginas auxiliares:</b> <a href="/contexto" target="_blank" rel="noreferrer">/contexto</a> (vista en vivo del array <code>messages</code>) y <a href="/proveedores" target="_blank" rel="noreferrer">/proveedores</a> (comparación OpenAI vs Anthropic).</li>
           </ul>
+            </div>
+          </details>
         </section>
 
         {/* ============== EDITOR ============== */}
         <section className="criollo-section">
-          <h2>2) 💻 Editor — IA modifica código (un turno)</h2>
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>2) 💻 Editor — IA modifica código (un turno)</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             <a href="/editor" target="_blank" rel="noreferrer"><code>http://localhost:5173/editor</code></a>
           </p>
@@ -350,11 +362,18 @@ export default function Docs() {
             <li><b>Panel derecho:</b> el array <code>messages[]</code> que se mandó. <b>Todo</b> ese texto es lo que la IA usó para responderte.</li>
             <li><b>Botón "Aplicar al editor":</b> reemplaza el código actual con el bloque <code>```...```</code> que vino en la respuesta. Si no aplicás, la respuesta se descarta.</li>
           </ul>
+            </div>
+          </details>
         </section>
 
         {/* ============== LOOP AGÉNTICO ============== */}
         <section className="criollo-section">
-          <h2>3) 🤖 Loop Agéntico — IA con herramientas (loop)</h2>
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>3) 🤖 Loop Agéntico — IA con herramientas (loop)</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             <a href="/loop-agentico" target="_blank" rel="noreferrer"><code>http://localhost:5173/loop-agentico</code></a>
           </p>
@@ -448,11 +467,18 @@ export default function Docs() {
             <b> declarar herramientas, dejar que la IA las pida, ejecutarlas localmente, devolverle
             el resultado, repetir.</b>
           </p>
+            </div>
+          </details>
         </section>
 
         {/* ============== AGENTS.MD ============== */}
         <section className="criollo-section">
-          <h2>4) 📋 AGENTS.md — instrucciones persistentes para el agente</h2>
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>4) 📋 AGENTS.md — instrucciones persistentes para el agente</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             <a href="/agents-md" target="_blank" rel="noreferrer"><code>http://localhost:5173/agents-md</code></a>
           </p>
@@ -526,11 +552,113 @@ export default function Docs() {
             <li><b>Panel derecho (Historial Request/Response):</b> abrí cualquier request y mirá el campo <code>system</code> — cuando el toggle está ON, ves todo el AGENTS.md inyectado ahí. <b>Cada</b> request lo lleva.</li>
             <li><b>Costo:</b> AGENTS.md grandes hacen que <b>cada</b> request gaste más tokens (porque va completo cada vez). Por eso conviene ser conciso. Prompt caching de Anthropic descuenta el 90% si los detecta repetidos — pero igual son tokens.</li>
           </ul>
+            </div>
+          </details>
+        </section>
+
+        {/* ============== AGENTS.MD + SKILLS ============== */}
+        <section className="criollo-section">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>5) 📋 Agente + 🧪 skills — cargar reglas on-demand</span>
+            </summary>
+            <div className="docs-collapsible-body">
+          <p>
+            <a href="/agents-md-skills" target="_blank" rel="noreferrer"><code>http://localhost:5173/agents-md-skills</code></a>
+          </p>
+          <h3>Qué hace</h3>
+          <p>
+            Es el mismo agente del modo 4 (con AGENTS.md inyectado en el system), pero se le
+            suman <b>dos tools nuevas</b>: <code>load_skill</code> (carga el cuerpo de una skill
+            on-demand al contexto) y <code>run_skill_test</code> (corre un test determinista
+            asociado a esa skill para validar lo que hizo). El AGENTS.md ahora <b>no</b> contiene
+            las reglas detalladas — contiene un <i>índice</i> de skills disponibles con su
+            descripción corta, y la IA decide cuándo necesita cargar el detalle.
+          </p>
+
+          <h3>El concepto que enseña: <i>contexto bajo demanda</i></h3>
+          <p>
+            Si AGENTS.md (sección 4) es "mandá <b>todas</b> las reglas en cada request", skills
+            es "mandá un <b>índice</b> de reglas y dejá que la IA pida sólo las que necesita".
+            Es la misma idea de las APIs REST descubribles: en vez de mandar todo el manual
+            cada vez, mandás el catálogo y un mecanismo para ir a buscar el detalle.
+          </p>
+          <div className="prov-callout">
+            <p>
+              <b>Por qué importa:</b> AGENTS.md grandes (cientos de líneas con reglas de
+              estilo, seguridad, dominio, deploy…) hacen que <b>cada</b> request cargue todo
+              eso, aunque la tarea sea trivial. Con skills, el sistema mete sólo el índice
+              (chico) en el system, y el cuerpo de cada skill viaja únicamente cuando la IA
+              decide que lo necesita.
+            </p>
+          </div>
+
+          <h3>El loop, paso a paso</h3>
+          <ol>
+            <li>El system arranca con AGENTS.md <b>+ un índice</b> de skills disponibles (ej: <code>commit-message</code>, <code>jdoc-style</code>, <code>null-checks</code>) con una línea de descripción cada una.</li>
+            <li>Vos mandás una instrucción (ej. "agregá un método que transfiera saldo").</li>
+            <li>La IA mira el índice, decide que necesita la skill <code>null-checks</code> para validar inputs, y pide <code>load_skill(id="null-checks")</code>.</li>
+            <li>Tu código devuelve el cuerpo de esa skill como <code>tool_result</code>. <b>Ahora</b> esas reglas viven en el contexto.</li>
+            <li>La IA edita el código aplicando las reglas, y opcionalmente llama <code>run_skill_test(id="null-checks")</code> para verificar que su cambio respeta la skill.</li>
+            <li>El test determinista (definido en <code>src/skill-tests.js</code>, indexado por id de skill) corre sobre el código resultante y devuelve <code>pass</code> / <code>fail</code> con detalle.</li>
+            <li>Si falla, la IA itera. Si pasa, termina.</li>
+          </ol>
+
+          <h3>Comparación con el modo 4 (AGENTS.md solo)</h3>
+          <div className="prov-table-wrap">
+            <table className="prov-table">
+              <thead>
+                <tr>
+                  <th>Aspecto</th>
+                  <th className="prov-col-openai">📋 AGENTS.md solo</th>
+                  <th className="prov-col-claude">📋 AGENTS.md + 🧪 skills</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Qué viaja en el system</td>
+                  <td>Todas las reglas, completas</td>
+                  <td>Índice + descripciones cortas</td>
+                </tr>
+                <tr>
+                  <td>Cuándo se carga el detalle</td>
+                  <td>Siempre, en cada request</td>
+                  <td>Sólo si la IA lo pide</td>
+                </tr>
+                <tr>
+                  <td>Tokens fijos por turno</td>
+                  <td>Altos (crecen con el AGENTS.md)</td>
+                  <td>Bajos (sólo índice)</td>
+                </tr>
+                <tr>
+                  <td>Validación del resultado</td>
+                  <td>Ojo humano</td>
+                  <td><code>run_skill_test</code> determinista</td>
+                </tr>
+                <tr>
+                  <td>Decisión "qué regla aplicar"</td>
+                  <td>La IA filtra del bloque entero</td>
+                  <td>La IA elige del índice antes de cargar</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Qué mirar en el modo</h3>
+          <ul>
+            <li><b>Panel de skills (izq.):</b> el índice editable. Cada skill tiene id, descripción corta y cuerpo. Lo que viaja en el system es sólo lo de arriba — el cuerpo viaja sólo cuando la IA llama <code>load_skill</code>.</li>
+            <li><b>Historial Request/Response (der.):</b> ⭐ mirá cómo en la <b>primera</b> request el system es chico (índice solamente). Después de un <code>load_skill</code>, el array <code>messages</code> incluye el cuerpo completo como <code>tool_result</code> — pero el system <i>sigue chico</i>. <b>Esa es la diferencia clave.</b></li>
+            <li><b><code>run_skill_test</code>:</b> después de editar, la IA muchas veces decide validarse a sí misma. Vas a ver llamadas a la tool con su <code>pass</code>/<code>fail</code>. Si falla, suele reintentar.</li>
+            <li><b>Esto es lo que hace Claude Code:</b> el sistema de Skills de Claude Code es <i>literalmente</i> esto — un índice de skills disponibles en el system, y la tool para cargar el detalle cuando hace falta. Cursor rules cargables siguen el mismo patrón.</li>
+          </ul>
+            </div>
+          </details>
         </section>
 
         {/* ============== ESTA APP vs AGENTES PRODUCTIVOS ============== */}
         <section className="criollo-section">
-          <h2>5) 🛠️ Esta app vs. Claude Code / Cursor / Codex</h2>
+          <h2>🛠️ Esta app vs. Claude Code / Cursor / Codex</h2>
           <p>
             Pregunta que aparece sola después de jugar con el Loop Agéntico: <i>¿esto es lo
             mismo que Claude Code? ¿que Cursor? ¿que Codex?</i> La respuesta corta es <b>no, pero
@@ -675,15 +803,6 @@ export default function Docs() {
             <li><b>Tool use / function calling</b> — feature de la API que permite declarar funciones que la IA puede pedir. Ella no las ejecuta, solo las pide.</li>
             <li><b>Loop agéntico</b> — el ciclo de pedir tool → ejecutar → devolver resultado → repetir, hasta que la IA termina.</li>
             <li><b>stop_reason / finish_reason</b> — por qué el modelo paró. <code>"end_turn"</code>/<code>"stop"</code> = terminó normal; <code>"tool_use"</code>/<code>"tool_calls"</code> = pidió una herramienta; <code>"max_tokens"</code> = se cortó.</li>
-          </ul>
-        </section>
-
-        <section className="criollo-section">
-          <h2>Páginas auxiliares</h2>
-          <ul>
-            <li><a href="/contexto" target="_blank" rel="noreferrer"><b>/contexto</b></a> — vista en vivo del array <code>messages</code> que tiene el chat ahora mismo (se sincroniza por <code>localStorage</code>).</li>
-            <li><a href="/proveedores" target="_blank" rel="noreferrer"><b>/proveedores</b></a> — comparación OpenAI vs Anthropic: dónde vive el contexto, qué endpoint usa cada uno.</li>
-            <li><a href="/criollo" target="_blank" rel="noreferrer"><b>/criollo</b></a> — la API explicada en argentino bien jerga.</li>
           </ul>
         </section>
 
