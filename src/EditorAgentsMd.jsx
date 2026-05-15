@@ -78,6 +78,72 @@ Aplicá estas tres reglas al código actual. Después de cada \`edit_code\`, rel
 - Después de cada \`edit_code\`, hacé \`read_code\` y revisá las 3 reglas mentalmente sobre el código completo.
 - Antes de terminar la corrida, hacé un último \`read_code\` y confirmá que las 3 reglas se cumplen. Si no, corregí.`,
   },
+  {
+    id: 'no-magic-numbers',
+    name: 'Sin números mágicos',
+    enabled: true,
+    description: 'Todo literal numérico (≠ 0, 1, -1) debe vivir en una constante static final con nombre descriptivo.',
+    body: `# Skill: no-magic-numbers (sin números mágicos)
+
+Ningún literal numérico suelto en el cuerpo del código. Todo número distinto de \`0\`, \`1\` y \`-1\` debe declararse como constante \`private static final\` con un nombre que explique qué representa.
+
+## Regla
+
+- ❌ Mal: \`if (intentos > 3) { ... }\`
+- ✅ Bien: declarar \`private static final int MAX_INTENTOS = 3;\` y usar \`if (intentos > MAX_INTENTOS) { ... }\`.
+
+- ❌ Mal: \`double comision = monto * 0.05;\`
+- ✅ Bien: \`private static final double TASA_COMISION = 0.05;\` y \`double comision = monto * TASA_COMISION;\`.
+
+## Excepciones permitidas
+
+- \`0\`, \`1\` y \`-1\` están OK porque suelen representar identidad/vacío/sentinel y no aportan claridad como constantes.
+- La propia línea \`static final\` no se considera violación (es la declaración de la constante).
+
+## Cómo aplicarlo
+
+- Antes de cada \`edit_code\`, fijate si vas a introducir un número distinto de 0/1/-1. Si sí, primero agregá la constante (o reutilizá una existente) y después usala.
+- Después de cada \`edit_code\`, corré \`run_skill_test("no-magic-numbers")\` y si devuelve FAIL, corregí con otro \`edit_code\` y volvé a correr el test hasta que pase.`,
+  },
+  {
+    id: 'commit-style',
+    name: 'Mensaje de commit (Conventional Commits)',
+    enabled: true,
+    description: 'La respuesta final tiene que tener forma de commit message: tipo(scope): sujeto corto + cuerpo con el porqué.',
+    body: `# Skill: commit-style (mensaje de commit)
+
+Tu respuesta final (el texto que cierra el loop, no las llamadas a tools) tiene que tener forma de **Conventional Commit**, no de párrafo prosaico.
+
+## Formato obligatorio
+
+\`\`\`
+<tipo>(<scope opcional>): <sujeto en imperativo, ≤ 72 chars>
+
+<cuerpo: 1-3 oraciones explicando POR QUÉ se hizo el cambio,
+no qué — el diff ya muestra el qué>
+\`\`\`
+
+## Tipos permitidos
+
+- \`feat\`: agregás funcionalidad nueva (método, clase, comportamiento).
+- \`fix\`: arreglás un bug o comportamiento incorrecto.
+- \`refactor\`: cambiás estructura sin alterar comportamiento externo.
+- \`docs\`: solo comentarios / documentación.
+- \`test\`: solo tests.
+- \`chore\`: tareas que no entran en las anteriores (renombres, formato).
+
+## Ejemplos
+
+- ✅ \`feat(cuenta): agregar método retirar con validación de saldo\\n\\nEl método rechaza montos negativos y montos mayores al saldo actual para mantener la invariante de saldo no negativo.\`
+- ✅ \`refactor(cuenta): extraer validación de monto a método privado\\n\\nLa lógica se repetía en depositar y retirar; centralizarla reduce el riesgo de divergencia.\`
+- ❌ \`Agregué un método para retirar plata de la cuenta. Hace lo que pediste y valida que el monto sea positivo y que haya saldo suficiente.\` (es un párrafo, no un commit message)
+
+## Cómo aplicarlo
+
+- Este skill NO tiene test determinístico — no llames a \`run_skill_test\` sobre él.
+- Cargalo con \`load_skill("commit-style")\` antes de redactar tu respuesta final.
+- En el último mensaje del loop (sin llamadas a tools), seguí el formato al pie de la letra.`,
+  },
 ]
 
 function loadInitialSkills() {
@@ -90,6 +156,11 @@ function loadInitialSkills() {
     // Validación básica de shape — si no, reset al default.
     const ok = parsed.every((s) => s && typeof s.id === 'string' && typeof s.body === 'string')
     if (!ok) return DEFAULT_SKILLS
+    // Migración soft: si el storage tiene EXACTAMENTE el default viejo
+    // (un único `arch-check` que la persona nunca tocó), lo reemplazamos
+    // por el nuevo default. Si tiene skills custom o editados, respetamos.
+    const isOldDefault = parsed.length === 1 && parsed[0].id === 'arch-check' && !parsed[0].draft
+    if (isOldDefault) return DEFAULT_SKILLS
     // Migración: skills viejos sin `enabled` se asumen habilitados (retro-compat).
     return parsed.map((s) => ({ ...s, enabled: s.enabled !== false }))
   } catch {
@@ -779,14 +850,22 @@ export default function EditorAgentsMd({ withSkills = true }) {
           </div>
           <div className="instr-body" style={{ flex: 1 }}>
             <div className="suggested-steps">
-              <div className="suggested-steps-title">Probá una instrucción y mirá cómo cambia con/sin AGENTS.md:</div>
+              <div className="suggested-steps-title">Sugerencias rápidas — clic para cargar (si tenés algo escrito, te pide confirmación):</div>
               <ol className="suggested-steps-list">
                 {SUGGESTED_PROMPTS.map((p, i) => (
                   <li key={i}>
                     <button
                       type="button"
                       className="suggested-step-btn"
-                      onClick={() => setInstruction(p)}
+                      onClick={() => {
+                        const current = instruction.trim()
+                        const isSuggestion = SUGGESTED_PROMPTS.some((s) => s.trim() === current)
+                        if (current && !isSuggestion) {
+                          const ok = window.confirm(`Ya escribiste algo en el chat:\n\n"${current.slice(0, 100)}${current.length > 100 ? '…' : ''}"\n\n¿Pisarlo con la sugerencia?`)
+                          if (!ok) return
+                        }
+                        setInstruction(p)
+                      }}
                       disabled={loading}
                     >
                       {p}
@@ -795,14 +874,19 @@ export default function EditorAgentsMd({ withSkills = true }) {
                 ))}
               </ol>
             </div>
-            <textarea
-              className="instr-input"
-              value={instruction}
-              onChange={(e) => setInstruction(e.target.value)}
-              placeholder="¿Qué querés que haga el agente?"
-              disabled={loading}
-              style={{ minHeight: 60 }}
-            />
+            <label className="instr-input-label">
+              <span className="instr-input-label-text">
+                ✍️ Chat — escribí tu propia instrucción (este texto es el que se va a enviar)
+              </span>
+              <textarea
+                className="instr-input"
+                value={instruction}
+                onChange={(e) => setInstruction(e.target.value)}
+                placeholder="¿Qué querés que haga el agente? Podés escribir libremente acá."
+                disabled={loading}
+                style={{ minHeight: 96 }}
+              />
+            </label>
             {/*
               Toggle del sub-tema "skill" del AGENTS.md.
               Solo modula el botón CON AGENTS.md (sin AGENTS.md no hay skills, igual

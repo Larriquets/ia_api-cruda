@@ -13,6 +13,7 @@
 
 export const SKILL_TESTS = {
   'arch-check': archCheckTest,
+  'no-magic-numbers': noMagicNumbersTest,
 }
 
 export function hasSkillTest(id) {
@@ -94,6 +95,42 @@ function archCheckTest(code, { maxMethodLines = 15 } = {}) {
     }
   }
 
+  return violations
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// no-magic-numbers — literales numéricos solo en constantes static final
+// ─────────────────────────────────────────────────────────────────────
+// Regla: todo número literal distinto de 0, 1, -1 debe vivir en una
+// constante `static final`. Skill agnóstico de dominio — aplica a cualquier
+// código Java. La detección ignora strings, comentarios y la propia línea
+// de declaración de la constante.
+function noMagicNumbersTest(code) {
+  const violations = []
+  const stripped = stripJavaCommentsAndStrings(code)
+  const lines = stripped.split('\n')
+  const ALLOWED = new Set(['0', '1'])
+  // Captura enteros y decimales, con sufijo opcional L/F/D/l/f/d.
+  const numberRe = /(?<![\w.])(-?\d+(?:\.\d+)?)[LlFfDd]?(?![\w.])/g
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (/\bstatic\s+final\b/.test(line)) continue
+    let m
+    numberRe.lastIndex = 0
+    while ((m = numberRe.exec(line)) !== null) {
+      const raw = m[1]
+      const normalized = raw.replace(/^-/, '')
+      if (ALLOWED.has(normalized)) continue
+      // Ignorar el caso `-1` (signo unario + 1) cuando viene precedido de
+      // operador o paréntesis, no de número/identificador.
+      if (raw === '-1') continue
+      violations.push({
+        rule: 'no-magic-numbers',
+        message: `línea ${i + 1}: literal numérico \`${raw}\` debe vivir en una constante \`private static final\` con nombre descriptivo.`,
+      })
+    }
+  }
   return violations
 }
 
