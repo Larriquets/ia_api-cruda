@@ -4,7 +4,7 @@ export default function Proveedores({ onBack }) {
   return (
     <div className="criollo">
       <header className="header">
-        <h1>OpenAI vs Anthropic — dónde vive el contexto</h1>
+        <h1>OpenAI vs Anthropic vs local — dónde vive el contexto</h1>
         <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
       </header>
 
@@ -15,15 +15,22 @@ export default function Proveedores({ onBack }) {
           <h2>El concepto en una frase</h2>
           <div className="prov-callout">
             <p>
-              <b>OpenAI te ofrece guardarte el contexto en sus servidores como feature opcional.</b>
+              <b>OpenAI te ofrece guardar los mensajes en sus servidores y rearmarte el array en cada turno (feature opcional).</b>
               <br />
-              <b>Anthropic NO te lo guarda nunca — vos te encargás siempre.</b>
+              <b>Anthropic no te guarda nada — el array lo armás siempre vos.</b>
+              <br />
+              <b>LM Studio tampoco — el modelo corre en tu máquina y el historial lo administra el cliente.</b>
+            </p>
+            <p className="prov-callout-aside">
+              Ojo: en los tres casos el modelo es stateless. Lo único que cambia es <b>quién administra el historial</b>,
+              no si "el LLM se acuerda". Más abajo está el detalle.
             </p>
           </div>
           <p>
             Anthropic decidió por diseño que su API sea 100% stateless: cada request es un
             evento aislado, sin noción de "conversación". OpenAI tiene los dos modos disponibles
-            (clásico y persistente).
+            (clásico y persistente). LM Studio es stateless también, pero además corre
+            en tu propia máquina — ni siquiera sale a internet.
           </p>
         </section>
 
@@ -36,6 +43,7 @@ export default function Proveedores({ onBack }) {
                   <th>Aspecto</th>
                   <th className="prov-col-openai">OpenAI</th>
                   <th className="prov-col-claude">Anthropic (Claude)</th>
+                  <th className="prov-col-lmstudio">LM Studio (local)</th>
                 </tr>
               </thead>
               <tbody>
@@ -43,41 +51,61 @@ export default function Proveedores({ onBack }) {
                   <td>Endpoint clásico (cliente manda todo)</td>
                   <td>✅ <code>/v1/chat/completions</code></td>
                   <td>✅ <code>/v1/messages</code></td>
+                  <td>✅ <code>/v1/chat/completions</code> (shape de OpenAI)</td>
                 </tr>
                 <tr>
                   <td>Endpoint persistente (server guarda contexto)</td>
                   <td>✅ <code>/v1/responses</code> + Conversations API</td>
+                  <td>❌ no existe</td>
                   <td>❌ no existe</td>
                 </tr>
                 <tr>
                   <td>Tabla "conversations" en su DB</td>
                   <td>Sí, si usás <code>/responses</code></td>
                   <td>Nunca</td>
+                  <td>Nunca (no hay DB de nadie)</td>
                 </tr>
                 <tr>
                   <td>Logs de requests sueltos (abuse monitoring)</td>
                   <td>30 días</td>
                   <td>30 días</td>
+                  <td>Ninguno (corre en tu máquina)</td>
                 </tr>
                 <tr>
                   <td>Si reportan tu API por abuso</td>
                   <td>Hasta 30 días extra</td>
                   <td>Hasta 2 años</td>
+                  <td>N/A — no hay proveedor</td>
                 </tr>
                 <tr>
                   <td>Entrenan con tu data (API directa)</td>
                   <td>NO</td>
                   <td>NO</td>
+                  <td>NO (no sale de tu máquina)</td>
                 </tr>
                 <tr>
                   <td>Entrenan con tu data (apps consumer)</td>
                   <td>ChatGPT free/plus: SÍ por default</td>
                   <td>Claude.ai: NO nunca</td>
+                  <td>N/A</td>
                 </tr>
                 <tr>
                   <td>Cliente puede llamar desde el navegador</td>
                   <td>Sí (sin restricción CORS)</td>
                   <td>Bloqueado por default (necesita header especial)</td>
+                  <td>Sí, pero hay que habilitar CORS desde Server Settings</td>
+                </tr>
+                <tr>
+                  <td>API key</td>
+                  <td>Obligatoria</td>
+                  <td>Obligatoria</td>
+                  <td>No (LM Studio acepta un placeholder)</td>
+                </tr>
+                <tr>
+                  <td>Costo por token</td>
+                  <td>Sí</td>
+                  <td>Sí</td>
+                  <td>Gratis — lo que pagás es luz y RAM</td>
                 </tr>
               </tbody>
             </table>
@@ -117,6 +145,30 @@ export default function Proveedores({ onBack }) {
             La conversación queda viva en servidores de OpenAI. Cerrás la pestaña, recargás,
             mandás el <code>conversation_id</code> y seguís donde estabas. <b>El contexto vive en OpenAI.</b>
           </p>
+
+          <div className="prov-callout">
+            <p>
+              <b>⚠️ Ojo con la palabra "persistente": el modelo NO se acuerda de nada.</b>
+            </p>
+            <p>
+              Suena a que GPT "recuerda" entre turnos, pero internamente sigue siendo el mismo
+              loop stateless de siempre. Lo único que cambia es <b>quién arma el array</b>:
+            </p>
+            <ul>
+              <li><b>Modo clásico:</b> vos mandás el <code>messages[]</code> completo cada turno.</li>
+              <li><b>Modo persistente:</b> OpenAI guarda los mensajes en SU base de datos y los <b>rehidrata</b> en cada llamada antes de pasárselos al modelo.</li>
+            </ul>
+            <p>
+              El modelo recibe exactamente el mismo array en los dos casos. No hay "memoria" mágica
+              del lado del LLM — hay un wrapper server-side que te ahorra remandar bytes desde el cliente.
+            </p>
+            <p>
+              <b>Importante:</b> te cobran los <code>input_tokens</code> del historial completo igual,
+              en cada turno. El modo persistente <b>no es prompt caching</b> (eso es otra feature,
+              con descuento por reusar prefijos y TTL de minutos). Acá no te ahorrás plata, te ahorrás
+              transporte y manejo de estado en el cliente.
+            </p>
+          </div>
         </section>
 
         <section className="criollo-section">
@@ -313,63 +365,56 @@ anthropic-version: 2023-06-01
         </section>
 
         <section className="criollo-section">
-          <h2>🟣 Y el tercer caso: Ollama (modelo local)</h2>
+          <h2>🔵 Y el tercer caso: LM Studio (modelo local)</h2>
           <p>
             Esta app también soporta un tercer "proveedor" que es radicalmente distinto:
             <b> el modelo corre en tu propia máquina</b>. No hay servers de nadie en el medio.
           </p>
           <p>
-            <a href="https://ollama.com" target="_blank" rel="noopener noreferrer">Ollama</a> es un
-            runtime local que descarga y corre modelos open-weight (Gemma de Google, Llama de Meta,
-            Mistral, etc.). Lo arrancás con <code>ollama serve</code> y queda escuchando en
-            <code>http://localhost:11434</code>.
+            <a href="https://lmstudio.ai" target="_blank" rel="noopener noreferrer">LM Studio</a> es
+            una app de escritorio que descarga y corre modelos open-weight (Llama de Meta, Qwen,
+            Mistral, etc.) y expone un server HTTP <b>compatible con la API de OpenAI</b>. Lo prendés
+            desde Developer → Start Server y queda escuchando en <code>http://localhost:1234</code>.
           </p>
+          <ul>
+            <li><b>Interfaz gráfica:</b> descargás modelos, ajustás parámetros y mirás métricas desde la app, sin terminal.</li>
+            <li><b>Endpoint compatible con OpenAI:</b> expone <code>/v1/chat/completions</code> con el mismo shape que <code>api.openai.com</code>. Si ya tenés código para OpenAI, lo apuntás a <code>http://localhost:1234</code> y anda igual.</li>
+            <li><b>Server opt-in:</b> no levanta server automático al abrir la app. Hay que prender "Start Server" a mano.</li>
+          </ul>
 
           <h3 className="prov-h3">El request en este caso</h3>
           <div className="criollo-quote">
-            {`POST http://localhost:11434/api/chat
-(sin Authorization — el server es tuyo)
+            {`POST http://localhost:1234/v1/chat/completions
+Authorization: Bearer lm-studio   ← placeholder, no se valida
 
 {
-  "model": "gemma3:4b",
+  "model": "qwen2.5-coder-7b-instruct",
   "messages": [
     { "role": "system",    "content": "Eres útil" },
     { "role": "user",      "content": "Hola" },
     { "role": "assistant", "content": "Hola, ¿cómo estás?" },
     { "role": "user",      "content": "¿Cómo me llamo?" }
   ],
-  "stream": false,
-  "options": { "temperature": 0.7 }
+  "temperature": 0.7,
+  "stream": false
 }`}
           </div>
+          <p>
+            Notá que el header <code>Authorization</code> está pero el valor es un placeholder —
+            LM Studio ignora la key. Algunos SDKs se rompen si el header no existe, así que conviene
+            mandar algo aunque sea cosmético.
+          </p>
 
-          <h3 className="prov-h3">Qué cambia respecto a OpenAI/Claude</h3>
+          <h3 className="prov-h3">Qué cambia respecto a OpenAI / Claude</h3>
           <ul>
-            <li><b>Sin API key:</b> el server es tuyo, no hay nada que autenticar.</li>
+            <li><b>Sin API key real:</b> el server es tuyo. El header <code>Authorization</code> existe sólo porque algunos SDKs se rompen sin él.</li>
             <li><b>Sin red:</b> el request va a localhost. Funciona offline.</li>
             <li><b>Sin facturación:</b> usa tu CPU/GPU. Lo que pagás es luz y RAM.</li>
             <li><b>Privacidad total:</b> el prompt nunca sale de tu máquina.</li>
-            <li><b>Sin Conversations API:</b> Ollama es stateless como Claude — el contexto lo armás vos.</li>
-            <li><b>Modelos:</b> elegís con <code>ollama pull gemma3:4b</code> (o el tag que prefieras).</li>
+            <li><b>Sin Conversations API:</b> es stateless como Claude — el contexto lo armás vos.</li>
+            <li><b>Elegir modelo:</b> se carga uno por vez desde la GUI. En la ConfigBar de esta app hay un botón "Detectar" que lista los cargados via <code>GET /v1/models</code>.</li>
+            <li><b>Auto-Evict:</b> por default LM Studio descarga el modelo tras unos minutos de idle. Si pasa en mitad de un request te tira <code>"Model reloaded."</code> — el wrapper reintenta una vez, pero conviene desactivarlo en Developer → Idle TTL.</li>
           </ul>
-
-          <h3 className="prov-h3">El detalle de CORS (otra vez)</h3>
-          <p>
-            Por default, Ollama solo acepta llamadas desde <code>localhost</code>. Si el navegador
-            te tira CORS al llamar desde Vite, arrancá Ollama con:
-          </p>
-          <div className="criollo-quote">
-            {`# Windows (PowerShell)
-$env:OLLAMA_ORIGINS="*"; ollama serve
-
-# Mac/Linux
-OLLAMA_ORIGINS=* ollama serve`}
-          </div>
-          <p>
-            Para usarlo en esta app: descargá el modelo (<code>ollama pull gemma3:4b</code>), dejá
-            <code>ollama serve</code> corriendo, y elegí "🟣 Ollama (local)" en el selector de
-            proveedor.
-          </p>
         </section>
 
         <section className="criollo-section">
@@ -393,13 +438,13 @@ OLLAMA_ORIGINS=* ollama serve`}
                 <li>Más laburo pero vos sos dueño total</li>
               </ul>
             </div>
-            <div className="prov-card prov-card-ollama">
-              <div className="prov-card-title">🟣 Ollama (local)</div>
-              <p>"El modelo corre en tu máquina. Ni siquiera salimos a internet."</p>
+            <div className="prov-card prov-card-lmstudio">
+              <div className="prov-card-title">🔵 LM Studio (local)</div>
+              <p>"El modelo corre en tu máquina, con GUI y endpoint OpenAI-compatible. Ni siquiera salimos a internet."</p>
               <ul>
-                <li>Sin API key, sin facturación, sin red</li>
-                <li>Privacidad absoluta (offline-capable)</li>
-                <li>Limitado por tu hardware</li>
+                <li>Sin API key real, sin facturación, sin red</li>
+                <li>Drop-in replacement de la API de OpenAI en <code>localhost:1234</code></li>
+                <li>Hay que prender el server a mano (Developer → Start Server)</li>
               </ul>
             </div>
           </div>

@@ -50,7 +50,9 @@ export default function App() {
   const [persistentMode, setPersistentMode] = useState(false)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'openai'
-    return localStorage.getItem(PROVIDER_KEY) || 'openai'
+    const saved = localStorage.getItem(PROVIDER_KEY)
+    if (saved === 'openai' || saved === 'anthropic' || saved === 'lmstudio') return saved
+    return 'openai'
   })
   const [conversationId, setConversationId] = useState(() => {
     if (typeof window === 'undefined') return null
@@ -322,18 +324,15 @@ export default function App() {
               const label =
                 next === 'anthropic'
                   ? 'Anthropic (Claude)'
-                  : next === 'ollama'
-                    ? 'Ollama (local)'
-                    : next === 'lmstudio'
-                      ? 'LM Studio (local)'
-                      : 'OpenAI'
+                  : next === 'lmstudio'
+                    ? 'LM Studio (local)'
+                    : 'OpenAI'
               appendLog('info', `Proveedor cambiado a ${label}`)
             }}
             className={`hdr-select-input provider-select-${provider}`}
           >
             <option value="openai">🟢 OpenAI</option>
             <option value="anthropic">🟠 Claude (Anthropic)</option>
-            <option value="ollama">🟣 Ollama (local)</option>
             <option value="lmstudio">🔵 LM Studio (local)</option>
           </select>
         </label>
