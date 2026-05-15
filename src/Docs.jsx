@@ -528,6 +528,143 @@ export default function Docs() {
           </ul>
         </section>
 
+        {/* ============== ESTA APP vs AGENTES PRODUCTIVOS ============== */}
+        <section className="criollo-section">
+          <h2>5) 🛠️ Esta app vs. Claude Code / Cursor / Codex</h2>
+          <p>
+            Pregunta que aparece sola después de jugar con el Loop Agéntico: <i>¿esto es lo
+            mismo que Claude Code? ¿que Cursor? ¿que Codex?</i> La respuesta corta es <b>no, pero
+            están construidos sobre exactamente lo que ves acá</b>. Esta sección existe para que
+            cuando vuelvas a tu Cursor / Claude Code / Codex de todos los días, sepas qué está
+            pasando por debajo y puedas usarlos mejor.
+          </p>
+
+          <h3>Las tres capas</h3>
+          <ol>
+            <li>
+              <b>La API</b> (<code>/v1/chat/completions</code>, <code>/v1/messages</code>) —
+              el motor HTTP. Stateless, sin manos. Le mandás JSON, te devuelve JSON. No lee tus
+              archivos, no corre comandos, no recuerda nada entre requests. <b>Es el ladrillo.</b>
+            </li>
+            <li>
+              <b>Esta app</b> — una linterna apuntando a la API. No agrega inteligencia, solo
+              expone el JSON crudo, el contexto que se acumula, el loop de tool-use, los tokens.
+              Sirve para <b>entender</b>.
+            </li>
+            <li>
+              <b>Claude Code, Cursor, Codex / Copilot</b> — agentes productivos construidos
+              <i>encima</i> de esa misma API. Le agregaron tools reales (filesystem, shell, git),
+              gestión de contexto largo, permisos, UX de IDE / terminal. Sirven para <b>trabajar</b>.
+            </li>
+          </ol>
+
+          <div className="prov-callout">
+            <p>
+              <b>Lo que ves en el Loop Agéntico es, en miniatura, lo que hace Claude Code cuando
+              te responde.</b> Mismo loop, mismo <code>tool_use</code> → <code>tool_result</code>,
+              mismo <code>messages[]</code> que crece. La diferencia son las tools (
+              <code>Read</code>, <code>Edit</code>, <code>Bash</code>, <code>Grep</code>… vs. dos
+              tools sobre un string) y la UX alrededor.
+            </p>
+          </div>
+
+          <h3>Comparación lado a lado</h3>
+          <div className="prov-table-wrap">
+            <table className="prov-table">
+              <thead>
+                <tr>
+                  <th>Aspecto</th>
+                  <th className="prov-col-openai">Esta app</th>
+                  <th className="prov-col-claude">Claude Code / Cursor / Codex</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Qué es</td>
+                  <td>Cliente HTTP educativo</td>
+                  <td>Agente de programación productivo</td>
+                </tr>
+                <tr>
+                  <td>Tools disponibles</td>
+                  <td>2-5 simuladas sobre un snippet en memoria</td>
+                  <td>Decenas, sobre filesystem, git, shell reales</td>
+                </tr>
+                <tr>
+                  <td>Sobre qué actúa</td>
+                  <td>Un string de código en <code>localStorage</code></td>
+                  <td>Tu repo, tu terminal, tu IDE</td>
+                </tr>
+                <tr>
+                  <td>Gestión de contexto</td>
+                  <td>Vos lo ves crudo y lo manejás</td>
+                  <td>Automática (compaction, caching, file pinning)</td>
+                </tr>
+                <tr>
+                  <td>Permisos / aprobaciones</td>
+                  <td>Sentinel <code>NEEDS_HUMAN_APPROVAL</code> manual</td>
+                  <td>Sistema de permisos, modos (plan, accept-edits), hooks</td>
+                </tr>
+                <tr>
+                  <td>Archivo de reglas</td>
+                  <td><code>AGENTS.md</code> en el editor de la app</td>
+                  <td><code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.cursorrules</code> en tu repo</td>
+                </tr>
+                <tr>
+                  <td>Para qué sirve</td>
+                  <td><b>Entender</b> cómo funciona por debajo</td>
+                  <td><b>Trabajar</b> sobre código real</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Qué te llevás de acá para usar mejor tu agente</h3>
+          <p>
+            Cada modo de esta app te muestra una capa que en Claude Code / Cursor / Codex queda
+            tapada. Cuando volvés a tu herramienta de todos los días, ya sabés qué está pasando:
+          </p>
+          <ul>
+            <li>
+              <b>💬 Chat → el contexto se paga.</b> Cuando tu Cursor "se vuelve lento" o "olvida
+              cosas viejas", es porque el <code>messages[]</code> creció. Saber esto te explica
+              por qué conviene abrir chats nuevos para tareas nuevas, y por qué los modelos con
+              ventana de contexto más grande no son <i>gratis</i>: cada token de historial se cobra
+              en cada turno.
+            </li>
+            <li>
+              <b>💻 Editor → el código es contexto, nada más.</b> Cuando le pegás un snippet a
+              Copilot Chat o le pedís a Cursor que mire un archivo, lo único que la IA "ve" es
+              ese texto dentro de <code>messages[].content</code>. No "abre" tu archivo, no
+              "entiende" tu proyecto — lee strings. Esto cambia cómo redactás prompts y por qué
+              <i> qué le pegás</i> importa más que <i>cómo se lo pedís</i>.
+            </li>
+            <li>
+              <b>🤖 Loop Agéntico → tu agente es un cerebro sin manos.</b> Cuando Claude Code
+              dice "voy a leer X archivo" y después "voy a editar Y", son dos vueltas del loop
+              que viste acá. Saber esto te ayuda a leer mejor lo que hace tu agente, a entender
+              por qué a veces se traba ("se quedó pidiendo una tool que falla") y por qué tareas
+              grandes consumen muchos turnos (= muchos tokens, = plata).
+            </li>
+            <li>
+              <b>📋 AGENTS.md → las reglas viajan en cada request.</b> Tu <code>CLAUDE.md</code> /
+              <code> .cursorrules</code> <b>no</b> "entrena" a la IA. Se concatena al system prompt
+              en cada llamada. Por eso conviene que sea conciso (cada token cuenta, cada turno) y
+              específico (lo genérico ya lo sabe el modelo). La comparación "con/sin" del modo 4
+              es <i>literal</i> lo que ganás o perdés cuando lo escribís bien o mal.
+            </li>
+          </ul>
+
+          <div className="prov-callout">
+            <p>
+              <b>Modelo mental para usuarios de agentes:</b> tu Cursor / Claude Code / Codex es
+              <i> esta app con muchas más tools y una UX prolija arriba</i>. Si entendés qué pasa
+              en el panel derecho del Loop Agéntico, entendés qué está haciendo tu agente cuando
+              "piensa". Si entendés por qué el array <code>messages[]</code> crece, entendés por
+              qué tu sesión larga cuesta más y responde peor. <b>Ese es el objetivo de la app.</b>
+            </p>
+          </div>
+        </section>
+
         {/* ============== APENDICE ============== */}
         <section className="criollo-section">
           <h2>Glosario rápido</h2>
