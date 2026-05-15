@@ -3238,3 +3238,60 @@ body {
   color: #64748b;
   flex: 1;
 }
+
+/* === Header responsive (mobile) ===
+   En desktop el header es una fila con el h1 a la izquierda y el switch a la
+   derecha. Bajo 720px el switch no entra completo en una fila: lo apilamos
+   debajo del título y dejamos scroll horizontal dentro del propio switch para
+   que los botones no se rompan verticalmente. */
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .header h1 {
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-mode-switch {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .app-mode-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 6px 10px;
+  }
+
+  /* El dropdown de Docs tiene un divider con margin-left:10px que en mobile
+     deja la última opción colgando del borde — lo achicamos para mantener el
+     orden visual del grupo principal sin empujar al scroll horizontal. */
+  .app-mode-switch .app-mode-dropdown-divided {
+    margin-left: 6px;
+    padding-left: 8px;
+  }
+
+  /* Los menús desplegables abren con right:0 (anclados al borde derecho del
+     header en desktop). En mobile el padre del switch ya ocupa todo el ancho
+     y puede estar scrolleado horizontalmente: anclamos al borde izquierdo del
+     botón para que el menú no se salga de pantalla. */
+  .app-mode-menu {
+    right: auto;
+    left: 0;
+    min-width: 240px;
+    max-width: calc(100vw - 24px);
+  }
+}
