@@ -197,6 +197,33 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
                 💡 El snapshot se guarda en <code>localStorage</code> cada vez que el chat
                 cambia. Con "Live" activado se relee cada 1.5s.
               </p>
+              <div className="prov-callout" style={{ marginTop: 12 }}>
+                <p>
+                  ⚠️ <b>Heads up — esto es una elección de tutorial, no una recomendación.</b>{' '}
+                  Esta app guarda <b>todo</b> el contexto (mensajes, historial, AGENTS.md,
+                  logs) en <code>localStorage</code> del navegador. Es lo más simple para que
+                  veas el array <code>messages[]</code> con tus propios ojos y para que dos
+                  pestañas se sincronicen sin servidor. <b>En una app real no se hace así.</b>
+                </p>
+                <p style={{ marginTop: 8 }}>
+                  Por qué no: <code>localStorage</code> es sincrónico, tiene ~5MB de tope,
+                  vive en el navegador (se pierde si el usuario limpia el cache o cambia de
+                  máquina), no encripta nada, y <b>no debería tocar PII ni tokens de sesión</b>.
+                  En producción el contexto vive donde corresponde según el caso:
+                </p>
+                <ul style={{ marginTop: 4 }}>
+                  <li><b>Historial de chat</b> — base de datos del lado server, atada al userId.</li>
+                  <li><b>Tokens / API keys</b> — nunca en el browser; van en el server (env vars, secret manager).</li>
+                  <li><b>Estado de UI efímero</b> — memoria de la app o IndexedDB si pesa.</li>
+                  <li><b>Conversaciones largas</b> — Conversations API del proveedor (OpenAI), o tu propia tabla con resúmenes/embeddings.</li>
+                </ul>
+                <p style={{ marginTop: 8 }}>
+                  Acá uso <code>localStorage</code> a propósito: cero backend, todo inspeccionable
+                  desde DevTools (<code>Application → Storage → Local Storage</code>), y vos podés
+                  borrar/editar el contexto a mano para experimentar. Es <b>didáctico</b>, no
+                  arquitectura.
+                </p>
+              </div>
             </>
           )}
         </section>

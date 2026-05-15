@@ -548,7 +548,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
             💡 Este archivo se inyecta en el <code>system</code> prompt del agente
             <b> en cada request</b>. La IA "no aprende" tu proyecto — vos le mandás
             estas reglas todas las veces. Es la única forma porque la IA es
-            <b> virgen en cada llamada</b>.
+            <b> recién nacida en cada llamada</b>.
           </div>
 
           {withSkills && (

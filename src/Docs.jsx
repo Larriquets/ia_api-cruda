@@ -64,14 +64,14 @@ export default function Docs() {
             </li>
           </ol>
           <p>
-            Lo que sigue abajo (la IA es virgen, el contexto, las tools, AGENTS.md) son
+            Lo que sigue abajo (la IA es recién nacida, el contexto, las tools, AGENTS.md) son
             <b> consecuencias</b> de esta primera idea.
           </p>
         </section>
 
-        {/* ============== LA IA ES VIRGEN ============== */}
+        {/* ============== LA IA ES RECIEN NACIDA ============== */}
         <section className="criollo-section">
-          <h2>🧠 El concepto que une todo: la IA es "virgen" en cada request</h2>
+          <h2>🧠 El concepto que une todo: la IA es "recién nacida" en cada request</h2>
           <p>
             Si te llevás <b>una sola idea</b> de toda esta app, que sea esta. Es lo que más
             cuesta internalizar y lo que explica el 80% de las cosas que parecen raras.
@@ -86,7 +86,7 @@ export default function Docs() {
             </p>
           </div>
 
-          <h3>Qué quiere decir "virgen"</h3>
+          <h3>Qué quiere decir "recién nacida"</h3>
           <p>Cada vez que hacés <code>POST /v1/messages</code>, del otro lado pasa esto:</p>
           <ol>
             <li>Se levanta una instancia del modelo (o se le asigna una a tu request).</li>
@@ -123,13 +123,13 @@ export default function Docs() {
               <p>
                 Pero ojo: eso es <b>azúcar sintáctica</b>. Por debajo, OpenAI hace lo mismo — toma
                 tu nuevo mensaje, lo concatena con el historial que tienen guardado, y arma un
-                prompt completo internamente. <b>La IA sigue siendo "virgen" en cada inferencia.</b>
+                prompt completo internamente. <b>La IA sigue siendo "recién nacida" en cada inferencia.</b>
                 La diferencia es solo <i>dónde vive</i> el array <code>messages</code>: en tu
                 cliente (clásico) o en el server de OpenAI (persistente).
               </p>
               <p>
                 <b>Anthropic no tiene equivalente.</b> Por eso Claude es siempre 100% del lado
-                cliente — la "virginidad" es total y absoluta en cada request.
+                cliente — la "amnesia" es total y absoluta en cada request.
               </p>
             </div>
           </details>
@@ -168,14 +168,14 @@ export default function Docs() {
               <h4>4) Por qué no hay forma de "entrenar" a la IA con tu conversación</h4>
               <p>
                 La IA no aprende de tus chats. No hay un modelo "tuyo" que se va personalizando.
-                Cada request: instancia virgen, mismo modelo que el de cualquier otro usuario del
+                Cada request: instancia recién nacida, mismo modelo que el de cualquier otro usuario del
                 planeta. Si querés que "aprenda" tus preferencias, las metés en el system prompt
                 o en el historial — pero eso lo cargás <b>vos</b>, cada vez.
               </p>
 
               <h4>5) Por qué el Loop Agéntico funciona</h4>
               <p>
-                Justamente porque la IA es virgen, vos podés <b>fabricar</b> una historia
+                Justamente porque la IA es recién nacida, vos podés <b>fabricar</b> una historia
                 conversacional que incluya tool calls que ella "hizo" y tool results que tu código
                 generó. La IA, al recibir ese historial, lo toma como suyo y sigue desde ahí.
                 Esto es <i>literalmente</i> lo que ves en el panel "Historial Request/Response"
@@ -454,9 +454,9 @@ export default function Docs() {
             AGENTS.md activado, otra ignorándolo — y muestra los dos resultados lado a lado.
           </p>
 
-          <h3>El concepto que enseña: <i>cómo le enseñás convenciones a una IA virgen</i></h3>
+          <h3>El concepto que enseña: <i>cómo le enseñás convenciones a una IA recién nacida</i></h3>
           <p>
-            Esto cierra el círculo de toda la app. Si la IA es <b>virgen en cada request</b>
+            Esto cierra el círculo de toda la app. Si la IA es <b>recién nacida en cada request</b>
             (sección 🧠 de arriba), <b>¿cómo hacés para que respete tus convenciones?</b>
             ¿Cómo le decís que <i>en este proyecto</i> los campos privados llevan <code>_</code>,
             que el logging va por <code>log.info()</code>, que los métodos públicos son verbos
