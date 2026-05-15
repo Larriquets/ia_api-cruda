@@ -19,6 +19,56 @@ export default function Docs() {
         {/* ============== MENÚ DE DOCS ============== */}
         <DocsNav current="docs" />
 
+        {/* ============== TODA IA ES UNA API ============== */}
+        <section className="criollo-section">
+          <h2>🌐 Arranquemos por lo importante: toda IA pasa por una API</h2>
+          <p>
+            <b>Toda interacción humano↔IA pasa por una API.</b> ChatGPT, Claude.ai, Copilot,
+            Cursor, el chat de tu banco — son UIs que por debajo le pegan HTTP al mismo
+            endpoint que vas a usar vos en este curso. La única diferencia es de capas: esos
+            productos te esconden el JSON, te ponen markdown lindo y manejan la sesión por
+            vos. <b>Acá lo ves crudo.</b>
+          </p>
+          <div className="prov-callout">
+            <p>
+              <b>Si entendés este POST, entendés cómo funciona cualquier producto de IA del
+              mercado por dentro.</b> La inteligencia está en el modelo; el producto es <b>cómo
+              armás el JSON</b> y <b>cómo presentás la respuesta</b>. Lo único que cambia entre
+              ChatGPT y Cursor y el bot de tu banco es <i>qué</i> meten en <code>messages[]</code>
+              y <i>qué tools</i> declaran.
+            </p>
+          </div>
+          <p>
+            <b>La finalidad de esta app, en sus cuatro etapas, es esa.</b> Cada modo le saca
+            una capa más al producto comercial para que veas el POST que está abajo:
+          </p>
+          <ol>
+            <li>
+              <b>💬 Chat</b> — lo mismo que ChatGPT, pero te muestra el array <code>messages[]</code>
+              que viaja en cada turno. Ahí ves el "recuerdo" de la conversación con la mano.
+            </li>
+            <li>
+              <b>💻 Editor</b> — lo que hace cualquier asistente de código de un solo turno
+              (Copilot inline, "Edit with AI" de VS Code). Le pegás código + instrucción, te
+              vuelve código. Sin magia.
+            </li>
+            <li>
+              <b>🤖 Loop Agéntico</b> — lo que hace Cursor, Claude Code, Copilot Agent: declarar
+              tools, dejar que la IA las pida, ejecutarlas, devolverle el resultado, repetir.
+              Acá ves cada vuelta del loop.
+            </li>
+            <li>
+              <b>📋 Agente + reglas</b> — el truco del <code>AGENTS.md</code> / <code>CLAUDE.md</code>
+              / <code>.cursorrules</code>: un archivo de texto que se concatena al system prompt
+              en cada request. Acá lo ves inyectarse en vivo.
+            </li>
+          </ol>
+          <p>
+            Lo que sigue abajo (la IA es virgen, el contexto, las tools, AGENTS.md) son
+            <b> consecuencias</b> de esta primera idea.
+          </p>
+        </section>
+
         {/* ============== LA IA ES VIRGEN ============== */}
         <section className="criollo-section">
           <h2>🧠 El concepto que une todo: la IA es "virgen" en cada request</h2>
