@@ -387,7 +387,9 @@ export default function LoopAgentico() {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <img src="/logo.png" alt="" className="brand-logo" />
+          <a href="/" className="brand-home" aria-label="Ir al inicio">
+            <img src="/logo.png" alt="" className="brand-logo" />
+          </a>
           <span className="brand-braces">{'{'}</span>
           <span className="brand">La IA Cruda</span>
           <span className="brand-braces">{'}'}</span>
@@ -652,7 +654,7 @@ export default function LoopAgentico() {
             </span>
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
-            💡 <b>El prompt crece turno a turno.</b> Mirá cómo en cada iteración el array
+            💡 <b>El prompt crece turno a turno.</b> Mirá cómo en cada iteración el array{' '}
             <code>messages</code> incluye los <code>tool_result</code> del turno anterior — eso
             es lo que hace que la IA pueda encadenar llamadas. <b>Un solo prompt</b> tuyo, N
             requests internas.

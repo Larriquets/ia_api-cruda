@@ -3,6 +3,17 @@ import DocsNav from './DocsNav.jsx'
 
 const STORAGE_KEY = 'chat_context_snapshot'
 
+const TOC_ITEMS = [
+  { id: 'tesis',         emoji: '🎯', label: 'La tesis' },
+  { id: 'chat',          emoji: '💬', label: '1) Chat — historial' },
+  { id: 'snapshot',      emoji: '📸', label: 'Foto en vivo' },
+  { id: 'editor',        emoji: '💻', label: '2) Editor — payload mínimo' },
+  { id: 'loop',          emoji: '🤖', label: '3) Loop — crece solo' },
+  { id: 'agents-md',     emoji: '📋', label: '4) AGENTS.md' },
+  { id: 'costo',         emoji: '💰', label: 'El contexto cuesta' },
+  { id: 'conclusion',    emoji: '📌', label: 'Conclusión' },
+]
+
 export default function Contexto({ onBack }) {
   const [snapshot, setSnapshot] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -49,10 +60,23 @@ export default function Contexto({ onBack }) {
         <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
       </header>
 
-      <div className="criollo-content">
-        <DocsNav current="contexto" />
+      <div className="criollo-content docs-layout">
+        <aside className="docs-sidebar" aria-label="Navegación de documentación">
+          <DocsNav current="contexto" />
+          <nav className="docs-toc" aria-label="Índice de la página">
+            <div className="docs-toc-title">En esta página</div>
+            {TOC_ITEMS.map((item) => (
+              <a key={item.id} href={`#${item.id}`} className="docs-toc-link">
+                <span className="docs-toc-emoji">{item.emoji}</span>
+                <span className="docs-toc-label">{item.label}</span>
+              </a>
+            ))}
+          </nav>
+        </aside>
 
-        <section className="criollo-section">
+        <div className="docs-main">
+
+        <section className="criollo-section" id="tesis">
           <h2>La tesis</h2>
           <p>
             <b>El modelo es stateless.</b> Entre dos requests no recuerda nada: ni quién sos,
@@ -82,7 +106,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="chat">
           <h2>1) Chat — el contexto como historial</h2>
           <p>
             El caso clásico. Vos escribís, el modelo responde, vos respondés a la respuesta.
@@ -128,7 +152,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           </p>
         </section>
 
-        <section className="criollo-section snapshot-section">
+        <section className="criollo-section snapshot-section" id="snapshot">
           <div className="snapshot-banner">
             <h2 className="snapshot-title">📸 Foto en vivo del contexto del chat</h2>
             <div className="snapshot-controls">
@@ -229,7 +253,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           )}
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="editor">
           <h2>2) Editor — el contexto como payload mínimo</h2>
           <p>
             En <a href="/editor" target="_blank" rel="noreferrer"><code>/editor</code></a> no
@@ -252,10 +276,10 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="loop">
           <h2>3) Loop Agéntico — el contexto que crece solo</h2>
           <p>
-            En <a href="/loop-agentico" target="_blank" rel="noreferrer"><code>/loop-agentico</code></a>
+            En <a href="/loop-agentico" target="_blank" rel="noreferrer"><code>/loop-agentico</code></a>{' '}
             el modelo tiene tools (<code>read_code</code>, <code>edit_code</code>, etc.) y
             corre en un loop: llama una tool, recibe el resultado, decide qué hacer, llama
             otra, y así. <b>Cada <code>tool_result</code> se queda en el historial</b> para
@@ -264,7 +288,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           <p>
             Acá pasa algo que en el chat no se nota: <b>el contexto crece sin que vos
             escribas nada</b>. Un loop de 10 pasos puede dejar el array con 30+ mensajes,
-            porque cada paso suma un <code>assistant</code> (la decisión), un <code>tool_call</code>
+            porque cada paso suma un <code>assistant</code> (la decisión), un <code>tool_call</code>{' '}
             y un <code>tool_result</code>. El historial se hincha solo.
           </p>
           <p>
@@ -282,10 +306,10 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="agents-md">
           <h2>4) AGENTS.md — el contexto como instrucción inyectada</h2>
           <p>
-            En <a href="/agents-md" target="_blank" rel="noreferrer"><code>/agents-md</code></a>
+            En <a href="/agents-md" target="_blank" rel="noreferrer"><code>/agents-md</code></a>{' '}
             el contexto se construye distinto: hay un archivo <code>AGENTS.md</code> con
             reglas y, opcionalmente, "skills" (recetas con tests). <b>Todo eso se inyecta
             al <code>system</code> prompt antes del user message.</b>
@@ -309,13 +333,13 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
             que vos armaste lo configuró para responder así.
           </p>
           <p>
-            Esto demuestra el ángulo más político del contexto: <b>quien controla el
+            Esto demuestra el ángulo más político del contexto: <b>quien controla el{' '}
             <code>system</code> controla al agente</b>. Si alguien puede inyectar texto en
             tu system prompt, puede cambiar tu producto sin tocar tu modelo.
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="costo">
           <h2>El contexto cuesta — quién paga</h2>
           <p>Una vez que entendés que todo es contexto, aparece la pregunta: ¿cuánto cuesta?</p>
           <ul>
@@ -346,7 +370,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="conclusion">
           <h2>Conclusión</h2>
           <p>
             Los cuatro modos de esta app cuentan la misma historia desde cuatro ángulos:
@@ -366,6 +390,8 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
         <footer className="criollo-footer">
           <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
         </footer>
+
+        </div>
       </div>
     </div>
   )

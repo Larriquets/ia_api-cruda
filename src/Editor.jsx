@@ -307,7 +307,9 @@ export default function Editor({ onBack }) {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <img src="/logo.png" alt="" className="brand-logo" />
+          <a href="/" className="brand-home" aria-label="Ir al inicio">
+            <img src="/logo.png" alt="" className="brand-logo" />
+          </a>
           <span className="brand-braces">{'{'}</span>
           <span className="brand">La IA Cruda</span>
           <span className="brand-braces">{'}'}</span>

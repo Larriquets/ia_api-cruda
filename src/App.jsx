@@ -8,7 +8,6 @@ import {
 import { sendClaudeMessage } from './anthropic.js'
 import { sendOllamaMessage } from './ollama.js'
 import { sendLmStudioMessage } from './lmstudio.js'
-import Criollo from './Criollo.jsx'
 import Contexto from './Contexto.jsx'
 import Proveedores from './Proveedores.jsx'
 import Editor from './Editor.jsx'
@@ -83,7 +82,6 @@ export default function App() {
   const [serverHistory, setServerHistory] = useState([])
   const [page, setPage] = useState(() => {
     if (typeof window === 'undefined') return 'chat'
-    if (window.location.pathname === '/criollo') return 'criollo'
     if (window.location.pathname === '/contexto') return 'contexto'
     if (window.location.pathname === '/proveedores') return 'proveedores'
     if (window.location.pathname === '/editor') return 'editor'
@@ -315,9 +313,6 @@ export default function App() {
   const contextTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0)
 
   const goHome = () => { window.location.href = '/' }
-  if (page === 'criollo') {
-    return <><WelcomeModal /><Criollo onBack={goHome} /></>
-  }
   if (page === 'contexto') {
     return <><WelcomeModal /><Contexto onBack={goHome} /></>
   }
@@ -345,7 +340,9 @@ export default function App() {
       <WelcomeModal />
       <header className="header">
         <h1>
-          <img src="/logo.png" alt="" className="brand-logo" />
+          <a href="/" className="brand-home" aria-label="Ir al inicio">
+            <img src="/logo.png" alt="" className="brand-logo" />
+          </a>
           <span className="brand-braces">{'{'}</span>
           <span className="brand">La IA Cruda</span>
           <span className="brand-braces">{'}'}</span>
@@ -661,15 +658,6 @@ export default function App() {
             <span>Request → API (crudo)</span>
             <span className="panel-links">
               <a
-                href="/criollo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="docs-link criollo-link"
-                title="Explicación a nivel usuario, sin tecnicismos (abre en otra pestaña)"
-              >
-                criollo 🧉
-              </a>
-              <a
                 href="https://platform.openai.com/docs/api-reference/chat/create"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -688,15 +676,6 @@ export default function App() {
           <div className="panel-title panel-title-sub">
             <span>Response ← API (crudo)</span>
             <span className="panel-links">
-              <a
-                href="/criollo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="docs-link criollo-link"
-                title="Explicación a nivel usuario, sin tecnicismos (abre en otra pestaña)"
-              >
-                criollo 🧉
-              </a>
               <a
                 href="https://platform.openai.com/docs/api-reference/chat/object"
                 target="_blank"

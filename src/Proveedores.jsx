@@ -1,5 +1,19 @@
 import DocsNav from './DocsNav.jsx'
 
+const TOC_ITEMS = [
+  { id: 'frase',         emoji: '🎯', label: 'En una frase' },
+  { id: 'tabla',         emoji: '📊', label: 'Tabla comparativa' },
+  { id: 'flujo-openai',  emoji: '🟢', label: 'Flujo OpenAI persistente' },
+  { id: 'flujo-claude',  emoji: '🟠', label: 'Flujo Claude' },
+  { id: 'no-guardar',    emoji: '🔒', label: '"No guardar" ≠ "nada"' },
+  { id: 'que-conviene',  emoji: '🤔', label: 'Qué te conviene' },
+  { id: 'codigo',        emoji: '💻', label: 'Lo que cambia en el código' },
+  { id: 'response',      emoji: '📥', label: 'Response distinto' },
+  { id: 'cors',          emoji: '🚧', label: 'CORS con Claude' },
+  { id: 'lmstudio',      emoji: '🔵', label: 'LM Studio (local)' },
+  { id: 'resumen',       emoji: '📌', label: 'Resumiendo' },
+]
+
 export default function Proveedores({ onBack }) {
   return (
     <div className="criollo">
@@ -8,10 +22,23 @@ export default function Proveedores({ onBack }) {
         <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
       </header>
 
-      <div className="criollo-content">
-        <DocsNav current="proveedores" />
+      <div className="criollo-content docs-layout">
+        <aside className="docs-sidebar" aria-label="Navegación de documentación">
+          <DocsNav current="proveedores" />
+          <nav className="docs-toc" aria-label="Índice de la página">
+            <div className="docs-toc-title">En esta página</div>
+            {TOC_ITEMS.map((item) => (
+              <a key={item.id} href={`#${item.id}`} className="docs-toc-link">
+                <span className="docs-toc-emoji">{item.emoji}</span>
+                <span className="docs-toc-label">{item.label}</span>
+              </a>
+            ))}
+          </nav>
+        </aside>
 
-        <section className="criollo-section">
+        <div className="docs-main">
+
+        <section className="criollo-section" id="frase">
           <h2>El concepto en una frase</h2>
           <div className="prov-callout">
             <p>
@@ -34,7 +61,7 @@ export default function Proveedores({ onBack }) {
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="tabla">
           <h2>Tabla comparativa rápida</h2>
           <div className="prov-table-wrap">
             <table className="prov-table">
@@ -112,7 +139,7 @@ export default function Proveedores({ onBack }) {
           </div>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="flujo-openai">
           <h2>El flujo cuando hablás con OpenAI (modo persistente)</h2>
           <div className="prov-flow">
             <div className="prov-flow-line">
@@ -171,7 +198,7 @@ export default function Proveedores({ onBack }) {
           </div>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="flujo-claude">
           <h2>El flujo cuando hablás con Claude (siempre)</h2>
           <div className="prov-flow prov-flow-claude">
             <div className="prov-flow-line">
@@ -201,12 +228,12 @@ export default function Proveedores({ onBack }) {
             </div>
           </div>
           <p>
-            Anthropic ve cada llamada como un evento aislado. <b>No tiene noción de "tu conversación con id X".</b>
+            Anthropic ve cada llamada como un evento aislado. <b>No tiene noción de "tu conversación con id X".</b>{' '}
             Si querés persistencia, te la armás vos (localStorage, IndexedDB, backend propio, lo que sea).
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="no-guardar">
           <h2>"No guardar contexto" ≠ "No guardar nada"</h2>
           <p>Cuidado con este matiz. Anthropic <b>sí loguea cada request</b> por 30 días para detectar abuso. Lo que NO hace es:</p>
           <ul>
@@ -227,7 +254,7 @@ export default function Proveedores({ onBack }) {
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="que-conviene">
           <h2>¿Qué te conviene a vos?</h2>
           <h3 className="prov-h3">Te conviene OpenAI con modo persistente si:</h3>
           <ul>
@@ -254,7 +281,7 @@ export default function Proveedores({ onBack }) {
           </ul>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="codigo">
           <h2>Lo que cambia en el código</h2>
           <p>Probá mandar el mismo mensaje con cada proveedor y mirá el panel "Request crudo":</p>
 
@@ -304,7 +331,7 @@ anthropic-version: 2023-06-01
           </ul>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="response">
           <h2>Y el response también es distinto</h2>
           <h3 className="prov-h3">OpenAI</h3>
           <div className="criollo-quote">
@@ -340,12 +367,12 @@ anthropic-version: 2023-06-01
           </div>
           <p>
             Para sacar el texto: <code>data.content[0].text</code> (es un array de bloques,
-            no un string). Tokens: <code>input_tokens</code>/<code>output_tokens</code> en vez de
+            no un string). Tokens: <code>input_tokens</code>/<code>output_tokens</code> en vez de{' '}
             <code>prompt_tokens</code>/<code>completion_tokens</code>.
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="cors">
           <h2>El detalle de CORS con Claude</h2>
           <p>
             Anthropic <b>bloquea por default</b> las llamadas desde el navegador. Lo hace porque
@@ -353,7 +380,7 @@ anthropic-version: 2023-06-01
             (cualquiera puede inspeccionar y robarla).
           </p>
           <p>
-            Para que esta app funcione, tuve que mandar el header
+            Para que esta app funcione, tuve que mandar el header{' '}
             <code>anthropic-dangerous-direct-browser-access: true</code>. Es la "puerta trasera"
             oficial. Su nombre dice todo: <b>está bien para una demo local, no para producción.</b>
           </p>
@@ -364,7 +391,7 @@ anthropic-version: 2023-06-01
           </p>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="lmstudio">
           <h2>🔵 Y el tercer caso: LM Studio (modelo local)</h2>
           <p>
             Esta app también soporta un tercer "proveedor" que es radicalmente distinto:
@@ -417,7 +444,7 @@ Authorization: Bearer lm-studio   ← placeholder, no se valida
           </ul>
         </section>
 
-        <section className="criollo-section">
+        <section className="criollo-section" id="resumen">
           <h2>Resumiendo todo</h2>
           <div className="prov-summary">
             <div className="prov-card prov-card-openai">
@@ -453,6 +480,8 @@ Authorization: Bearer lm-studio   ← placeholder, no se valida
         <footer className="criollo-footer">
           <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
         </footer>
+
+        </div>
       </div>
     </div>
   )

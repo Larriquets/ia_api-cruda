@@ -140,10 +140,6 @@ export default function ModeSwitch({ active }) {
               <b>⚖️ /proveedores</b>
               <span className="app-mode-menu-sub">OpenAI vs Anthropic</span>
             </a>
-            <a href="/criollo" className="app-mode-menu-item" role="menuitem">
-              <b>🧉 /criollo</b>
-              <span className="app-mode-menu-sub">la API en argentino</span>
-            </a>
           </div>
         )}
       </div>

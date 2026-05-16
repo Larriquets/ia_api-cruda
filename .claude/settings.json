@@ -20,7 +20,8 @@
       "PowerShell(Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue)",
       "Bash(git fetch *)",
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(curl -s http://localhost:5173)"
     ]
   }
 }
