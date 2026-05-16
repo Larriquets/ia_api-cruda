@@ -657,6 +657,213 @@ export default function Docs() {
           </details>
         </section>
 
+        {/* ============== CONTROLES DEL REQUEST (transversales) ============== */}
+        <section className="criollo-section">
+          <h2>🎛 Controles del request — perillas que cambian todo</h2>
+          <p>
+            Lo que viste hasta acá son <b>modos</b>: distintas formas de armar el array
+            <code>messages</code>. Esta sección es sobre las <b>perillas</b> que viajan al
+            costado del array y cambian cómo el modelo responde sin tocar una sola palabra
+            de tu prompt. Son dos: <b>el system prompt</b> (quién es la IA) y <b>la
+            temperatura</b> (cuánto se anima a desviarse).
+          </p>
+          <p>
+            Las dos son <b>transversales</b> a los modos de chat (Crudo, Conversación,
+            Persistente) y, en el caso del system, también al Editor y al Loop Agéntico.
+          </p>
+
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>A) 🧠 System prompt editable — la "personalidad" antes del primer hola</span>
+            </summary>
+            <div className="docs-collapsible-body">
+              <h3>Qué es</h3>
+              <p>
+                El <code>system</code> es el mensaje con <code>role:"system"</code> que
+                viaja como <i>primer</i> ítem del array <code>messages</code>. Lo lee el
+                modelo antes que cualquier user message y define cómo va a responder a
+                <b>todos</b> los turnos siguientes. No es opcional ni cosmético: cambia el
+                comportamiento de raíz.
+              </p>
+              <div className="prov-callout">
+                <p>
+                  <b>Idea clave:</b> el modelo es el mismo (mismo GPT, mismo Claude). Lo
+                  único que cambia entre "ChatGPT", el bot de tu banco y un asistente de
+                  programación es <b>qué dice el system</b>. La inteligencia es del modelo;
+                  la <b>personalidad</b> es del system.
+                </p>
+              </div>
+
+              <h3>Dónde aparece en la app</h3>
+              <ul>
+                <li>
+                  <b>Chat (<code>/</code>)</b>: editor plegable arriba del input.
+                  Persiste por tab y viaja en <code>messages[0]</code> en los tres modos
+                  (Crudo, Conversación, Persistente — este último lo manda como
+                  <code>instructions</code> en <code>/v1/responses</code>).
+                </li>
+                <li>
+                  <b>Editor (<code>/editor</code>)</b>: el mismo editor, con presets que
+                  cambian el estilo del código generado (lunfardo, paranoico de seguridad,
+                  minimalista).
+                </li>
+                <li>
+                  <b>Loop Agéntico (<code>/loop-agentico</code>)</b>: editás el system del
+                  agente para cambiar cómo decide usar las tools (más rápido, más
+                  paranoico, más narrador).
+                </li>
+              </ul>
+
+              <h3>Los presets — el "wow" en 1 click</h3>
+              <p>
+                Cada modo trae 4-5 presets para que veas el efecto sin tener que escribir
+                un system desde cero. Algunos del Chat:
+              </p>
+              <ul>
+                <li><b>🏴‍☠️ Pirata bonaerense</b> — responde en jerga pirata + lunfardo.</li>
+                <li><b>📦 Devuelve solo JSON</b> — cero prosa, solo un objeto.</li>
+                <li><b>🎓 Profesor sarcástico</b> — te tira un palito antes de responder bien.</li>
+                <li><b>😄 Solo emojis</b> — prohibido usar letras.</li>
+              </ul>
+
+              <h3>🧪 Experimento para entender</h3>
+              <ol>
+                <li>Abrí el chat en modo <b>Crudo</b> (sin historial).</li>
+                <li>Escribí <code>hola</code> y mandalo. Mirá la respuesta.</li>
+                <li>Abrí el editor de system, elegí preset <b>🏴‍☠️ Pirata bonaerense</b>.</li>
+                <li>Borrá el chat (botón "Limpiar") y mandá <code>hola</code> de nuevo.</li>
+                <li>
+                  La respuesta debería sonar como un pirata. <b>Es el mismo modelo, el
+                  mismo "hola", la misma temperatura.</b> Lo único que cambió fue una
+                  línea de texto en <code>messages[0]</code>.
+                </li>
+                <li>
+                  Bonus: en modo Crudo el system <i>también</i> viaja (es lo único que
+                  acompaña al user message). Por eso podés ver el efecto sin acumular
+                  historial.
+                </li>
+              </ol>
+
+              <h3>Detalles raros que vale conocer</h3>
+              <ul>
+                <li>
+                  <b>Claude separa el system</b> del array <code>messages</code>: en
+                  <code>/v1/messages</code> viaja como una key aparte (<code>system: "..."</code>),
+                  no como un ítem con <code>role:"system"</code>. La app lo normaliza
+                  internamente — pero si mirás el JSON crudo del request en el panel
+                  derecho con provider Claude, lo vas a ver afuera del array.
+                </li>
+                <li>
+                  <b>Si dejás el textarea vacío</b>, la app manda el system default. El
+                  badge "vacío → default" en el editor te avisa.
+                </li>
+                <li>
+                  <b>Sobreescritura no destruye historial</b>: cambiar el system en
+                  Conversación reescribe <code>messages[0]</code> al instante y se aplica
+                  al próximo request. El historial de turnos previos sigue ahí.
+                </li>
+              </ul>
+            </div>
+          </details>
+
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>B) 🌡 Temperatura + "×3" — la IA no es determinista (y vos podés moverle la perilla)</span>
+            </summary>
+            <div className="docs-collapsible-body">
+              <h3>Qué es la temperatura</h3>
+              <p>
+                Cada vez que el modelo genera un token, en realidad calcula una
+                distribución de probabilidades sobre miles de candidatos posibles. La
+                <b>temperatura</b> es cuánto le permitís alejarse del más probable:
+              </p>
+              <ul>
+                <li><b>0</b> — siempre elige el token más probable. Casi determinístico.</li>
+                <li><b>0.7</b> — el default. Equilibrio entre coherencia y variedad.</li>
+                <li><b>1.0</b> — se anima a tokens menos probables. Más creativo.</li>
+                <li><b>2.0</b> — caótico. Suele romper la gramática.</li>
+              </ul>
+              <div className="prov-callout">
+                <p>
+                  <b>Idea clave:</b> con temperatura &gt; 0, el <b>mismo prompt produce
+                  respuestas distintas cada vez</b>. No es un bug. Es así por diseño. La
+                  IA <i>no</i> es una función pura.
+                </p>
+              </div>
+
+              <h3>El botón "×3 🎲" — ver la variabilidad con tus ojos</h3>
+              <p>
+                Al lado del botón Enviar hay un botón <b>×3</b>. Manda el mismo prompt
+                tres veces seguidas con la misma temperatura y te muestra las tres
+                respuestas en un panel comparativo. <b>Las respuestas no se meten al
+                chat</b> — sirven para experimentar sin romper el historial. Si una te
+                gusta, podés "✓ aplicar al chat".
+              </p>
+              <p>
+                <i>Nota:</i> deshabilitado en modo Persistente. Cada request escribiría al
+                thread del servidor de OpenAI, no podrías "elegir" después.
+              </p>
+
+              <h3>🧪 Experimento para entender</h3>
+              <ol>
+                <li>Slider de temperatura a <b>0</b>.</li>
+                <li>
+                  Escribí <code>Inventá un nombre creativo para una banda de rock</code> y
+                  apretá <b>×3</b>.
+                </li>
+                <li>
+                  Probablemente las tres respuestas sean <b>casi idénticas</b>. Con
+                  temperatura 0 la IA siempre elige lo más probable.
+                </li>
+                <li>Subí el slider a <b>1.5</b> y apretá ×3 de nuevo.</li>
+                <li>
+                  Ahora las tres deberían ser muy distintas. Algunas incluso medio
+                  delirantes. <b>Cambió la perilla, no el prompt.</b>
+                </li>
+                <li>
+                  Subí a <b>2.0</b> y ×3 una vez más. Vas a ver respuestas que rompen
+                  gramática o se van por ramas raras. Por eso 0.7 es default: el sweet
+                  spot.
+                </li>
+              </ol>
+
+              <h3>Detalles que vale conocer</h3>
+              <ul>
+                <li>
+                  <b>Claude clampa a 0–1.</b> Si el slider está en 1.5 con provider
+                  Claude, la app avisa con un hint amarillo y manda 1.0 al request. Es una
+                  limitación del wrapper de Anthropic, no nuestra.
+                </li>
+                <li>
+                  <b>OpenAI y LM Studio aceptan hasta 2.</b> Aprovechalos para ver el
+                  caos en su máximo esplendor.
+                </li>
+                <li>
+                  <b>Temperatura ≠ creatividad.</b> Temperatura es <i>variabilidad</i>.
+                  Para tareas con una respuesta correcta (código, JSON, hechos) querés
+                  bajita (0–0.3). Para brainstorming o ficción, alta (0.9–1.3).
+                </li>
+                <li>
+                  <b>El parámetro viaja en el request.</b> Si abrís el panel "Request →
+                  API (crudo)" después de mandar, vas a ver <code>"temperature": 1.5</code>
+                  en el body. Con Ollama va anidado adentro de <code>options</code>.
+                </li>
+              </ul>
+
+              <h3>Combinarlas: system + temperatura</h3>
+              <p>
+                Las dos perillas se multiplican. Un system <b>"Pirata bonaerense"</b> con
+                temp <b>0</b> te da siempre la misma respuesta pirata. Con temp <b>1.5</b>
+                te da tres respuestas piratas <i>distintas</i>, todas en personaje. El
+                system define <i>quién</i> responde; la temperatura, <i>cuánto se anima</i>
+                a variar dentro de ese personaje.
+              </p>
+            </div>
+          </details>
+        </section>
+
         {/* ============== ESTA APP vs AGENTES PRODUCTIVOS ============== */}
         <section className="criollo-section">
           <h2>🛠️ Esta app vs. Claude Code / Cursor / Codex</h2>

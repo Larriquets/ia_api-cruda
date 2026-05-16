@@ -935,8 +935,8 @@ body {
 /* Plegables grandes — las 5 secciones numeradas de /docs.
    Mismo mecanismo que .docs-collapsible pero con tamaño/peso tipo <h2>. */
 .docs-section-collapsible > summary {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   color: #e2e8f0;
   padding: 14px 16px;
   gap: 12px;
