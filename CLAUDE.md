@@ -43,10 +43,21 @@ Ollama y LM Studio aceptan el shape tal cual.
 
 ### Cuatro modos de contexto en el Chat (mutuamente excluyentes)
 Segmented control en [App.jsx](src/App.jsx) — solo uno activo a la vez.
-- **Crudo** — solo el último user message, sin system ni history.
+- **Crudo** — `system` + último user message, sin historial previo. Cada turno arranca limpio pero mantiene la "personalidad" del system.
 - **Conversación** — cliente acumula `messages[]` y lo reenvía completo cada request.
 - **Persistente** — `/v1/responses` + Conversations API; el contexto vive en OpenAI. Forzado a off cuando `provider !== 'openai'`.
 - **Ruido** — inyecta relleno determinista al final del último user message vía [applyNoise](src/noise.js). Controles de seed e intensidad en la UI. Demuestra cómo el contexto sucio degrada la respuesta.
+
+### System prompt editable (Chat, Editor, Loop Agéntico)
+[SystemEditor.jsx](src/SystemEditor.jsx) es un componente plegable compartido. Lo consumen los tres modos con sus propios defaults y presets:
+- Chat usa `CHAT_DEFAULT_SYSTEM` + `CHAT_PRESETS` de [system-presets.js](src/system-presets.js) (pirata, JSON estricto, profesor sarcástico, solo emojis).
+- Editor usa `EDITOR_DEFAULT_SYSTEM` + `EDITOR_PRESETS` (sobre-comentado, lunfardo, paranoico de seguridad, minimalista).
+- Loop Agéntico usa `AGENT_SYSTEM_PROMPT` de [agent-tools.js](src/agent-tools.js) + `AGENT_PRESETS` definidos inline en [LoopAgentico.jsx](src/LoopAgentico.jsx) (rápido, paranoico, narrador).
+
+Reglas para extender:
+- Si el alumno deja el textarea vacío, hay que mandar el default (no string vacío). Validar con `.trim()`.
+- En el Chat los tres modos respetan el system. La diferencia es el historial: Crudo no acumula, Conversación sí (cliente), Persistente sí (servidor de OpenAI).
+- En el Chat persistente, el system viaja como `instructions` a `/v1/responses` (no como `messages[0]`).
 
 ### Agentes (loop function-calling)
 Cada wrapper agéntico (`*-agent.js`) implementa un loop sobre tools definidas en [agent-tools.js](src/agent-tools.js):
@@ -66,8 +77,9 @@ Claves activas (cada modo persiste su propio estado para no pisarse):
 - `chat_logs` — log capado a `LOGS_MAX = 500`.
 - `openai_conversation_id` — ID de modo persistent.
 - `chat_provider` — `'openai' | 'anthropic' | 'ollama' | 'lmstudio'` (compartido entre todos los modos).
+- `chat_system_prompt`, `chat_system_open` — system editable del Chat y estado plegado del editor.
 
-**Editor (`/editor`)** — claves propias (`code`, `lang`, `keep_context`, `history`, `cols`, logs).
+**Editor (`/editor`)** — claves propias (`code`, `lang`, `keep_context`, `history`, `cols`, logs, `editor_system_prompt`, `editor_system_open`).
 **Loop Agéntico (`/loop-agentico`)** — `agente_context_thread` para retomar la conversación + claves propias (`agente_code_snapshot`, `agente_language`, `agente_logs`, `agente_cols`, `agente_system_override`, `agente_system_open`).
 **AGENTS.md (`/agents-md*`)** — `agentmd_code_snapshot`, `agentmd_agents_md_v4`, `agentmd_skills_v1`, `agentmd_logs`, `agentmd_cols`.
 **LM Studio** — `lmstudio_host`, `lmstudio_model`.

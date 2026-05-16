@@ -7,6 +7,48 @@ import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import SystemEditor from './SystemEditor.jsx'
+
+// Presets para el agente: variantes que cambian la "personalidad" del loop
+// (ritmo de iteración, verbosidad, criterio para usar las tools).
+const AGENT_PRESETS = [
+  {
+    id: 'default',
+    label: '🤖 Agente default',
+    subtitle: 'el system base de la app',
+    prompt: AGENT_SYSTEM_PROMPT,
+  },
+  {
+    id: 'rapido',
+    label: '⚡ Rápido y al toque',
+    subtitle: 'cero ceremonia, mínimas iteraciones',
+    prompt: `Sos un agente de programación. Usás las tools read_code y edit_code para resolver lo que te pide el usuario.
+Reglas:
+- Hacé el mínimo de iteraciones posibles. Si podés resolver con 1 edit, hacé 1 edit.
+- No expliques nada antes ni después salvo que te lo pidan.
+- No leas el código si ya lo viste en este turno o en el contexto previo.`,
+  },
+  {
+    id: 'paranoico',
+    label: '🛡 Paranoico (lee antes de editar)',
+    subtitle: 'siempre read_code primero',
+    prompt: `Sos un agente de programación conservador.
+Reglas innegociables:
+- ANTES de cualquier edit_code, llamá a read_code para confirmar el estado actual del archivo, aunque creas que ya lo sabés.
+- Hacé cambios pequeños y atómicos: una sola intención por edit.
+- Después del último edit, llamá a read_code una vez más para verificar el resultado y reportarlo.`,
+  },
+  {
+    id: 'narrador',
+    label: '🎙 Narrador en castellano',
+    subtitle: 'cuenta qué hace antes de cada tool',
+    prompt: `Sos un agente de programación didáctico. Usás read_code y edit_code para resolver el pedido.
+Reglas:
+- Antes de CADA llamada a tool, escribí una oración breve en castellano rioplatense explicando qué vas a hacer y por qué.
+- Después de cada tool_result, comentá en una oración qué viste.
+- Al final dejá un resumen en 2-3 bullets de qué cambiaste.`,
+  },
+]
 
 const CODE_KEY = 'agente_code_snapshot'
 const LANG_KEY = 'agente_language'
@@ -199,7 +241,8 @@ export default function LoopAgentico() {
           : provider === 'lmstudio'
             ? runLmStudioAgent
             : runOpenAIAgent
-      const systemOverride = systemPrompt.trim() && systemPrompt !== AGENT_SYSTEM_PROMPT ? systemPrompt : null
+      const trimmed = systemPrompt.trim()
+      const systemOverride = trimmed && trimmed !== AGENT_SYSTEM_PROMPT.trim() ? systemPrompt : null
       if (systemOverride) {
         appendLog('info', `System prompt personalizado (${systemPrompt.length} chars)`)
       }
@@ -491,50 +534,17 @@ export default function LoopAgentico() {
             </span>
           </div>
           <div className="instr-body">
-            <div className={`system-editor${systemOpen ? ' system-editor-open' : ''}`}>
-              <button
-                type="button"
-                className="system-editor-toggle"
-                onClick={() => setSystemOpen((v) => !v)}
-                title="El system prompt es la instrucción base que recibe el modelo antes de tu prompt. Editalo para ver cómo cambia el comportamiento del agente."
-              >
-                <span className="system-editor-chev">{systemOpen ? '▾' : '▸'}</span>
-                <span className="system-editor-label">
-                  <code>"role": "system"</code> · {systemPrompt.length} chars
-                </span>
-                <span className={`system-editor-flag${systemPrompt !== AGENT_SYSTEM_PROMPT ? ' system-editor-flag-dirty' : ''}`}>
-                  {systemPrompt === AGENT_SYSTEM_PROMPT ? 'default' : 'editado'}
-                </span>
-              </button>
-              {systemOpen && (
-                <>
-                  <textarea
-                    className="system-editor-textarea"
-                    value={systemPrompt}
-                    onChange={(e) => setSystemPrompt(e.target.value)}
-                    disabled={loading}
-                    spellCheck={false}
-                    rows={10}
-                  />
-                  <div className="system-editor-actions">
-                    <button
-                      type="button"
-                      className="docs-link"
-                      onClick={() => {
-                        setSystemPrompt(AGENT_SYSTEM_PROMPT)
-                        appendLog('info', 'System prompt restaurado al default')
-                      }}
-                      disabled={loading || systemPrompt === AGENT_SYSTEM_PROMPT}
-                    >
-                      Restaurar default
-                    </button>
-                    <span className="system-editor-hint">
-                      Reemplaza el system base que viaja en cada request. Si lo dejás vacío o igual al default, se manda el original.
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
+            <SystemEditor
+              value={systemPrompt}
+              onChange={setSystemPrompt}
+              defaultPrompt={AGENT_SYSTEM_PROMPT}
+              open={systemOpen}
+              onToggleOpen={setSystemOpen}
+              disabled={loading}
+              presets={AGENT_PRESETS}
+              onLog={appendLog}
+              hint="Reemplaza el system base que viaja en cada iteración del loop. Vacío = se usa el default."
+            />
             <div className="suggested-steps">
               <div className="suggested-steps-title">Probá una de estas instrucciones:</div>
               <ol className="suggested-steps-list">

@@ -106,9 +106,10 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
           <h3>Los tres sub-modos del chat (segmented control)</h3>
           <ul>
             <li>
-              <b>Crudo</b> — se manda solo el último user message. Sin <code>system</code>,
-              sin historial. Demuestra que sin contexto el modelo no recuerda nada, ni
-              siquiera quién es.
+              <b>Crudo</b> — se manda el <code>system</code> + el último user message,
+              sin historial. Demuestra que sin acumular la conversación el modelo no
+              recuerda nada de los turnos anteriores, aunque sí mantiene la personalidad
+              que le da el <code>system</code>.
             </li>
             <li>
               <b>Conversación</b> — el array crece y se reenvía completo. Vos sos la memoria.

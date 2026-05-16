@@ -19,19 +19,33 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
+import SystemEditor from './SystemEditor.jsx'
+import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
 const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'chat_logs'
+const SYSTEM_KEY = 'chat_system_prompt'
+const SYSTEM_OPEN_KEY = 'chat_system_open'
 const LOGS_MAX = 500
 
-const initialMessages = [
-  { role: 'system', content: 'Eres un asistente útil que responde en español de forma clara y concisa.' },
+const buildInitialMessages = (systemPrompt) => [
+  { role: 'system', content: systemPrompt || CHAT_DEFAULT_SYSTEM },
 ]
 
 export default function App() {
-  const [messages, setMessages] = useState(initialMessages)
+  const [systemPrompt, setSystemPrompt] = useState(() => {
+    if (typeof window === 'undefined') return CHAT_DEFAULT_SYSTEM
+    return localStorage.getItem(SYSTEM_KEY) ?? CHAT_DEFAULT_SYSTEM
+  })
+  const [systemOpen, setSystemOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(SYSTEM_OPEN_KEY) === '1'
+  })
+  const [messages, setMessages] = useState(() => buildInitialMessages(
+    typeof window === 'undefined' ? CHAT_DEFAULT_SYSTEM : (localStorage.getItem(SYSTEM_KEY) ?? CHAT_DEFAULT_SYSTEM),
+  ))
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -118,6 +132,24 @@ export default function App() {
   }, [logs])
 
   useEffect(() => {
+    try { localStorage.setItem(SYSTEM_KEY, systemPrompt) } catch { /* noop */ }
+    setMessages((prev) => {
+      const effective = systemPrompt.trim() ? systemPrompt : CHAT_DEFAULT_SYSTEM
+      if (prev.length > 0 && prev[0].role === 'system') {
+        if (prev[0].content === effective) return prev
+        const next = prev.slice()
+        next[0] = { role: 'system', content: effective }
+        return next
+      }
+      return [{ role: 'system', content: effective }, ...prev]
+    })
+  }, [systemPrompt])
+
+  useEffect(() => {
+    try { localStorage.setItem(SYSTEM_OPEN_KEY, systemOpen ? '1' : '0') } catch { /* noop */ }
+  }, [systemOpen])
+
+  useEffect(() => {
     if (persistentMode && conversationId) {
       refreshServerHistory(conversationId)
     }
@@ -167,10 +199,12 @@ export default function App() {
 
         setMessages((prev) => [...prev, { role: 'user', content: text }])
 
+        const effectiveSystem = systemPrompt.trim() ? systemPrompt : CHAT_DEFAULT_SYSTEM
         const reply = await sendResponseMessage(text, id, {
           onLog: appendLog,
           onRawRequest: setRawRequest,
           onRawResponse: setRawResponse,
+          instructions: effectiveSystem,
         })
 
         setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
@@ -179,17 +213,17 @@ export default function App() {
         refreshServerHistory(id)
       } else {
         const payload = rawMode
-          ? [{ role: 'user', content: text }]
+          ? [...buildInitialMessages(systemPrompt), { role: 'user', content: text }]
           : [...messages, { role: 'user', content: text }]
 
         if (!rawMode) {
           setMessages([...messages, { role: 'user', content: text }])
         } else {
-          setMessages([...initialMessages, { role: 'user', content: text }])
+          setMessages([...buildInitialMessages(systemPrompt), { role: 'user', content: text }])
         }
 
         if (rawMode) {
-          appendLog('info', 'Modo CRUDO activo — enviando solo este mensaje, sin system ni historial')
+          appendLog('info', 'Modo CRUDO activo — enviando system + este mensaje, sin historial previo')
         } else {
           appendLog('info', `Modo conversación — enviando ${payload.length} mensaje(s) (system + historial + nuevo)`)
         }
@@ -220,7 +254,7 @@ export default function App() {
 
         if (rawMode) {
           setMessages([
-            ...initialMessages,
+            ...buildInitialMessages(systemPrompt),
             { role: 'user', content: text },
             { role: 'assistant', content: reply },
           ])
@@ -238,7 +272,7 @@ export default function App() {
   }
 
   const handleClear = () => {
-    setMessages(initialMessages)
+    setMessages(buildInitialMessages(systemPrompt))
     setError(null)
     setRawRequest(null)
     setRawResponse(null)
@@ -257,7 +291,7 @@ export default function App() {
     localStorage.removeItem(CONV_ID_KEY)
     setConversationId(null)
     setServerHistory([])
-    setMessages(initialMessages)
+    setMessages(buildInitialMessages(systemPrompt))
     appendLog('info', 'Conversation_id descartado — la próxima llamada creará uno nuevo')
   }
 
@@ -380,12 +414,12 @@ export default function App() {
                 if (rawMode) return
                 setPersistentMode(false)
                 setRawMode(true)
-                appendLog('info', 'Modo CRUDO — sin system, sin historial')
+                appendLog('info', 'Modo CRUDO — system + último mensaje, sin historial')
               }}
-              title="Cada mensaje se envía solo, sin system ni historial. Demuestra que la API no recuerda nada."
+              title="Cada mensaje se envía con el system pero sin historial previo. Demuestra que la API no recuerda mensajes anteriores."
             >
               Crudo
-              <span className="mode-seg-sub">sin contexto</span>
+              <span className="mode-seg-sub">sin historial</span>
             </button>
             <button
               type="button"
@@ -435,6 +469,24 @@ export default function App() {
               </button>
             )}
           </div>
+
+          <SystemEditor
+            value={systemPrompt}
+            onChange={setSystemPrompt}
+            defaultPrompt={CHAT_DEFAULT_SYSTEM}
+            open={systemOpen}
+            onToggleOpen={setSystemOpen}
+            disabled={loading}
+            presets={CHAT_PRESETS}
+            onLog={appendLog}
+            hint={
+              rawMode
+                ? 'En modo Crudo viaja como messages[0] (role:system) junto con tu último mensaje. No hay historial — cada turno arranca limpio.'
+                : persistentMode
+                  ? 'En modo Persistente viaja como instructions en /v1/responses. Probá presets para ver cambiar la personalidad al instante.'
+                  : 'En modo Conversación viaja como messages[0] (role:system) en cada request. Probá presets — el mismo "hola" cambia totalmente.'
+            }
+          />
 
           <div className="chat" ref={chatRef}>
             {visibleMessages.length === 0 && (
@@ -563,7 +615,7 @@ export default function App() {
               <div className="context-header">
                 <span className="context-title">Contexto acumulado</span>
                 <span className="context-header-right">
-                  <span className="context-meta context-meta-warn">desactivado (modo crudo)</span>
+                  <span className="context-meta context-meta-warn">sin historial (modo crudo)</span>
                   <a
                     href="/contexto"
                     target="_blank"
@@ -576,7 +628,7 @@ export default function App() {
                 </span>
               </div>
               <div className="context-foot">
-                En modo crudo cada mensaje se envía solo, sin <code>system</code> ni historial.
+                En modo crudo cada turno se manda con el <code>system</code> + tu último mensaje. No se acumula historial entre turnos.
               </div>
             </div>
           )}

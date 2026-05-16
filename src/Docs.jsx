@@ -290,8 +290,9 @@ export default function Docs() {
               siempre mandás todo. Claude no tiene API persistente.
             </li>
             <li>
-              <b>Modo "raw"</b> — manda solo tu último mensaje, sin system ni historial.
-              Sirve para ver cómo responde la IA sin contexto de ningún tipo.
+              <b>Modo "raw"</b> — manda el <code>system</code> + tu último mensaje, sin
+              historial previo. Sirve para ver cómo responde la IA cuando no acumula la
+              conversación, pero seguís controlando su "personalidad" desde el system.
             </li>
           </ul>
 

@@ -6,6 +6,8 @@ import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import SystemEditor from './SystemEditor.jsx'
+import { EDITOR_DEFAULT_SYSTEM, EDITOR_PRESETS } from './system-presets.js'
 
 const CODE_KEY = 'editor_code_snapshot'
 const LANG_KEY = 'editor_language'
@@ -14,6 +16,8 @@ const LOGS_KEY = 'editor_logs'
 const KEEP_CONTEXT_KEY = 'editor_keep_context'
 const HISTORY_KEY = 'editor_history'
 const COLS_KEY = 'editor_cols'
+const SYSTEM_KEY = 'editor_system_prompt'
+const SYSTEM_OPEN_KEY = 'editor_system_open'
 const LOGS_MAX = 500
 const HISTORY_MAX = 40
 
@@ -43,13 +47,6 @@ const SUGGESTED_STEPS = [
   '¿Cómo se llama la clase que agregaste?',
   'Creá un objeto de la clase que creaste, instanciala.',
 ]
-
-const SYSTEM_PROMPT = `Sos un asistente de programación. El usuario te pasa un fragmento de código y una instrucción.
-Reglas:
-- Si te piden modificar el código, devolvé SOLO el código resultante dentro de un bloque \`\`\`<lenguaje> ... \`\`\`. Sin explicaciones antes ni después.
-- Si te piden explicar, respondé en prosa breve, en español.
-- Si te piden tests, devolvé el archivo de tests dentro de un bloque \`\`\`.
-- Nunca inventes APIs ni librerías que no existan.`
 
 // Extrae el primer bloque ```...``` de un texto. Si no hay bloque, devuelve el texto entero.
 function extractCodeBlock(text) {
@@ -111,6 +108,14 @@ export default function Editor({ onBack }) {
       return DEFAULT_COLS
     }
   })
+  const [systemPrompt, setSystemPrompt] = useState(() => {
+    if (typeof window === 'undefined') return EDITOR_DEFAULT_SYSTEM
+    return localStorage.getItem(SYSTEM_KEY) ?? EDITOR_DEFAULT_SYSTEM
+  })
+  const [systemOpen, setSystemOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem(SYSTEM_OPEN_KEY) === '1'
+  })
 
   const logRef = useRef(null)
   const layoutRef = useRef(null)
@@ -145,6 +150,14 @@ export default function Editor({ onBack }) {
   useEffect(() => {
     try { localStorage.setItem(COLS_KEY, JSON.stringify(cols)) } catch { /* noop */ }
   }, [cols])
+
+  useEffect(() => {
+    try { localStorage.setItem(SYSTEM_KEY, systemPrompt) } catch { /* noop */ }
+  }, [systemPrompt])
+
+  useEffect(() => {
+    try { localStorage.setItem(SYSTEM_OPEN_KEY, systemOpen ? '1' : '0') } catch { /* noop */ }
+  }, [systemOpen])
 
   // Redimensionado de columnas: dividerIndex 0 = entre col 0 y 1, 1 = entre col 1 y 2.
   const startResize = (dividerIndex) => (e) => {
@@ -214,10 +227,14 @@ export default function Editor({ onBack }) {
       ? `Modo CON CONTEXTO — incluyendo ${history.length} mensaje(s) previos del historial`
       : 'Modo SIN CONTEXTO — cada instrucción es independiente')
 
+    const effectiveSystem = systemPrompt.trim() ? systemPrompt : EDITOR_DEFAULT_SYSTEM
+    if (effectiveSystem !== EDITOR_DEFAULT_SYSTEM) {
+      appendLog('info', `System prompt personalizado (${effectiveSystem.length} chars)`)
+    }
     const userMsg = { role: 'user', content: buildUserMessage() }
     const messages = keepContext
-      ? [{ role: 'system', content: SYSTEM_PROMPT }, ...history, userMsg]
-      : [{ role: 'system', content: SYSTEM_PROMPT }, userMsg]
+      ? [{ role: 'system', content: effectiveSystem }, ...history, userMsg]
+      : [{ role: 'system', content: effectiveSystem }, userMsg]
 
     try {
       const sendFn =
@@ -424,6 +441,17 @@ export default function Editor({ onBack }) {
             </span>
           </div>
           <div className="instr-body">
+            <SystemEditor
+              value={systemPrompt}
+              onChange={setSystemPrompt}
+              defaultPrompt={EDITOR_DEFAULT_SYSTEM}
+              open={systemOpen}
+              onToggleOpen={setSystemOpen}
+              disabled={loading}
+              presets={EDITOR_PRESETS}
+              onLog={appendLog}
+              hint="Viaja como messages[0] (role:system) en cada request. Probá presets para ver cómo cambia el estilo del código generado."
+            />
             <div className="suggested-steps">
               <div className="suggested-steps-title">
                 Probá esta secuencia (clic en cada paso para cargarlo):
