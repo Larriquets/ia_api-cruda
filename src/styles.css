@@ -3722,16 +3722,24 @@ body {
 
   .app-mode-switch {
     width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    flex-wrap: wrap;
+    overflow: visible;
+    align-items: stretch;
   }
 
   .app-mode-btn {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     white-space: nowrap;
     padding: 6px 10px;
+    justify-content: center;
+  }
+
+  .app-mode-dropdown {
+    flex: 1 1 auto;
+  }
+
+  .app-mode-dropdown-btn {
+    width: 100%;
   }
 
   /* El dropdown de Docs tiene un divider con margin-left:10px que en mobile
@@ -3751,5 +3759,11 @@ body {
     left: 0;
     min-width: 240px;
     max-width: calc(100vw - 24px);
+    z-index: 250;
+  }
+
+  .app-mode-dropdown-divided .app-mode-menu {
+    right: 0;
+    left: auto;
   }
 }
