@@ -1,12 +1,94 @@
+import { useEffect, useState } from 'react'
 import ModeSwitch from './ModeSwitch.jsx'
 import DocsNav from './DocsNav.jsx'
 
+const TOC_ITEMS = [
+  { id: 'api-es-todo',     emoji: '🌐', label: 'Toda IA es API' },
+  { id: 'recien-nacida',   emoji: '🧠', label: 'IA recién nacida' },
+  { id: 'de-que-se-trata', emoji: '🧪', label: 'Qué es esta app' },
+  { id: 'modo-chat',       emoji: '💬', label: '1) Chat' },
+  { id: 'modo-editor',     emoji: '💻', label: '2) Editor' },
+  { id: 'modo-loop',       emoji: '🤖', label: '3) Loop Agéntico' },
+  { id: 'modo-agentsmd',   emoji: '📋', label: '4) AGENTS.md' },
+  { id: 'modo-skills',     emoji: '🧪', label: '5) Skills' },
+  { id: 'controles',       emoji: '🎛', label: 'Controles del request' },
+  { id: 'vs-agentes',      emoji: '🛠️', label: 'vs Cursor / CC / Codex' },
+  { id: 'glosario',        emoji: '📖', label: 'Glosario' },
+]
+
 export default function Docs() {
+  const [activeSection, setActiveSection] = useState(TOC_ITEMS[0].id)
+
+  useEffect(() => {
+    const sectionIds = TOC_ITEMS.map((item) => item.id)
+
+    const openSection = (id) => {
+      const section = document.getElementById(id)
+      const details = section?.querySelector(':scope > details')
+      if (details) details.open = true
+      return section
+    }
+
+    const initialId = window.location.hash.replace('#', '') || TOC_ITEMS[0].id
+    if (sectionIds.includes(initialId)) {
+      setActiveSection(initialId)
+      openSection(initialId)
+    }
+
+    const handleHashChange = () => {
+      const id = window.location.hash.replace('#', '')
+      if (!sectionIds.includes(id)) return
+      setActiveSection(id)
+      openSection(id)
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+
+        if (visibleEntry?.target?.id) {
+          setActiveSection(visibleEntry.target.id)
+        }
+      },
+      {
+        rootMargin: '-18% 0px -65% 0px',
+        threshold: [0, 0.1, 0.25],
+      }
+    )
+
+    sectionIds.forEach((id) => {
+      const section = document.getElementById(id)
+      if (section) observer.observe(section)
+    })
+
+    window.addEventListener('hashchange', handleHashChange)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [])
+
+  const handleTocClick = (event, id) => {
+    event.preventDefault()
+    const section = document.getElementById(id)
+    const details = section?.querySelector(':scope > details')
+
+    if (details) details.open = true
+    setActiveSection(id)
+    window.history.pushState(null, '', `#${id}`)
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="criollo">
       <header className="header">
         <h1>
-          <img src="/logo.png" alt="" className="brand-logo" />
+          <a href="/" className="brand-home" aria-label="Ir al inicio">
+            <img src="/logo.png" alt="" className="brand-logo" />
+          </a>
           <span className="brand-braces">{'{'}</span>
           <span className="brand">La IA Cruda</span>
           <span className="brand-braces">{'}'}</span>
@@ -17,14 +99,38 @@ export default function Docs() {
         </div>
       </header>
 
-      <div className="criollo-content">
+      <div className="criollo-content docs-layout">
 
-        {/* ============== MENÚ DE DOCS ============== */}
-        <DocsNav current="docs" />
+        {/* ============== SIDEBAR (sticky) ============== */}
+        <aside className="docs-sidebar" aria-label="Navegación de documentación">
+          <DocsNav current="docs" />
+          <nav className="docs-toc" aria-label="Índice de la página">
+            <div className="docs-toc-title">En esta página</div>
+            {TOC_ITEMS.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={`docs-toc-link${activeSection === item.id ? ' is-active' : ''}`}
+                aria-current={activeSection === item.id ? 'location' : undefined}
+                onClick={(event) => handleTocClick(event, item.id)}
+              >
+                <span className="docs-toc-emoji">{item.emoji}</span>
+                <span className="docs-toc-label">{item.label}</span>
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="docs-main">
 
         {/* ============== TODA IA ES UNA API ============== */}
-        <section className="criollo-section">
-          <h2>🌐 Arranquemos por lo importante: toda IA pasa por una API</h2>
+        <section className="criollo-section" id="api-es-todo">
+          <details className="docs-collapsible docs-section-collapsible" open>
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🌐 Arranquemos por lo importante: toda IA pasa por una API</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             <b>Toda interacción humano↔IA pasa por una API.</b> ChatGPT, Claude.ai, Copilot,
             Cursor, el chat de tu banco — son UIs que por debajo le pegan HTTP al mismo
@@ -37,7 +143,7 @@ export default function Docs() {
               <b>Si entendés este POST, entendés cómo funciona cualquier producto de IA del
               mercado por dentro.</b> La inteligencia está en el modelo; el producto es <b>cómo
               armás el JSON</b> y <b>cómo presentás la respuesta</b>. Lo único que cambia entre
-              ChatGPT y Cursor y el bot de tu banco es <i>qué</i> meten en <code>messages[]</code>
+              ChatGPT y Cursor y el bot de tu banco es <i>qué</i> meten en <code>messages[]</code>{' '}
               y <i>qué tools</i> declaran.
             </p>
           </div>
@@ -47,7 +153,7 @@ export default function Docs() {
           </p>
           <ol>
             <li>
-              <b>💬 Chat</b> — lo mismo que ChatGPT, pero te muestra el array <code>messages[]</code>
+              <b>💬 Chat</b> — lo mismo que ChatGPT, pero te muestra el array <code>messages[]</code>{' '}
               que viaja en cada turno. Ahí ves el "recuerdo" de la conversación con la mano.
             </li>
             <li>
@@ -67,7 +173,7 @@ export default function Docs() {
             </li>
             <li>
               <b>📋 Agente + 🧪 skills</b> — el mismo agente con <code>AGENTS.md</code>, pero le
-              sumás dos tools: <code>load_skill</code> (carga una skill on-demand al contexto) y
+              sumás dos tools: <code>load_skill</code> (carga una skill on-demand al contexto) y{' '}
               <code>run_skill_test</code> (corre un test determinista para validar). Es el patrón
               de Claude Code skills / Cursor rules cargables: la IA decide cuándo necesita el
               detalle, no se lo metés todo de entrada.
@@ -77,11 +183,18 @@ export default function Docs() {
             Lo que sigue abajo (la IA es recién nacida, el contexto, las tools, AGENTS.md) son
             <b> consecuencias</b> de esta primera idea.
           </p>
+            </div>
+          </details>
         </section>
 
         {/* ============== LA IA ES RECIEN NACIDA ============== */}
-        <section className="criollo-section">
-          <h2>🧠 El concepto que une todo: la IA es "recién nacida" en cada request</h2>
+        <section className="criollo-section" id="recien-nacida">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🧠 El concepto que une todo: la IA es "recién nacida" en cada request</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             Si te llevás <b>una sola idea</b> de toda esta app, que sea esta. Es lo que más
             cuesta internalizar y lo que explica el 80% de las cosas que parecen raras.
@@ -91,33 +204,40 @@ export default function Docs() {
             <p>
               <b>Cada request a la IA es una IA recién nacida.</b> No tiene memoria de la
               request anterior. No sabe que hablaste con ella hace 5 segundos. No sabe que
-              sos vos. No sabe que existió un mensaje previo. Lo único que sabe es <b>lo
-              que está en el body del POST de este request</b>.
+              sos vos. Lo único que sabe es <b>lo que está en el body del POST de este
+              request</b>. Cuando responde, se olvida de todo y se va.
             </p>
           </div>
 
-          <h3>Qué quiere decir "recién nacida"</h3>
-          <p>Cada vez que hacés <code>POST /v1/messages</code>, del otro lado pasa esto:</p>
-          <ol>
-            <li>Se levanta una instancia del modelo (o se le asigna una a tu request).</li>
-            <li>Lee el JSON que mandaste — <code>system</code>, <code>messages</code>, <code>tools</code>.</li>
-            <li>Genera una respuesta.</li>
-            <li><b>Termina. Se olvida de todo.</b> La instancia se va.</li>
-          </ol>
           <p>
-            No hay "sesión". No hay un <code>userId</code> que el modelo recuerde. No hay un
-            cache mental con tu nombre. La próxima request es <b>otra instancia</b>, leyendo
-            otro JSON, sin nada en común con la anterior salvo lo que <b>vos</b> le pongas
-            en <code>messages</code>.
+            Cada <code>POST /v1/messages</code> levanta una instancia del modelo, lee tu JSON
+            (<code>system</code> + <code>messages</code> + <code>tools</code>), genera la
+            respuesta y <b>termina</b>. No hay sesión, no hay <code>userId</code> con estado,
+            no hay cache mental. La próxima request es <b>otra instancia</b> leyendo otro
+            JSON, sin nada en común salvo lo que <b>vos</b> le pongas en <code>messages</code>.
+          </p>
+          <p>
+            Esto es <b>por diseño</b>: cualquier servidor atiende cualquier request
+            (escalabilidad), la salida depende solo del input (determinismo), no hay nada que
+            filtrar después (privacidad), y tu código tiene <b>toda</b> la verdad (sin
+            estado oculto).
           </p>
 
-          <h3>Por qué hace falta hacerlo así</h3>
-          <ul>
-            <li><b>Escalabilidad:</b> cualquier servidor puede atender cualquier request. No hay sticky sessions.</li>
-            <li><b>Determinismo:</b> la respuesta depende <b>solo</b> del input. Sin estado oculto.</li>
-            <li><b>Privacidad:</b> si no guardan estado, no hay nada que filtrar después.</li>
-            <li><b>Simpleza para el cliente:</b> tu código tiene <b>toda</b> la verdad. No hay "dos fuentes de verdad" entre cliente y server.</li>
-          </ul>
+          <div className="prov-callout">
+            <p>
+              <b>Modelo mental para guardar:</b> la IA es una <b>función pura</b> — mismo
+              input, misma distribución de output. <b>Vos</b> mantenés el estado, lo
+              persistís, lo editás, lo mandás. La IA es <i>un cerebro alquilado por 200
+              milisegundos</i>: durante ese rato una GPU corre inferencia con tu prompt,
+              después pasa a atender a otro. Todo lo que la IA "sabe" de vos está en el JSON
+              que mandaste. Fin.
+            </p>
+          </div>
+          <p>
+            Por eso <a href="/contexto" target="_blank" rel="noreferrer"><b>/contexto</b></a> es
+            una página tan importante de esta app: te muestra <b>literalmente</b> todo lo
+            que la IA va a saber en la próxima request del chat. <b>No hay nada más.</b>
+          </p>
 
           <details className="docs-collapsible">
             <summary>
@@ -133,7 +253,7 @@ export default function Docs() {
               <p>
                 Pero ojo: eso es <b>azúcar sintáctica</b>. Por debajo, OpenAI hace lo mismo — toma
                 tu nuevo mensaje, lo concatena con el historial que tienen guardado, y arma un
-                prompt completo internamente. <b>La IA sigue siendo "recién nacida" en cada inferencia.</b>
+                prompt completo internamente. <b>La IA sigue siendo "recién nacida" en cada inferencia.</b>{' '}
                 La diferencia es solo <i>dónde vive</i> el array <code>messages</code>: en tu
                 cliente (clásico) o en el server de OpenAI (persistente).
               </p>
@@ -163,13 +283,13 @@ export default function Docs() {
               <p>
                 Si querés que la IA "olvide" algo que dijo, podés simplemente <b>sacar ese turno
                 del array</b> <code>messages</code> antes de mandar el próximo request. La IA no
-                se va a quejar — no tiene cómo darse cuenta. Para ella la conversación <b>es</b>
+                se va a quejar — no tiene cómo darse cuenta. Para ella la conversación <b>es</b>{' '}
                 lo que le mandás.
               </p>
 
               <h4>3) Por qué podés mentirle sobre lo que dijo</h4>
               <p>
-                Análogo a lo anterior: podrías editar un mensaje <code>role: "assistant"</code>
+                Análogo a lo anterior: podrías editar un mensaje <code>role: "assistant"</code>{' '}
                 en el array y poner cualquier cosa. La IA va a tomar eso como "lo que dijo en el
                 turno anterior" y seguir desde ahí. Es una técnica conocida como <b>assistant
                 prefilling</b>.
@@ -193,32 +313,18 @@ export default function Docs() {
               </p>
             </div>
           </details>
-
-          <div className="prov-callout">
-            <p>
-              <b>El modelo mental para guardar:</b> la IA es como una <b>función pura</b>.
-              Dado el mismo input, da la misma distribución de output. No tiene side effects
-              ni memoria. <b>Vos</b> sos el que mantiene el estado, lo persiste, lo edita, lo
-              manda. La IA es <i>un cerebro alquilado por 200 milisegundos</i>.
-            </p>
-          </div>
-          <p>
-            Esa frase es literal. Tu request dura ~200ms-2s, durante los cuales una GPU ejecuta
-            inferencia con tu prompt como entrada. Cuando termina, esa GPU pasa a atender la
-            request de otro usuario. <b>Todo lo que la IA "sabe" sobre vos está en el JSON que
-            le mandaste.</b> Fin.
-          </p>
-          <p>
-            Por eso <a href="/contexto" target="_blank" rel="noreferrer"><b>/contexto</b></a> es
-            una página tan importante de esta app: te muestra <b>literalmente</b> todo lo que
-            la IA va a saber en la próxima request del chat. <b>No hay nada más.</b> Lo que
-            está ahí, eso sabe. Lo que no está ahí, no existe para ella.
-          </p>
+            </div>
+          </details>
         </section>
 
         {/* ============== INTRO ============== */}
-        <section className="criollo-section">
-          <h2>De qué se trata esta app</h2>
+        <section className="criollo-section" id="de-que-se-trata">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🧪 De qué se trata esta app</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             Es un laboratorio para <b>ver qué pasa realmente</b> cuando hablás con una IA.
             No es un chat pulido — la idea es exponer todo: el JSON que se manda, el JSON
@@ -242,10 +348,12 @@ export default function Docs() {
               Todo lo lindo de la izquierda es solo presentación.
             </p>
           </div>
+            </div>
+          </details>
         </section>
 
         {/* ============== CHAT ============== */}
-        <section className="criollo-section">
+        <section className="criollo-section" id="modo-chat">
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
@@ -308,7 +416,7 @@ export default function Docs() {
         </section>
 
         {/* ============== EDITOR ============== */}
-        <section className="criollo-section">
+        <section className="criollo-section" id="modo-editor">
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
@@ -368,7 +476,7 @@ export default function Docs() {
         </section>
 
         {/* ============== LOOP AGÉNTICO ============== */}
-        <section className="criollo-section">
+        <section className="criollo-section" id="modo-loop">
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
@@ -473,7 +581,7 @@ export default function Docs() {
         </section>
 
         {/* ============== AGENTS.MD ============== */}
-        <section className="criollo-section">
+        <section className="criollo-section" id="modo-agentsmd">
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
@@ -486,7 +594,7 @@ export default function Docs() {
           <h3>Qué hace</h3>
           <p>
             Es el Loop Agéntico, pero con una columna extra: un editor para un archivo
-            <code> AGENTS.md</code>. Lo que escribís ahí se inyecta en el <code>system</code>
+            <code> AGENTS.md</code>. Lo que escribís ahí se inyecta en el <code>system</code>{' '}
             prompt del agente <b>en cada request</b> del loop. Y hay un botón
             <b> "Comparar con/sin"</b> que corre la misma instrucción dos veces — una con el
             AGENTS.md activado, otra ignorándolo — y muestra los dos resultados lado a lado.
@@ -558,7 +666,7 @@ export default function Docs() {
         </section>
 
         {/* ============== AGENTS.MD + SKILLS ============== */}
-        <section className="criollo-section">
+        <section className="criollo-section" id="modo-skills">
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
@@ -658,10 +766,15 @@ export default function Docs() {
         </section>
 
         {/* ============== CONTROLES DEL REQUEST (transversales) ============== */}
-        <section className="criollo-section">
-          <h2>🎛 Controles del request — perillas que cambian todo</h2>
+        <section className="criollo-section" id="controles">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🎛 Controles del request — perillas que cambian todo</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
-            Lo que viste hasta acá son <b>modos</b>: distintas formas de armar el array
+            Lo que viste hasta acá son <b>modos</b>: distintas formas de armar el array{' '}
             <code>messages</code>. Esta sección es sobre las <b>perillas</b> que viajan al
             costado del array y cambian cómo el modelo responde sin tocar una sola palabra
             de tu prompt. Son dos: <b>el system prompt</b> (quién es la IA) y <b>la
@@ -672,7 +785,7 @@ export default function Docs() {
             Persistente) y, en el caso del system, también al Editor y al Loop Agéntico.
           </p>
 
-          <details className="docs-collapsible docs-section-collapsible">
+          <details className="docs-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
               <span>A) 🧠 System prompt editable — la "personalidad" antes del primer hola</span>
@@ -682,7 +795,7 @@ export default function Docs() {
               <p>
                 El <code>system</code> es el mensaje con <code>role:"system"</code> que
                 viaja como <i>primer</i> ítem del array <code>messages</code>. Lo lee el
-                modelo antes que cualquier user message y define cómo va a responder a
+                modelo antes que cualquier user message y define cómo va a responder a{' '}
                 <b>todos</b> los turnos siguientes. No es opcional ni cosmético: cambia el
                 comportamiento de raíz.
               </p>
@@ -700,7 +813,7 @@ export default function Docs() {
                 <li>
                   <b>Chat (<code>/</code>)</b>: editor plegable arriba del input.
                   Persiste por tab y viaja en <code>messages[0]</code> en los tres modos
-                  (Crudo, Conversación, Persistente — este último lo manda como
+                  (Crudo, Conversación, Persistente — este último lo manda como{' '}
                   <code>instructions</code> en <code>/v1/responses</code>).
                 </li>
                 <li>
@@ -748,7 +861,7 @@ export default function Docs() {
               <h3>Detalles raros que vale conocer</h3>
               <ul>
                 <li>
-                  <b>Claude separa el system</b> del array <code>messages</code>: en
+                  <b>Claude separa el system</b> del array <code>messages</code>: en{' '}
                   <code>/v1/messages</code> viaja como una key aparte (<code>system: "..."</code>),
                   no como un ítem con <code>role:"system"</code>. La app lo normaliza
                   internamente — pero si mirás el JSON crudo del request en el panel
@@ -767,7 +880,7 @@ export default function Docs() {
             </div>
           </details>
 
-          <details className="docs-collapsible docs-section-collapsible">
+          <details className="docs-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
               <span>B) 🌡 Temperatura — la IA no es determinista (y vos podés moverle la perilla)</span>
@@ -776,7 +889,7 @@ export default function Docs() {
               <h3>Qué es la temperatura</h3>
               <p>
                 Cada vez que el modelo genera un token, en realidad calcula una
-                distribución de probabilidades sobre miles de candidatos posibles. La
+                distribución de probabilidades sobre miles de candidatos posibles. La{' '}
                 <b>temperatura</b> es cuánto le permitís alejarse del más probable:
               </p>
               <ul>
@@ -839,7 +952,7 @@ export default function Docs() {
                 </li>
                 <li>
                   <b>El parámetro viaja en el request.</b> Si abrís el panel "Request →
-                  API (crudo)" después de mandar, vas a ver <code>"temperature": 1.5</code>
+                  API (crudo)" después de mandar, vas a ver <code>"temperature": 1.5</code>{' '}
                   en el body. Con Ollama va anidado adentro de <code>options</code>.
                 </li>
               </ul>
@@ -854,11 +967,18 @@ export default function Docs() {
               </p>
             </div>
           </details>
+            </div>
+          </details>
         </section>
 
         {/* ============== ESTA APP vs AGENTES PRODUCTIVOS ============== */}
-        <section className="criollo-section">
-          <h2>🛠️ Esta app vs. Claude Code / Cursor / Codex</h2>
+        <section className="criollo-section" id="vs-agentes">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>🛠️ Esta app vs. Claude Code / Cursor / Codex</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <p>
             Pregunta que aparece sola después de jugar con el Loop Agéntico: <i>¿esto es lo
             mismo que Claude Code? ¿que Cursor? ¿que Codex?</i> La respuesta corta es <b>no, pero
@@ -883,7 +1003,7 @@ export default function Docs() {
               son ejemplos mínimos y reusables).
             </li>
             <li>
-              <b>Claude Code, Cursor, Codex / Copilot</b> — agentes productivos construidos
+              <b>Claude Code, Cursor, Codex / Copilot</b> — agentes productivos construidos{' '}
               <i>encima</i> de esa misma API. Le agregaron tools reales (filesystem, shell, git),
               gestión de contexto largo, permisos, UX de IDE / terminal. Sirven para <b>trabajar</b>.
             </li>
@@ -1008,11 +1128,18 @@ export default function Docs() {
               de la app: entender lo que ya usás, y poder construir lo tuyo.</b>
             </p>
           </div>
+            </div>
+          </details>
         </section>
 
         {/* ============== APENDICE ============== */}
-        <section className="criollo-section">
-          <h2>Glosario rápido</h2>
+        <section className="criollo-section" id="glosario">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>📖 Glosario rápido</span>
+            </summary>
+            <div className="docs-collapsible-body">
           <ul>
             <li><b>Token</b> — la unidad mínima de texto que procesa el modelo. Un token ≈ 4 caracteres en español. Se cobra por token.</li>
             <li><b>Stateless</b> — sin memoria entre requests. Cada llamada es independiente; el "recuerdo" lo armás vos mandando el historial.</li>
@@ -1021,8 +1148,11 @@ export default function Docs() {
             <li><b>Loop agéntico</b> — el ciclo de pedir tool → ejecutar → devolver resultado → repetir, hasta que la IA termina.</li>
             <li><b>stop_reason / finish_reason</b> — por qué el modelo paró. <code>"end_turn"</code>/<code>"stop"</code> = terminó normal; <code>"tool_use"</code>/<code>"tool_calls"</code> = pidió una herramienta; <code>"max_tokens"</code> = se cortó.</li>
           </ul>
+            </div>
+          </details>
         </section>
 
+        </div>
       </div>
     </div>
   )

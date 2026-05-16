@@ -1994,6 +1994,10 @@ body {
   min-width: 0;
 }
 
+.docs-main .criollo-section {
+  scroll-margin-top: 18px;
+}
+
 /* En el layout de sidebar, el menú de docs externas pasa a columna vertical */
 .docs-layout .docs-nav {
   flex-direction: column;
@@ -2052,6 +2056,18 @@ body {
   color: #e2e8f0;
 }
 
+.docs-toc-link.is-active,
+.docs-toc-link[aria-current="location"] {
+  background: rgba(59, 130, 246, 0.16);
+  border-left-color: #60a5fa;
+  color: #f8fafc;
+}
+
+.docs-toc-link.is-active .docs-toc-label,
+.docs-toc-link[aria-current="location"] .docs-toc-label {
+  font-weight: 700;
+}
+
 .docs-toc-emoji {
   font-size: 13px;
   flex-shrink: 0;
@@ -2098,6 +2114,11 @@ body {
     border-radius: 999px;
     padding: 4px 9px;
     font-size: 11.5px;
+  }
+
+  .docs-toc-link.is-active,
+  .docs-toc-link[aria-current="location"] {
+    border-color: #60a5fa;
   }
 
   .docs-toc-label {
