@@ -39,6 +39,13 @@ body {
 }
 
 /* === Marca "{ La IA Cruda } // todo es contexto" (reutilizable en headers y modal) === */
+.brand-home {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
 .brand-logo {
   height: 28px;
   width: auto;
@@ -890,6 +897,12 @@ body {
   user-select: none;
 }
 
+.docs-collapsible > summary > span:last-child {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+}
+
 .docs-collapsible > summary::-webkit-details-marker {
   display: none;             /* WebKit: oculta marker default */
 }
@@ -901,6 +914,7 @@ body {
 .docs-collapsible-chev {
   color: #64748b;
   display: inline-block;
+  flex: 0 0 auto;
   transition: transform 150ms ease;
   font-size: 12px;
   width: 10px;
@@ -1946,6 +1960,262 @@ body {
 
 .docs-nav-desc {
   color: #64748b;
+}
+
+/* === Layout de /docs: sidebar sticky + contenido ancho === */
+.criollo-content.docs-layout {
+  max-width: 1280px;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+
+.docs-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 4px 4px 24px;
+  scrollbar-width: thin;
+}
+
+.docs-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.docs-sidebar::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+.docs-main {
+  min-width: 0;
+}
+
+/* En el layout de sidebar, el menú de docs externas pasa a columna vertical */
+.docs-layout .docs-nav {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.docs-layout .docs-nav-title {
+  margin-right: 0;
+  margin-bottom: 4px;
+}
+
+.docs-layout .docs-nav-link {
+  padding: 8px 10px;
+  flex-wrap: wrap;
+}
+
+/* === TOC interno: vertical dentro del sidebar === */
+.docs-toc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.docs-toc-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  margin: 0 0 8px 4px;
+}
+
+.docs-toc-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 12.5px;
+  transition: all 120ms ease;
+  border-left: 2px solid transparent;
+}
+
+.docs-toc-link:hover {
+  background: rgba(59, 130, 246, 0.10);
+  border-left-color: #3b82f6;
+  color: #e2e8f0;
+}
+
+.docs-toc-emoji {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.docs-toc-label {
+  font-weight: 500;
+}
+
+/* Colapsar el sidebar en pantallas chicas */
+@media (max-width: 900px) {
+  .criollo-content.docs-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .docs-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .docs-layout .docs-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .docs-toc {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .docs-toc-title {
+    margin: 0 4px 0 0;
+  }
+
+  .docs-toc-link {
+    border-left: none;
+    background: #0b1220;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 11.5px;
+  }
+
+  .docs-toc-label {
+    white-space: nowrap;
+  }
+}
+
+/* Mobile angosto: el padding del contenido + chips con texto largo rompían el
+   maquetado de las tres pages de docs. Achicamos padding lateral y forzamos
+   que el texto largo dentro de summaries / chips / código no fuerce overflow
+   horizontal. Los chips del TOC quedan con ellipsis si no entran. */
+@media (max-width: 720px) {
+  .criollo-content {
+    padding: 16px 12px;
+  }
+
+  .criollo-content.docs-layout {
+    gap: 12px;
+  }
+
+  .criollo-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .criollo-section h2 {
+    font-size: 17px;
+  }
+
+  .docs-section-collapsible > summary {
+    font-size: 16px;
+    padding: 12px 12px;
+    gap: 8px;
+    line-height: 1.35;
+    align-items: flex-start;
+    word-break: break-word;
+  }
+
+  .docs-collapsible > summary {
+    font-size: 14px;
+    padding: 10px 12px;
+    line-height: 1.4;
+    align-items: flex-start;
+    min-height: 0;
+    word-break: break-word;
+  }
+
+  .docs-collapsible-body {
+    padding: 4px 12px 12px 12px;
+  }
+
+  /* "EN ESTA PÁGINA" en mobile: chips compactos que envuelven en varias filas
+     sin partir el label de cada chip (cada chip = una línea). Mantenemos flex
+     wrap; lo que hay que evitar es que el label largo rompa el chip en alto. */
+  .docs-sidebar {
+    min-width: 0;
+  }
+
+  .docs-toc {
+    padding: 10px;
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  .docs-toc-title {
+    width: 100%;
+    margin: 0 0 6px 0;
+  }
+
+  .docs-toc-link {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .docs-toc-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* "MÁS DOCS": en mobile colapsamos descripción para que cada link entre en
+     una línea. El nombre (/docs, /contexto) ya es identificable solo. */
+  .docs-layout .docs-nav {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .docs-layout .docs-nav-link {
+    padding: 6px 10px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .docs-layout .docs-nav-desc {
+    display: none;
+  }
+
+  /* Evitar overflow horizontal por <code> largos o palabras sin espacio
+     dentro de párrafos. */
+  .criollo-section p,
+  .criollo-section li {
+    overflow-wrap: anywhere;
+  }
+
+  .criollo-section code {
+    word-break: break-word;
+  }
+}
+
+/* Anclas: pequeño offset para que no quede pegado al borde superior */
+.criollo-section[id] {
+  scroll-margin-top: 16px;
+}
+
+/* Anidación de details: el segundo nivel pierde el borde fuerte para no chocar */
+.docs-section-collapsible .docs-collapsible {
+  background: #0a1424;
 }
 
 /* === Modo AGENTS.md === */
