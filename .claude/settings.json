@@ -18,7 +18,9 @@
       "Bash(findstr \":5173 :5174 :3000\")",
       "Read(//c/Users/larri/AppData/Local/Temp/**)",
       "PowerShell(Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page",
+      "Bash(npx vite *)"
     ]
   }
 }
