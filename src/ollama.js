@@ -11,20 +11,21 @@ const SYSTEM_PROMPT = 'Eres un asistente útil que responde en español de forma
 
 const buildUrl = (path) => `${getHost()}${path}`
 
-export async function sendOllamaMessage(messages, { onLog, onRawRequest, onRawResponse } = {}) {
+export async function sendOllamaMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
   const host = getHost()
   const model = getModel()
   const url = buildUrl('/api/chat')
 
   onLog?.('info', `Modelo local (Ollama): ${model}`)
   onLog?.('info', `Host Ollama: ${host} (sin API key — corre en tu máquina)`)
+  onLog?.('info', `Temperatura: ${temperature}`)
 
-  // Ollama acepta el mismo shape de messages que OpenAI
+  // Ollama acepta el mismo shape de messages que OpenAI; la temperatura va en options.
   const body = {
     model,
     messages,
     stream: false,
-    options: { temperature: 0.7 },
+    options: { temperature },
   }
 
   const requestPayload = {

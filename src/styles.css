@@ -719,6 +719,17 @@ body {
   cursor: not-allowed;
 }
 
+.composer .composer-multi-btn {
+  background: transparent;
+  color: #93c5fd;
+  border: 1px solid #334155;
+}
+
+.composer .composer-multi-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: #475569;
+}
+
 /* === Raw panel === */
 .raw-panel {
   border-right: 1px solid #334155;
@@ -3344,6 +3355,150 @@ body {
 
 .system-editor-preset-sub {
   font-size: 10px;
+  color: #64748b;
+}
+
+/* === Temperature control ===
+   Slider compacto que va al lado del SystemEditor en la columna del chat. */
+.temp-control {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0f1729;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.temp-control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.temp-control-title {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.temp-control-value {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+}
+
+.temp-control-slider {
+  width: 100%;
+  margin: 0;
+}
+
+.temp-control-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.temp-control-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.temp-control-hint {
+  font-size: 11px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/* === Multi-run panel ===
+   Resultado del botón "x3": N respuestas al mismo prompt para comparar. */
+.multirun-panel {
+  margin-top: 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: #0a1426;
+  overflow: hidden;
+}
+
+.multirun-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(59, 130, 246, 0.08);
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.multirun-header-meta {
+  color: #64748b;
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.multirun-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.multirun-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.multirun-item:last-child {
+  border-bottom: 0;
+}
+
+.multirun-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.multirun-item-num {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.multirun-item-content {
+  font-size: 13px;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.multirun-item-actions {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.multirun-item-loading {
+  color: #64748b;
+  font-style: italic;
+}
+
+.multirun-item-error {
+  color: #f87171;
+  font-size: 12px;
+}
+
+.multirun-foot {
+  padding: 6px 10px;
+  background: #0b1220;
+  border-top: 1px solid #1e293b;
+  font-size: 11px;
   color: #64748b;
 }
 

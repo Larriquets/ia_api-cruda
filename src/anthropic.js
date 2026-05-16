@@ -21,7 +21,7 @@ export function toAnthropicPayload(messages) {
   return { system, messages: claudeMessages }
 }
 
-export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawResponse } = {}) {
+export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
   const apiKey = getApiKey()
   const model = getModel()
 
@@ -32,6 +32,14 @@ export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawRe
     throw new Error('Falta VITE_ANTHROPIC_API_KEY en el archivo .env')
   }
   onLog?.('info', `API key Anthropic detectada (${maskKey(apiKey)})`)
+  // Claude clampa temperature a [0, 1]. La UI permite hasta 2 (OpenAI/LM Studio),
+  // así que truncamos acá para no recibir un 400 — pero registramos el clamp.
+  const claudeTemp = Math.min(1, Math.max(0, temperature))
+  if (claudeTemp !== temperature) {
+    onLog?.('info', `Temperatura ${temperature} clampada a ${claudeTemp} (Claude solo acepta 0–1)`)
+  } else {
+    onLog?.('info', `Temperatura: ${claudeTemp}`)
+  }
 
   const { system, messages: claudeMessages } = toAnthropicPayload(messages)
 
@@ -40,7 +48,7 @@ export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawRe
     system,
     messages: claudeMessages,
     max_tokens: 1024,
-    temperature: 0.7,
+    temperature: claudeTemp,
   }
 
   const requestPayload = {

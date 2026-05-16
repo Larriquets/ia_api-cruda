@@ -20,6 +20,7 @@ import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 import SystemEditor from './SystemEditor.jsx'
+import TemperatureControl from './TemperatureControl.jsx'
 import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
@@ -28,6 +29,8 @@ const PROVIDER_KEY = 'chat_provider'
 const LOGS_KEY = 'chat_logs'
 const SYSTEM_KEY = 'chat_system_prompt'
 const SYSTEM_OPEN_KEY = 'chat_system_open'
+const TEMP_KEY = 'chat_temperature'
+const MULTIRUN_N = 3
 const LOGS_MAX = 500
 
 const buildInitialMessages = (systemPrompt) => [
@@ -43,6 +46,13 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return localStorage.getItem(SYSTEM_OPEN_KEY) === '1'
   })
+  const [temperature, setTemperature] = useState(() => {
+    if (typeof window === 'undefined') return 0.7
+    const raw = localStorage.getItem(TEMP_KEY)
+    const parsed = raw != null ? parseFloat(raw) : NaN
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : 0.7
+  })
+  const [multiRun, setMultiRun] = useState(null) // { prompt, runs: [{status, reply, error, elapsed}] }
   const [messages, setMessages] = useState(() => buildInitialMessages(
     typeof window === 'undefined' ? CHAT_DEFAULT_SYSTEM : (localStorage.getItem(SYSTEM_KEY) ?? CHAT_DEFAULT_SYSTEM),
   ))
@@ -150,6 +160,10 @@ export default function App() {
   }, [systemOpen])
 
   useEffect(() => {
+    try { localStorage.setItem(TEMP_KEY, String(temperature)) } catch { /* noop */ }
+  }, [temperature])
+
+  useEffect(() => {
     if (persistentMode && conversationId) {
       refreshServerHistory(conversationId)
     }
@@ -205,6 +219,7 @@ export default function App() {
           onRawRequest: setRawRequest,
           onRawResponse: setRawResponse,
           instructions: effectiveSystem,
+          temperature,
         })
 
         setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
@@ -250,6 +265,7 @@ export default function App() {
           onLog: appendLog,
           onRawRequest: setRawRequest,
           onRawResponse: setRawResponse,
+          temperature,
         })
 
         if (rawMode) {
@@ -271,11 +287,93 @@ export default function App() {
     }
   }
 
+  const handleMultiSend = async () => {
+    const text = input.trim()
+    if (!text || loading) return
+    if (persistentMode && provider === 'openai') {
+      setError('El modo "×N" no funciona en Persistente: cada request modifica el thread del servidor. Cambiá a Crudo o Conversación.')
+      return
+    }
+    setInput('')
+    setLoading(true)
+    setError(null)
+    setRawRequest(null)
+    setRawResponse(null)
+
+    appendLog('user', `Multi-run ×${MULTIRUN_N}: "${text}"`)
+    appendLog('info', `Mandando ${MULTIRUN_N} requests idénticos con temperature=${temperature}. Las respuestas NO entran al chat.`)
+
+    // El payload depende del modo activo, igual que handleSend (Crudo o Conversación).
+    const payload = rawMode
+      ? [...buildInitialMessages(systemPrompt), { role: 'user', content: text }]
+      : [...messages, { role: 'user', content: text }]
+
+    const sendFn =
+      provider === 'anthropic'
+        ? sendClaudeMessage
+        : provider === 'lmstudio'
+          ? sendLmStudioMessage
+          : sendChatMessage
+
+    // Inicializamos las N entries como pending — la UI muestra el panel al toque.
+    setMultiRun({
+      prompt: text,
+      temperature,
+      runs: Array.from({ length: MULTIRUN_N }, () => ({ status: 'pending', reply: null, error: null, elapsed: null })),
+    })
+
+    // Secuencial (no paralelo) para no romper rate limits y para que el alumno vea
+    // las respuestas aparecer una por una.
+    for (let i = 0; i < MULTIRUN_N; i++) {
+      const startedAt = performance.now()
+      try {
+        const reply = await sendFn(payload, {
+          temperature,
+          // No pasamos onLog/onRawRequest acá: serían 3× ruido en el log y pisarían el panel raw.
+        })
+        const elapsed = Math.round(performance.now() - startedAt)
+        setMultiRun((prev) => {
+          if (!prev) return prev
+          const next = { ...prev, runs: prev.runs.slice() }
+          next.runs[i] = { status: 'ok', reply, error: null, elapsed }
+          return next
+        })
+        appendLog('success', `Run ${i + 1}/${MULTIRUN_N} OK (${reply.length} chars, ${elapsed} ms)`)
+      } catch (err) {
+        const elapsed = Math.round(performance.now() - startedAt)
+        setMultiRun((prev) => {
+          if (!prev) return prev
+          const next = { ...prev, runs: prev.runs.slice() }
+          next.runs[i] = { status: 'error', reply: null, error: err.message || 'Error', elapsed }
+          return next
+        })
+        appendLog('error', `Run ${i + 1}/${MULTIRUN_N} falló: ${err.message || 'Error'}`)
+      }
+    }
+    setLoading(false)
+  }
+
+  const handleApplyMultiRun = (reply, runUserText) => {
+    // Aplicar = meter el par user+assistant al chat como si fuera el envío oficial.
+    if (rawMode) {
+      setMessages([
+        ...buildInitialMessages(systemPrompt),
+        { role: 'user', content: runUserText },
+        { role: 'assistant', content: reply },
+      ])
+    } else {
+      setMessages([...messages, { role: 'user', content: runUserText }, { role: 'assistant', content: reply }])
+    }
+    setMultiRun(null)
+    appendLog('info', 'Respuesta elegida del multi-run aplicada al chat')
+  }
+
   const handleClear = () => {
     setMessages(buildInitialMessages(systemPrompt))
     setError(null)
     setRawRequest(null)
     setRawResponse(null)
+    setMultiRun(null)
     setServerHistory([])
     appendLog('info', 'Conversación local reiniciada (logs preservados)')
   }
@@ -488,6 +586,13 @@ export default function App() {
             }
           />
 
+          <TemperatureControl
+            value={temperature}
+            onChange={setTemperature}
+            disabled={loading}
+            clampedTo={provider === 'anthropic' ? 1 : null}
+          />
+
           <div className="chat" ref={chatRef}>
             {visibleMessages.length === 0 && (
               <div className="empty">Escribe un mensaje para comenzar.</div>
@@ -517,7 +622,77 @@ export default function App() {
               autoFocus
             />
             <button type="submit" disabled={loading || !input.trim()}>Enviar</button>
+            <button
+              type="button"
+              onClick={handleMultiSend}
+              disabled={loading || !input.trim() || (persistentMode && provider === 'openai')}
+              className="composer-multi-btn"
+              title={
+                persistentMode && provider === 'openai'
+                  ? 'No disponible en Persistente — cada request modifica el thread del servidor'
+                  : `Manda ${MULTIRUN_N} requests idénticos con la misma temperatura. Las respuestas NO entran al chat — sirve para ver cuánto varía el modelo.`
+              }
+            >
+              ×{MULTIRUN_N} 🎲
+            </button>
           </form>
+
+          {multiRun && (
+            <div className="multirun-panel">
+              <div className="multirun-header">
+                <span>
+                  🎲 {MULTIRUN_N} respuestas al mismo prompt
+                  <span className="multirun-header-meta"> · temp {multiRun.temperature.toFixed(2)} · "{multiRun.prompt.slice(0, 60)}{multiRun.prompt.length > 60 ? '…' : ''}"</span>
+                </span>
+                <button
+                  type="button"
+                  className="docs-link"
+                  onClick={() => setMultiRun(null)}
+                  title="Cerrar el panel sin aplicar nada al chat"
+                >
+                  cerrar ✕
+                </button>
+              </div>
+              <div className="multirun-list">
+                {multiRun.runs.map((run, i) => (
+                  <div key={i} className="multirun-item">
+                    <div className="multirun-item-header">
+                      <span className="multirun-item-num">#{i + 1}</span>
+                      <span>
+                        {run.status === 'pending' && 'esperando…'}
+                        {run.status === 'ok' && `${run.reply.length} chars · ${run.elapsed} ms`}
+                        {run.status === 'error' && `error · ${run.elapsed} ms`}
+                      </span>
+                    </div>
+                    {run.status === 'pending' && (
+                      <div className="multirun-item-loading">⏳ generando…</div>
+                    )}
+                    {run.status === 'ok' && (
+                      <>
+                        <div className="multirun-item-content">{run.reply}</div>
+                        <div className="multirun-item-actions">
+                          <button
+                            type="button"
+                            className="docs-link"
+                            onClick={() => handleApplyMultiRun(run.reply, multiRun.prompt)}
+                            title="Mete este par user+assistant en el chat como si fuera el envío oficial"
+                          >
+                            ✓ aplicar al chat
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {run.status === 'error' && (
+                      <div className="multirun-item-error">⚠ {run.error}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="multirun-foot">
+                💡 Mismo prompt, misma temperatura. Si las respuestas son distintas (suelen serlo con temp &gt; 0), es porque el muestreo es estocástico. Bajá a 0 y reintentá: deberían parecerse mucho más.
+              </div>
+            </div>
+          )}
 
           {!rawMode && !persistentMode && (
             <div className="context-section">

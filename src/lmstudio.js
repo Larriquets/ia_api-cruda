@@ -36,7 +36,7 @@ const isModelReloadedError = (data) => {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
-export async function sendLmStudioMessage(messages, { onLog, onRawRequest, onRawResponse } = {}) {
+export async function sendLmStudioMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
   const host = getHost()
   const model = getModel()
   const url = buildUrl('/v1/chat/completions')
@@ -49,12 +49,13 @@ export async function sendLmStudioMessage(messages, { onLog, onRawRequest, onRaw
 
   onLog?.('info', `Modelo local (LM Studio): ${model}`)
   onLog?.('info', `Host LM Studio: ${host} (sin API key real — corre en tu máquina)`)
+  onLog?.('info', `Temperatura: ${temperature}`)
 
   // LM Studio acepta exactamente el shape de OpenAI
   const body = {
     model,
     messages,
-    temperature: 0.7,
+    temperature,
     stream: false,
   }
 

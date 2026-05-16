@@ -8,7 +8,7 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 // ============== /chat/completions (modo clásico) ==============
-export async function sendChatMessage(messages, { onLog, onRawRequest, onRawResponse } = {}) {
+export async function sendChatMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
   const apiKey = getApiKey()
   const model = getModel()
 
@@ -19,8 +19,9 @@ export async function sendChatMessage(messages, { onLog, onRawRequest, onRawResp
     throw new Error('Falta VITE_OPENAI_API_KEY en el archivo .env')
   }
   onLog?.('info', `API key detectada (${maskKey(apiKey)})`)
+  onLog?.('info', `Temperatura: ${temperature}`)
 
-  const body = { model, messages, temperature: 0.7 }
+  const body = { model, messages, temperature }
 
   const requestPayload = {
     method: 'POST',
@@ -106,13 +107,14 @@ export async function createConversation({ onLog } = {}) {
 export async function sendResponseMessage(
   text,
   conversationId,
-  { onLog, onRawRequest, onRawResponse, instructions } = {},
+  { onLog, onRawRequest, onRawResponse, instructions, temperature = 0.7 } = {},
 ) {
   const apiKey = getApiKey()
   const model = getModel()
 
   onLog?.('info', `Modelo: ${model} (modo persistente)`)
   onLog?.('info', `Conversation ID: ${conversationId}`)
+  onLog?.('info', `Temperatura: ${temperature}`)
 
   if (!apiKey) throw new Error('Falta VITE_OPENAI_API_KEY')
 
@@ -120,6 +122,7 @@ export async function sendResponseMessage(
     model,
     conversation: conversationId,
     input: text,
+    temperature,
   }
   if (instructions) body.instructions = instructions
 

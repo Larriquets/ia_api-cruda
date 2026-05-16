@@ -67,7 +67,14 @@ Cada wrapper agéntico (`*-agent.js`) implementa un loop sobre tools definidas e
 - En modo Ruido (agente), [bloatToolResult](src/noise.js) infla cada `tool_result` con logs falsos para mostrar context-bloat real.
 
 ### Wrappers exponen hooks de debug
-Todos los wrappers (`sendChatMessage`, `sendClaudeMessage`, `sendOllamaMessage`, `sendLmStudioMessage`, y `runClaudeAgent` / `runOpenAIAgent` / `runLmStudioAgent`) aceptan `{ onLog, onRawRequest, onRawResponse }`. Los paneles de la UI dependen de esto. `onRawRequest` lleva el header Authorization **enmascarado** vía `maskKey()` (el `fetch` real usa la key entera).
+Todos los wrappers (`sendChatMessage`, `sendClaudeMessage`, `sendOllamaMessage`, `sendLmStudioMessage`, y `runClaudeAgent` / `runOpenAIAgent` / `runLmStudioAgent`) aceptan `{ onLog, onRawRequest, onRawResponse, temperature }`. Los paneles de la UI dependen de los tres primeros. `onRawRequest` lleva el header Authorization **enmascarado** vía `maskKey()` (el `fetch` real usa la key entera).
+
+`temperature` default 0.7. Anthropic clampa a [0, 1] dentro del wrapper y registra el clamp en el log. Ollama la mete en `options.temperature` (no a nivel root).
+
+### Temperature + multi-run (Chat)
+[TemperatureControl.jsx](src/TemperatureControl.jsx) es un slider 0–2 con label cualitativo (determinístico / equilibrado / creativo / caótico). Persiste en `chat_temperature`. Si el provider clampa (Claude), muestra un hint.
+
+El botón **"×3 🎲"** del composer dispara `handleMultiSend` en [App.jsx](src/App.jsx): hace N requests secuenciales con el mismo payload y temperature, los muestra en `multirun-panel` para comparar variabilidad. **No se mete al chat** salvo que el alumno apriete "✓ aplicar al chat" en una respuesta puntual — así no rompe el historial del modo Conversación. Deshabilitado en Persistente (cada request escribiría al thread del servidor).
 
 ### localStorage
 Claves activas (cada modo persiste su propio estado para no pisarse):
@@ -78,6 +85,7 @@ Claves activas (cada modo persiste su propio estado para no pisarse):
 - `openai_conversation_id` — ID de modo persistent.
 - `chat_provider` — `'openai' | 'anthropic' | 'ollama' | 'lmstudio'` (compartido entre todos los modos).
 - `chat_system_prompt`, `chat_system_open` — system editable del Chat y estado plegado del editor.
+- `chat_temperature` — valor del slider de temperatura (0–2). Default 0.7.
 
 **Editor (`/editor`)** — claves propias (`code`, `lang`, `keep_context`, `history`, `cols`, logs, `editor_system_prompt`, `editor_system_open`).
 **Loop Agéntico (`/loop-agentico`)** — `agente_context_thread` para retomar la conversación + claves propias (`agente_code_snapshot`, `agente_language`, `agente_logs`, `agente_cols`, `agente_system_override`, `agente_system_open`).
