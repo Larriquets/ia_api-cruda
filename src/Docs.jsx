@@ -877,7 +877,10 @@ export default function Docs() {
             <li>
               <b>Esta app</b> — una linterna apuntando a la API. No agrega inteligencia, solo
               expone el JSON crudo, el contexto que se acumula, el loop de tool-use, los tokens.
-              Sirve para <b>entender</b>.
+              Sirve para <b>entender</b> — y también como <b>punto de partida para codear tu propia
+              integración</b> contra la API (los wrappers en <code>src/openai.js</code>,{' '}
+              <code>src/anthropic.js</code>, <code>src/ollama.js</code>, <code>src/lmstudio.js</code>{' '}
+              son ejemplos mínimos y reusables).
             </li>
             <li>
               <b>Claude Code, Cursor, Codex / Copilot</b> — agentes productivos construidos
@@ -980,6 +983,13 @@ export default function Docs() {
               específico (lo genérico ya lo sabe el modelo). La comparación "con/sin" del modo 4
               es <i>literal</i> lo que ganás o perdés cuando lo escribís bien o mal.
             </li>
+            <li>
+              <b>🧑‍💻 Si vas a codear contra una API de IA, arrancá acá.</b> Los wrappers de esta app
+              son el "hello world" de cada proveedor: armar el body, mandar el <code>fetch</code>,
+              parsear la respuesta, manejar errores, exponer logs. Forkeás, le sacás la UI y te queda
+              el cliente HTTP mínimo para meter en tu propio bot, script, backend o integración.
+              No necesitás SDK: la API es JSON sobre HTTP y acá lo ves sin capas.
+            </li>
           </ul>
 
           <div className="prov-callout">
@@ -988,7 +998,14 @@ export default function Docs() {
               <i> esta app con muchas más tools y una UX prolija arriba</i>. Si entendés qué pasa
               en el panel derecho del Loop Agéntico, entendés qué está haciendo tu agente cuando
               "piensa". Si entendés por qué el array <code>messages[]</code> crece, entendés por
-              qué tu sesión larga cuesta más y responde peor. <b>Ese es el objetivo de la app.</b>
+              qué tu sesión larga cuesta más y responde peor.
+            </p>
+            <p>
+              <b>Y para quien quiere codear contra la API:</b> los cuatro wrappers de{' '}
+              <code>src/</code> son tu plantilla. Mismo <code>fetch</code>, mismo body, mismo
+              parseo — sin SDK, sin magia. Copiás, adaptás y ya tenés tu propia integración
+              hablando con OpenAI, Anthropic, Ollama o LM Studio. <b>Ese es el doble objetivo
+              de la app: entender lo que ya usás, y poder construir lo tuyo.</b>
             </p>
           </div>
         </section>
