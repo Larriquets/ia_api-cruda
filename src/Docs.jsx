@@ -770,7 +770,7 @@ export default function Docs() {
           <details className="docs-collapsible docs-section-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
-              <span>B) 🌡 Temperatura + "×3" — la IA no es determinista (y vos podés moverle la perilla)</span>
+              <span>B) 🌡 Temperatura — la IA no es determinista (y vos podés moverle la perilla)</span>
             </summary>
             <div className="docs-collapsible-body">
               <h3>Qué es la temperatura</h3>
@@ -793,37 +793,29 @@ export default function Docs() {
                 </p>
               </div>
 
-              <h3>El botón "×3 🎲" — ver la variabilidad con tus ojos</h3>
-              <p>
-                Al lado del botón Enviar hay un botón <b>×3</b>. Manda el mismo prompt
-                tres veces seguidas con la misma temperatura y te muestra las tres
-                respuestas en un panel comparativo. <b>Las respuestas no se meten al
-                chat</b> — sirven para experimentar sin romper el historial. Si una te
-                gusta, podés "✓ aplicar al chat".
-              </p>
-              <p>
-                <i>Nota:</i> deshabilitado en modo Persistente. Cada request escribiría al
-                thread del servidor de OpenAI, no podrías "elegir" después.
-              </p>
-
               <h3>🧪 Experimento para entender</h3>
+              <p>
+                Usá el modo <b>Crudo</b> para esto (cada envío arranca limpio, sin
+                acumular el chat) y limpiá entre prueba y prueba con el botón "Limpiar".
+              </p>
               <ol>
                 <li>Slider de temperatura a <b>0</b>.</li>
                 <li>
                   Escribí <code>Inventá un nombre creativo para una banda de rock</code> y
-                  apretá <b>×3</b>.
+                  mandalo. Anotá la respuesta.
                 </li>
                 <li>
-                  Probablemente las tres respuestas sean <b>casi idénticas</b>. Con
-                  temperatura 0 la IA siempre elige lo más probable.
+                  Limpiá el chat y mandá <b>el mismo prompt</b> dos o tres veces más. Con
+                  temperatura 0 deberían salir respuestas <b>casi idénticas</b>: la IA
+                  siempre elige lo más probable.
                 </li>
-                <li>Subí el slider a <b>1.5</b> y apretá ×3 de nuevo.</li>
+                <li>Subí el slider a <b>1.5</b> y repetí la prueba.</li>
                 <li>
-                  Ahora las tres deberían ser muy distintas. Algunas incluso medio
-                  delirantes. <b>Cambió la perilla, no el prompt.</b>
+                  Ahora cada envío debería dar una respuesta muy distinta. Algunas
+                  incluso medio delirantes. <b>Cambió la perilla, no el prompt.</b>
                 </li>
                 <li>
-                  Subí a <b>2.0</b> y ×3 una vez más. Vas a ver respuestas que rompen
+                  Subí a <b>2.0</b> y mandá de nuevo. Vas a ver respuestas que rompen
                   gramática o se van por ramas raras. Por eso 0.7 es default: el sweet
                   spot.
                 </li>
@@ -855,10 +847,10 @@ export default function Docs() {
               <h3>Combinarlas: system + temperatura</h3>
               <p>
                 Las dos perillas se multiplican. Un system <b>"Pirata bonaerense"</b> con
-                temp <b>0</b> te da siempre la misma respuesta pirata. Con temp <b>1.5</b>
-                te da tres respuestas piratas <i>distintas</i>, todas en personaje. El
-                system define <i>quién</i> responde; la temperatura, <i>cuánto se anima</i>
-                a variar dentro de ese personaje.
+                temp <b>0</b> te da siempre la misma respuesta pirata. Con temp <b>1.5</b>,
+                cada envío te da una respuesta pirata <i>distinta</i>, pero todas en
+                personaje. El system define <i>quién</i> responde; la temperatura,
+                <i>cuánto se anima</i> a variar dentro de ese personaje.
               </p>
             </div>
           </details>

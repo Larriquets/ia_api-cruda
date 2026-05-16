@@ -71,10 +71,8 @@ Todos los wrappers (`sendChatMessage`, `sendClaudeMessage`, `sendOllamaMessage`,
 
 `temperature` default 0.7. Anthropic clampa a [0, 1] dentro del wrapper y registra el clamp en el log. Ollama la mete en `options.temperature` (no a nivel root).
 
-### Temperature + multi-run (Chat)
+### Temperature (Chat)
 [TemperatureControl.jsx](src/TemperatureControl.jsx) es un slider 0–2 con label cualitativo (determinístico / equilibrado / creativo / caótico). Persiste en `chat_temperature`. Si el provider clampa (Claude), muestra un hint.
-
-El botón **"×3 🎲"** del composer dispara `handleMultiSend` en [App.jsx](src/App.jsx): hace N requests secuenciales con el mismo payload y temperature, los muestra en `multirun-panel` para comparar variabilidad. **No se mete al chat** salvo que el alumno apriete "✓ aplicar al chat" en una respuesta puntual — así no rompe el historial del modo Conversación. Deshabilitado en Persistente (cada request escribiría al thread del servidor).
 
 ### localStorage
 Claves activas (cada modo persiste su propio estado para no pisarse):
