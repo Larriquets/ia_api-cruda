@@ -14,6 +14,7 @@ import Editor from './Editor.jsx'
 import LoopAgentico from './LoopAgentico.jsx'
 import EditorAgentsMd from './EditorAgentsMd.jsx'
 import VentanaContexto from './VentanaContexto.jsx'
+import PromptInjection from './PromptInjection.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -90,6 +91,7 @@ export default function App() {
     if (window.location.pathname === '/agents-md') return 'agents-md'
     if (window.location.pathname === '/agents-md-skills') return 'agents-md-skills'
     if (window.location.pathname === '/ventana-contexto') return 'ventana-contexto'
+    if (window.location.pathname === '/prompt-injection') return 'prompt-injection'
     if (window.location.pathname === '/docs') return 'docs'
     return 'chat'
   })
@@ -335,6 +337,9 @@ export default function App() {
   }
   if (page === 'ventana-contexto') {
     return <><WelcomeModal /><VentanaContexto /></>
+  }
+  if (page === 'prompt-injection') {
+    return <><WelcomeModal /><PromptInjection /></>
   }
   if (page === 'docs') {
     return <><WelcomeModal /><Docs /></>
