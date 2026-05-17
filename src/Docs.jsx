@@ -11,6 +11,7 @@ const TOC_ITEMS = [
   { id: 'modo-loop',       emoji: '🤖', label: '3) Loop Agéntico' },
   { id: 'modo-agentsmd',   emoji: '📋', label: '4) AGENTS.md' },
   { id: 'modo-skills',     emoji: '🧪', label: '5) Skills' },
+  { id: 'modo-ventana',    emoji: '🪟', label: '6) Ventana de contexto' },
   { id: 'controles',       emoji: '🎛', label: 'Controles del request' },
   { id: 'vs-agentes',      emoji: '🛠️', label: 'vs Cursor / CC / Codex' },
   { id: 'glosario',        emoji: '📖', label: 'Glosario' },
@@ -761,6 +762,119 @@ export default function Docs() {
             <li><b><code>run_skill_test</code>:</b> después de editar, la IA muchas veces decide validarse a sí misma. Vas a ver llamadas a la tool con su <code>pass</code>/<code>fail</code>. Si falla, suele reintentar.</li>
             <li><b>Esto es lo que hace Claude Code:</b> el sistema de Skills de Claude Code es <i>literalmente</i> esto — un índice de skills disponibles en el system, y la tool para cargar el detalle cuando hace falta. Cursor rules cargables siguen el mismo patrón.</li>
           </ul>
+            </div>
+          </details>
+        </section>
+
+        {/* ============== VENTANA DE CONTEXTO ============== */}
+        <section className="criollo-section" id="modo-ventana">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>6) 🪟 Ventana de contexto — ver romperse la memoria en vivo</span>
+            </summary>
+            <div className="docs-collapsible-body">
+          <p>
+            <a href="/ventana-contexto" target="_blank" rel="noreferrer"><code>http://localhost:5173/ventana-contexto</code></a>
+          </p>
+          <h3>Qué hace</h3>
+          <p>
+            Un chat común, pero con un <b>límite de tokens artificial</b> (default: 300) que vos
+            controlás con un slider. Cuando la conversación se pasa del límite, la app <b>poda</b>{' '}
+            mensajes antes de enviar — y el panel "Memoria" te muestra <i>literalmente</i> qué se
+            borró y qué viaja.
+          </p>
+
+          <h3>El concepto que enseña: <i>cómo se rompe la memoria de un chat largo</i></h3>
+          <p>
+            Si la IA es recién nacida en cada request (sección 🧠) y vos le mandás todo el historial
+            (sección 💬), entonces hay un momento en el que <b>no entra más</b>: la ventana de
+            contexto del modelo es finita. Cursor lo maneja por vos, ChatGPT lo maneja por vos.
+            Acá lo manejás <b>vos</b> con tres estrategias clásicas, y ves la diferencia en vivo.
+          </p>
+
+          <h3>Las tres estrategias</h3>
+          <ul>
+            <li>
+              <b>FIFO</b> — cuando te pasás, va sacando los mensajes más viejos uno por uno hasta
+              entrar. Brutal: corta a mitad de un turno si hace falta. La IA "olvida" abrupto.
+            </li>
+            <li>
+              <b>Sliding window</b> — mantiene los últimos N turnos (slider configurable). Es lo
+              que hacen muchos chats productivos para tener gasto predecible. Olvida igual, pero
+              de forma más estructurada.
+            </li>
+            <li>
+              <b>Compaction</b> — el truco más copado: cuando te pasás, la app le pide al modelo
+              un <b>resumen</b> de los turnos viejos y los reemplaza por un único mensaje
+              "<code>[RESUMEN PREVIO]: ...</code>". Costo: un request extra de IA cada vez que se
+              compacta. Beneficio: la continuidad semántica se mantiene aunque la conversación
+              sea larga. Esto es <b>literalmente</b> lo que hace el comando <code>/compact</code>{' '}
+              de Claude Code.
+            </li>
+          </ul>
+
+          <div className="prov-callout">
+            <p>
+              <b>Lo más importante:</b> el system prompt (<code>messages[0]</code>) <b>nunca</b> se
+              poda. Es invariante de diseño. Si fuera al revés, perderías la "personalidad" del
+              bot en cuanto se llenara la ventana — y eso sería catastrófico.
+            </p>
+          </div>
+
+          <h3>🧪 Experimento sugerido</h3>
+          <ol>
+            <li>Dejá el límite en <b>300 tokens</b> y la estrategia en <b>FIFO</b>.</li>
+            <li>
+              Empezá la charla presentándote: "Hola, me llamo <i>[tu nombre]</i> y trabajo en{' '}
+              <i>[lo que sea]</i>".
+            </li>
+            <li>
+              Charlá 4-5 turnos sobre cualquier tema (pedile que te recomiende libros, que te
+              explique algo, etc.).
+            </li>
+            <li>
+              En algún momento del turno 5 o 6, el primer mensaje (donde te presentaste) va a
+              quedar <b>tachado en gris</b> en el panel Memoria. Esa es la poda.
+            </li>
+            <li>
+              Mandá ahora: "<i>¿te acordás cómo me llamo?</i>". La IA va a inventar un nombre o
+              decirte que no se acuerda — <b>porque ya no lo tiene en el contexto</b>.
+            </li>
+            <li>
+              Cambiá la estrategia a <b>Compaction</b>, limpiá, repetí los pasos 2-5. Cuando se
+              llene, vas a ver aparecer un mensaje <code>[RESUMEN PREVIO]</code> que <i>sí</i> menciona
+              tu nombre. La pregunta del paso 6 ahora se contesta bien.
+            </li>
+          </ol>
+
+          <h3>Qué mirar</h3>
+          <ul>
+            <li>
+              <b>Barra de tokens (arriba):</b> verde → amarillo → rojo. Cuando se pone roja, el
+              próximo envío va a podar.
+            </li>
+            <li>
+              <b>Panel "Memoria" (derecha):</b> ⭐ <b>la joya pedagógica</b>. Tu historial completo
+              con los mensajes tachados que ya no viajan al modelo. Es la imagen mental que vale
+              la pena llevarse.
+            </li>
+            <li>
+              <b>Panel Request crudo (medio):</b> abrí el JSON después de mandar — vas a ver que{' '}
+              <code>messages[]</code> tiene <i>menos</i> entradas que tu historial visible. Esa
+              diferencia es la ventana en acción.
+            </li>
+            <li>
+              <b>Log (abajo derecha):</b> cuando hay compaction, hay líneas <code>[compaction]</code>{' '}
+              con el request adicional. Ese es el costo extra que pagás.
+            </li>
+          </ul>
+
+          <p>
+            <b>Conexión con tu agente del día a día:</b> cuando tu Cursor "se vuelve lento" o
+            "olvida cosas viejas", esto es lo que está pasando por debajo. La estrategia y los
+            límites cambian, pero la mecánica es exactamente esta.
+          </p>
             </div>
           </details>
         </section>

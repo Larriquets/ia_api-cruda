@@ -4,13 +4,15 @@ import { useEffect, useRef, useState } from 'react'
  * Switch de modos del header. Reutilizable entre Chat / Editor / Loop Agéntico / Docs.
  * "Agente + reglas" y "Docs" son dropdowns. El primero tiene dos variantes: solo reglas o con Skills.
  *
- * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [docsOpen, setDocsOpen] = useState(false)
   const [agentsOpen, setAgentsOpen] = useState(false)
+  const [labOpen, setLabOpen] = useState(false)
   const dropdownRef = useRef(null)
   const agentsDropdownRef = useRef(null)
+  const labDropdownRef = useRef(null)
 
   // Cierra el dropdown al hacer click afuera.
   useEffect(() => {
@@ -45,10 +47,28 @@ export default function ModeSwitch({ active }) {
     }
   }, [agentsOpen])
 
+  useEffect(() => {
+    if (!labOpen) return
+    const onDocClick = (e) => {
+      if (labDropdownRef.current && !labDropdownRef.current.contains(e.target)) {
+        setLabOpen(false)
+      }
+    }
+    const onEsc = (e) => { if (e.key === 'Escape') setLabOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [labOpen])
+
   const cls = (mode) => `app-mode-btn${active === mode ? ' active' : ''}`
   const aria = (mode) => (active === mode ? { 'aria-current': 'page' } : {})
   const agentsActive = active === 'agents-md' || active === 'agents-md-skills'
   const agentsClsBase = `app-mode-btn${agentsActive ? ' active' : ''}`
+  const labActive = active === 'ventana-contexto'
+  const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
     <div className="app-mode-switch">
@@ -107,6 +127,33 @@ export default function ModeSwitch({ active }) {
             >
               <b>📋 Agente + 🧪 skills</b>
               <span className="app-mode-menu-sub">suma load_skill / run_skill_test</span>
+            </a>
+          </div>
+        )}
+      </div>
+
+      <div className="app-mode-dropdown" ref={labDropdownRef}>
+        <button
+          type="button"
+          className={`${labClsBase} app-mode-dropdown-btn`}
+          {...(labActive ? { 'aria-current': 'page' } : {})}
+          onClick={() => setLabOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={labOpen}
+          title="Experimentos pedagógicos sueltos: cosas que aíslan un concepto puntual de la API."
+        >
+          🧪 Experimentos <span className="app-mode-dropdown-chev">{labOpen ? '▴' : '▾'}</span>
+        </button>
+        {labOpen && (
+          <div className="app-mode-menu" role="menu">
+            <a
+              href="/ventana-contexto"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('ventana-contexto')}
+            >
+              <b>🪟 Ventana de contexto</b>
+              <span className="app-mode-menu-sub">FIFO / window / compaction en vivo</span>
             </a>
           </div>
         )}
