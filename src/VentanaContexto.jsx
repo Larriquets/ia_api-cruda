@@ -3,6 +3,7 @@ import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
@@ -332,6 +333,8 @@ export default function VentanaContexto() {
         {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
+
+        <ReadDocLink section="modo-ventana" />
       </ConfigBar>
 
       <div className="layout">

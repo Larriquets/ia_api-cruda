@@ -5,6 +5,7 @@ import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 
@@ -580,6 +581,8 @@ export default function EditorAgentsMd({ withSkills = true }) {
         <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
           Reset todo
         </button>
+
+        <ReadDocLink section={withSkills ? 'modo-skills' : 'modo-agentsmd'} />
       </ConfigBar>
 
       <div

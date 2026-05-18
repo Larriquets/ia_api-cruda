@@ -15,8 +15,10 @@ import LoopAgentico from './LoopAgentico.jsx'
 import EditorAgentsMd from './EditorAgentsMd.jsx'
 import VentanaContexto from './VentanaContexto.jsx'
 import PromptInjection from './PromptInjection.jsx'
+import Razonamiento from './Razonamiento.jsx'
 import Docs from './Docs.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
+import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
@@ -92,6 +94,7 @@ export default function App() {
     if (window.location.pathname === '/agents-md-skills') return 'agents-md-skills'
     if (window.location.pathname === '/ventana-contexto') return 'ventana-contexto'
     if (window.location.pathname === '/prompt-injection') return 'prompt-injection'
+    if (window.location.pathname === '/razonamiento') return 'razonamiento'
     if (window.location.pathname === '/docs') return 'docs'
     return 'chat'
   })
@@ -341,6 +344,9 @@ export default function App() {
   if (page === 'prompt-injection') {
     return <><WelcomeModal /><PromptInjection /></>
   }
+  if (page === 'razonamiento') {
+    return <><WelcomeModal /><Razonamiento /></>
+  }
   if (page === 'docs') {
     return <><WelcomeModal /><Docs /></>
   }
@@ -395,6 +401,8 @@ export default function App() {
         {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
+
+        <ReadDocLink section="modo-chat" />
       </ConfigBar>
 
       <div className="layout">

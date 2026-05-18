@@ -5,6 +5,7 @@ import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import SystemEditor from './SystemEditor.jsx'
@@ -472,6 +473,8 @@ export default function LoopAgentico() {
         <button onClick={handleResetCode} className="clear-btn" type="button">
           Reset código
         </button>
+
+        <ReadDocLink section="modo-loop" />
       </ConfigBar>
 
       <div

@@ -99,6 +99,81 @@ body {
   gap: 12px;
 }
 
+/* === CTA "Probar X ahora" — al final de cada doc de modo dentro de /docs.
+   Cierra el loop: ofrece pasar a la página del modo que se acaba de leer. */
+.try-mode-cta {
+  margin-top: 28px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(34, 197, 94, 0.06));
+  border: 1px solid #1e3a8a;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.try-mode-cta-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.try-mode-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  color: #dbeafe;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.try-mode-cta-btn:hover {
+  background: rgba(59, 130, 246, 0.32);
+  border-color: #60a5fa;
+  color: #eff6ff;
+  transform: translateY(-1px);
+}
+
+.try-mode-cta-emoji {
+  font-size: 16px;
+}
+
+.try-mode-cta-arrow {
+  color: #93c5fd;
+  font-size: 13px;
+}
+
+/* === "Leer doc" — link al final del ConfigBar, anclado a la derecha.
+   Linkea a la sección del modo actual dentro de /docs. */
+.read-doc-link {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #93c5fd;
+  text-decoration: none;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid #1e3a8a;
+  border-radius: 4px;
+  padding: 3px 10px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.read-doc-link:hover {
+  background: rgba(59, 130, 246, 0.22);
+  color: #dbeafe;
+  border-color: #3b82f6;
+}
+
 /* === Modal de bienvenida === */
 .welcome-overlay {
   position: fixed;
@@ -4145,4 +4220,340 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(520px, 1fr) minmax(420px, 1fr) minmax(420px, 1fr);
   }
+}
+
+/* ============== Razonamiento (/razonamiento) ============== */
+
+.razon-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.razon-presets-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-right: 4px;
+}
+
+.razon-preset-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #475569;
+  background: rgba(30, 41, 59, 0.6);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.razon-preset-btn:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.85);
+  border-color: #64748b;
+}
+
+.razon-preset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.razon-instructions {
+  padding: 0 10px;
+  border-bottom: 1px solid #334155;
+  font-size: 12px;
+}
+
+.razon-instructions > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: #cbd5e1;
+  user-select: none;
+}
+
+.razon-instructions textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.razon-foot {
+  margin: 6px 0 10px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.razon-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.razon-composer textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 13px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.razon-composer textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.razon-composer button {
+  align-self: flex-end;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.razon-composer button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.razon-composer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #475569;
+}
+
+.razon-result {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.razon-thinking {
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.06);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+/* Cuando es Claude, usamos naranja para que matchee con la paleta del provider-badge-anthropic */
+.razon-thinking-anthropic {
+  border-color: rgba(251, 146, 60, 0.4);
+  background: rgba(251, 146, 60, 0.05);
+}
+
+.razon-thinking-anthropic .razon-thinking-header { color: #fb923c; }
+.razon-thinking-anthropic .razon-thinking-tag {
+  background: rgba(251, 146, 60, 0.22);
+  color: #fed7aa;
+}
+.razon-thinking-anthropic .razon-thinking-text { color: #fed7aa; }
+.razon-thinking-anthropic .razon-thinking-block + .razon-thinking-block {
+  border-top-color: rgba(251, 146, 60, 0.25);
+}
+
+.razon-thinking-note {
+  font-size: 11px;
+  color: #fdba74;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  background: rgba(251, 146, 60, 0.08);
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.razon-thinking-note code {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.razon-thinking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #c084fc;
+  margin-bottom: 8px;
+}
+
+.razon-thinking-block + .razon-thinking-block {
+  border-top: 1px dashed rgba(168, 85, 247, 0.25);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.razon-thinking-block-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: #c4b5fd;
+}
+
+.razon-thinking-tag {
+  background: rgba(168, 85, 247, 0.22);
+  color: #e9d5ff;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.razon-thinking-id code {
+  font-size: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5e1;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.razon-thinking-enc {
+  font-size: 10px;
+  color: #fcd34d;
+  cursor: help;
+}
+
+.razon-thinking-loading {
+  border-style: dashed;
+  background: rgba(168, 85, 247, 0.03);
+}
+
+.razon-thinking-dots {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  padding: 4px 2px;
+}
+
+.razon-thinking-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a855f7;
+  animation: razon-pulse 1.2s infinite ease-in-out;
+}
+
+.razon-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.razon-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes razon-pulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.razon-thinking-text {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: #e9d5ff;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+}
+
+.razon-thinking-empty {
+  font-size: 12px;
+  color: #c4b5fd;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.razon-thinking-empty code {
+  font-style: normal;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.razon-answer {
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(16, 185, 129, 0.06);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.razon-answer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #34d399;
+  margin-bottom: 8px;
+}
+
+.razon-answer-text {
+  margin: 0;
+  font-size: 13px;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+.razon-usage {
+  margin: 0 10px 10px;
+  padding: 10px 12px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.5);
+  font-size: 12px;
+}
+
+.razon-usage-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  color: #cbd5e1;
+}
+
+.razon-usage-row b {
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.razon-usage-thinking {
+  color: #c084fc;
+  padding-left: 14px;
+}
+
+.razon-usage-thinking b {
+  color: #e9d5ff;
+}
+
+.razon-usage-foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #334155;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.4;
 }

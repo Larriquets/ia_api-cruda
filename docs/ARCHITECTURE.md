@@ -48,6 +48,7 @@ window.location.pathname → switch → componente de página
 | `/agents-md-skills` | [EditorAgentsMd.jsx](../src/EditorAgentsMd.jsx) (`withSkills=true`) | Agente + AGENTS.md + tools `load_skill` / `run_skill_test` |
 | `/ventana-contexto` | [VentanaContexto.jsx](../src/VentanaContexto.jsx) | FIFO / sliding window / compaction en vivo |
 | `/prompt-injection` | [PromptInjection.jsx](../src/PromptInjection.jsx) | System vs datos no confiables |
+| `/razonamiento` | [Razonamiento.jsx](../src/Razonamiento.jsx) | Modelos razonadores de OpenAI con `reasoning_effort` |
 | `/contexto` | [Contexto.jsx](../src/Contexto.jsx) | Vista en vivo del array `messages[]` del Chat |
 | `/proveedores` | [Proveedores.jsx](../src/Proveedores.jsx) | Comparación OpenAI vs Claude |
 | `/criollo` | (página presentacional) | Glosario de la API en lunfardo |
@@ -106,9 +107,11 @@ sendXxxMessage(messages, {
 | Var | Default | Para qué |
 |---|---|---|
 | `VITE_OPENAI_API_KEY` | (requerido) | Bearer en `Authorization` |
-| `VITE_OPENAI_MODEL` | `gpt-4o-mini` | Modelo OpenAI |
+| `VITE_OPENAI_MODEL` | `gpt-4o-mini` | Modelo OpenAI para Chat / Editor / Agentes (NO razonador) |
+| `VITE_OPENAI_REASONING_MODEL` | `gpt-5-mini` | Modelo default de `/razonamiento` (también editable desde la UI). Debe ser un razonador: `gpt-5*`, `o1*`, `o3*`, `o4*` |
 | `VITE_ANTHROPIC_API_KEY` | (requerido) | `x-api-key` |
-| `VITE_ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | Modelo Claude |
+| `VITE_ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | Modelo Claude para Chat (Haiku no razona) |
+| `VITE_ANTHROPIC_REASONING_MODEL` | `claude-sonnet-4-5` | Modelo default de `/razonamiento` lado Claude. Debe soportar extended thinking (Sonnet 3.7+, Opus 4+) |
 | `VITE_OLLAMA_HOST` | `http://localhost:11434` | Host Ollama |
 | `VITE_OLLAMA_MODEL` | `gemma3:4b` | Modelo Ollama |
 | `VITE_LMSTUDIO_HOST` | `http://localhost:1234` | Host LM Studio (también editable desde UI) |
@@ -265,6 +268,40 @@ Lógica pura en [context-window.js](../src/context-window.js). Tres estrategias 
 
 ---
 
+## 7.5. Razonamiento (`/razonamiento`)
+
+Experimento aislado para que el alumno vea cómo los **modelos razonadores** "piensan" antes de responder y, sobre todo, cómo cada proveedor decide qué exponer y qué esconder.
+
+Soporta **dos proveedores en la misma página** con selector arriba — la idea es que el alumno pruebe la misma pregunta con ambos y vea el contraste:
+
+| Proveedor | Wrapper | Endpoint | Qué expone | Control |
+|---|---|---|---|---|
+| OpenAI | [openai-reasoning.js](../src/openai-reasoning.js) | `POST /v1/responses` | Solo **resumen** opcional del razonamiento (`output[].type:'reasoning'`, `summary[]`). El crudo nunca sale. A veces el resumen llega vacío. | `reasoning.effort` (minimal/low/medium/high) + `reasoning.summary` (auto/concise/detailed) |
+| Anthropic | [anthropic-reasoning.js](../src/anthropic-reasoning.js) | `POST /v1/messages` | El **thinking entero**, en texto plano, dentro de `content[].type:'thinking'`. Cada bloque firmado (`signature`). | `thinking.budget_tokens` (mapeado desde el mismo `effort`: 1k/2k/5k/12k) |
+
+### Shape canónico de la UI
+
+Los dos wrappers devuelven el **mismo shape** para que la UI no ramifique:
+
+```js
+{
+  text: string,              // respuesta final visible
+  reasoningBlocks: [{
+    id, summary, encrypted,  // OpenAI
+    signature, redacted,     // Claude
+  }],
+  usage: { input_tokens, output_tokens, total_tokens, output_tokens_details? },
+  raw: data,
+}
+```
+
+### Reglas críticas
+
+- **OpenAI**: no acepta `temperature` (los razonadores la rechazan). No usa `VITE_OPENAI_MODEL` (que apunta a `gpt-4o-mini`, no razonador): usa `VITE_OPENAI_REASONING_MODEL` o el dropdown.
+- **Anthropic**: cuando `thinking` está habilitado, `temperature` **debe ser 1** (la API lo exige) y `max_tokens > budget_tokens`. Haiku NO razona — usa Sonnet 3.7+ u Opus 4+ vía `VITE_ANTHROPIC_REASONING_MODEL`.
+- **Contraste pedagógico**: el panel de pensamiento usa color violeta para OpenAI y naranja para Claude (matchea con la paleta del provider-badge del resto de la app). El alumno ve de un vistazo qué proveedor está usando.
+- **Tabla de tokens diferenciada**: en OpenAI se muestra `reasoning_tokens` separado (`usage.output_tokens_details.reasoning_tokens`); en Claude no se puede — el thinking entra dentro de `output_tokens` sin desglose, y la UI lo aclara explícitamente.
+
 ## 8. Diagrama de flujo (Chat — modo Conversación)
 
 ```
@@ -350,6 +387,10 @@ Cada modo persiste su propio estado para no pisarse con los otros.
 ### Ventana de contexto (`/ventana-contexto`)
 
 `ctxwin_messages`, `ctxwin_strategy`, `ctxwin_limit_tokens`, `ctxwin_window_turns`, `ctxwin_provider`, `ctxwin_system_prompt`, `ctxwin_system_open`, `ctxwin_temperature`, `ctxwin_logs`.
+
+### Razonamiento (`/razonamiento`)
+
+`razon_provider`, `razon_model_openai`, `razon_model_anthropic`, `razon_effort`, `razon_summary`, `razon_instructions`, `razon_logs`.
 
 ### LM Studio
 

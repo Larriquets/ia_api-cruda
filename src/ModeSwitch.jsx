@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
  * Switch de modos del header. Reutilizable entre Chat / Editor / Loop Agéntico / Docs.
  * "Agente + reglas" y "Docs" son dropdowns. El primero tiene dos variantes: solo reglas o con Skills.
  *
- * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [docsOpen, setDocsOpen] = useState(false)
@@ -67,7 +67,7 @@ export default function ModeSwitch({ active }) {
   const aria = (mode) => (active === mode ? { 'aria-current': 'page' } : {})
   const agentsActive = active === 'agents-md' || active === 'agents-md-skills'
   const agentsClsBase = `app-mode-btn${agentsActive ? ' active' : ''}`
-  const labActive = active === 'ventana-contexto' || active === 'prompt-injection'
+  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento'
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
@@ -163,6 +163,15 @@ export default function ModeSwitch({ active }) {
             >
               <b>🛡 Prompt injection</b>
               <span className="app-mode-menu-sub">system vs datos no confiables</span>
+            </a>
+            <a
+              href="/razonamiento"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('razonamiento')}
+            >
+              <b>🧠 Razonamiento</b>
+              <span className="app-mode-menu-sub">modelos que "piensan" antes de responder</span>
             </a>
           </div>
         )}

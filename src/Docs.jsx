@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import ModeSwitch from './ModeSwitch.jsx'
 import DocsNav from './DocsNav.jsx'
+import TryModeCTA from './TryModeCTA.jsx'
 
 const TOC_ITEMS = [
   { id: 'api-es-todo',     emoji: '🌐', label: 'Toda IA es API' },
@@ -13,6 +14,7 @@ const TOC_ITEMS = [
   { id: 'modo-skills',     emoji: '🧪', label: '5) Skills' },
   { id: 'modo-ventana',    emoji: '🪟', label: '6) Ventana de contexto' },
   { id: 'modo-injection',  emoji: '🛡', label: '7) Prompt injection' },
+  { id: 'modo-razonamiento', emoji: '🧠', label: '8) Razonamiento' },
   { id: 'controles',       emoji: '🎛', label: 'Controles del request' },
   { id: 'vs-agentes',      emoji: '🛠️', label: 'vs Cursor / CC / Codex' },
   { id: 'glosario',        emoji: '📖', label: 'Glosario' },
@@ -31,17 +33,34 @@ export default function Docs() {
       return section
     }
 
-    const initialId = window.location.hash.replace('#', '') || TOC_ITEMS[0].id
-    if (sectionIds.includes(initialId)) {
-      setActiveSection(initialId)
-      openSection(initialId)
+    // Hash inicial — viene de un link externo tipo /docs#modo-editor.
+    // Hay que abrir el <details> de esa sección ANTES de scrollear, sino
+    // el navegador no puede llegar (sección colapsada = sin altura).
+    const initialHashId = window.location.hash.replace('#', '')
+    const initialId = sectionIds.includes(initialHashId) ? initialHashId : TOC_ITEMS[0].id
+    setActiveSection(initialId)
+    const initialSection = openSection(initialId)
+
+    // Si vinimos con hash, forzamos scroll después de que el browser
+    // reflow-eó la apertura del <details>. Dos rAF + el container scrollable
+    // de docs (.criollo-content), porque scrollIntoView del default puede
+    // chocar con el header sticky.
+    if (initialHashId && initialSection) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          initialSection.scrollIntoView({ behavior: 'auto', block: 'start' })
+        })
+      })
     }
 
     const handleHashChange = () => {
       const id = window.location.hash.replace('#', '')
       if (!sectionIds.includes(id)) return
       setActiveSection(id)
-      openSection(id)
+      const section = openSection(id)
+      requestAnimationFrame(() => {
+        section?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
     }
 
     const observer = new IntersectionObserver(
@@ -60,14 +79,19 @@ export default function Docs() {
       }
     )
 
-    sectionIds.forEach((id) => {
-      const section = document.getElementById(id)
-      if (section) observer.observe(section)
-    })
+    // Conectamos el observer recién después del scroll inicial, así no
+    // pisa el activeSection que setamos a partir del hash.
+    const observerDelay = setTimeout(() => {
+      sectionIds.forEach((id) => {
+        const section = document.getElementById(id)
+        if (section) observer.observe(section)
+      })
+    }, initialHashId ? 600 : 0)
 
     window.addEventListener('hashchange', handleHashChange)
 
     return () => {
+      clearTimeout(observerDelay)
       observer.disconnect()
       window.removeEventListener('hashchange', handleHashChange)
     }
@@ -413,6 +437,13 @@ export default function Docs() {
             <li><b>Panel derecho (Log):</b> timestamps, latencia, tokens, errores.</li>
             <li><b>Páginas auxiliares:</b> <a href="/contexto" target="_blank" rel="noreferrer">/contexto</a> (vista en vivo del array <code>messages</code>) y <a href="/proveedores" target="_blank" rel="noreferrer">/proveedores</a> (comparación OpenAI vs Anthropic).</li>
           </ul>
+
+          <TryModeCTA
+            href="/"
+            label="Chat"
+            emoji="💬"
+            hint="Probá los tres modos de contexto (Crudo / Conversación / Persistente) y mirá cómo cambia el JSON que sale."
+          />
             </div>
           </details>
         </section>
@@ -473,6 +504,13 @@ export default function Docs() {
             <li><b>Panel derecho:</b> el array <code>messages[]</code> que se mandó. <b>Todo</b> ese texto es lo que la IA usó para responderte.</li>
             <li><b>Botón "Aplicar al editor":</b> reemplaza el código actual con el bloque <code>```...```</code> que vino en la respuesta. Si no aplicás, la respuesta se descarta.</li>
           </ul>
+
+          <TryModeCTA
+            href="/editor"
+            label="Editor"
+            emoji="💻"
+            hint="Pegá código, pedí un cambio, comparalo con/sin contexto."
+          />
             </div>
           </details>
         </section>
@@ -578,6 +616,13 @@ export default function Docs() {
             <b> declarar herramientas, dejar que la IA las pida, ejecutarlas localmente, devolverle
             el resultado, repetir.</b>
           </p>
+
+          <TryModeCTA
+            href="/loop-agentico"
+            label="Loop Agéntico"
+            emoji="🤖"
+            hint="Dale una instrucción y mirá el ciclo tool_use → tool_result en vivo."
+          />
             </div>
           </details>
         </section>
@@ -663,6 +708,13 @@ export default function Docs() {
             <li><b>Panel derecho (Historial Request/Response):</b> abrí cualquier request y mirá el campo <code>system</code> — cuando el toggle está ON, ves todo el AGENTS.md inyectado ahí. <b>Cada</b> request lo lleva.</li>
             <li><b>Costo:</b> AGENTS.md grandes hacen que <b>cada</b> request gaste más tokens (porque va completo cada vez). Por eso conviene ser conciso. Prompt caching de Anthropic descuenta el 90% si los detecta repetidos — pero igual son tokens.</li>
           </ul>
+
+          <TryModeCTA
+            href="/agents-md"
+            label="Agente + reglas"
+            emoji="📋"
+            hint="Editá el AGENTS.md y mirá cómo cambian las respuestas del agente."
+          />
             </div>
           </details>
         </section>
@@ -763,6 +815,13 @@ export default function Docs() {
             <li><b><code>run_skill_test</code>:</b> después de editar, la IA muchas veces decide validarse a sí misma. Vas a ver llamadas a la tool con su <code>pass</code>/<code>fail</code>. Si falla, suele reintentar.</li>
             <li><b>Esto es lo que hace Claude Code:</b> el sistema de Skills de Claude Code es <i>literalmente</i> esto — un índice de skills disponibles en el system, y la tool para cargar el detalle cuando hace falta. Cursor rules cargables siguen el mismo patrón.</li>
           </ul>
+
+          <TryModeCTA
+            href="/agents-md-skills"
+            label="Agente + skills"
+            emoji="🧪"
+            hint="Mirá cómo la IA pide load_skill y el system se mantiene chico."
+          />
             </div>
           </details>
         </section>
@@ -876,6 +935,13 @@ export default function Docs() {
             "olvida cosas viejas", esto es lo que está pasando por debajo. La estrategia y los
             límites cambian, pero la mecánica es exactamente esta.
           </p>
+
+          <TryModeCTA
+            href="/ventana-contexto"
+            label="Ventana de contexto"
+            emoji="🪟"
+            hint="Cambiá la estrategia (FIFO / window / compaction) y mirá cómo se poda el historial."
+          />
             </div>
           </details>
         </section>
@@ -978,6 +1044,153 @@ export default function Docs() {
             como no confiable, mantener secretos fuera del prompt cuando sea posible, validar acciones
             con código determinístico y no dejar que un <code>tool_result</code> se convierta en jefe.
           </p>
+
+          <TryModeCTA
+            href="/prompt-injection"
+            label="Prompt injection"
+            emoji="🛡"
+            hint="Probá los ataques precargados y mirá cuándo el modelo cae y cuándo aguanta."
+          />
+            </div>
+          </details>
+        </section>
+
+        {/* ============== RAZONAMIENTO ============== */}
+        <section className="criollo-section" id="modo-razonamiento">
+          <details className="docs-collapsible docs-section-collapsible">
+            <summary>
+              <span className="docs-collapsible-chev">▸</span>
+              <span>8) 🧠 Razonamiento — cuando el modelo "piensa" antes de responder</span>
+            </summary>
+            <div className="docs-collapsible-body">
+          <p>
+            <a href="/razonamiento" target="_blank" rel="noreferrer"><code>http://localhost:5173/razonamiento</code></a>
+          </p>
+
+          <h3>Qué hace</h3>
+          <p>
+            Es un laboratorio para ver de cerca los <b>modelos razonadores</b> — esos que en la
+            interfaz de ChatGPT o Claude muestran un "Pensando…" antes de contestar. La página te
+            deja mandar la misma pregunta a OpenAI (con <code>gpt-5-mini</code>, <code>o4-mini</code>,
+            etc.) o a Claude (con <code>claude-sonnet-4-5</code>), y comparar qué te devuelve cada
+            uno como "razonamiento".
+          </p>
+
+          <h3>El concepto que enseña: <i>el pensamiento son tokens</i></h3>
+          <p>
+            Un modelo razonador no tiene un cerebro místico. Lo que hace es <b>generar tokens de
+            razonamiento</b> antes de generar la respuesta visible. Esos tokens se descartan del
+            output final, pero <b>se facturan igual</b>. Es como pagar por borradores que nunca leés.
+          </p>
+
+          <div className="prov-callout">
+            <p>
+              <b>Idea clave:</b> "piensa más" significa "gasta más tokens internos". Más
+              <code>effort</code> = más calidad en problemas complejos, pero también más plata y más
+              latencia. En preguntas triviales es plata tirada.
+            </p>
+          </div>
+
+          <h3>El contraste OpenAI vs Claude (la lección más fuerte)</h3>
+          <p>
+            Los dos proveedores eligieron <b>políticas opuestas</b> sobre qué te muestran:
+          </p>
+          <ul>
+            <li>
+              <b>OpenAI esconde el razonamiento.</b> Solo te da un <i>resumen</i> opcional
+              (<code>output[].type:'reasoning'</code> con <code>summary[]</code>), y a veces ni eso —
+              el bloque puede llegar vacío. El razonamiento real queda guardado <b>cifrado</b> en
+              <code>encrypted_content</code>: opaco para vos, pero podés reenviarlo en multi-turn
+              para que el modelo retome su pensamiento sin volver a pagarlo. Lo hacen así para que
+              nadie pueda destilar el modelo copiándole los pensamientos.
+            </li>
+            <li>
+              <b>Claude muestra el thinking entero.</b> Te lo devuelve en
+              <code>content[].type:'thinking'</code> con el texto completo, párrafos enteros de
+              cadena de pensamiento. Cada bloque viene <b>firmado</b> (<code>signature</code>) para
+              que en multi-turn la API pueda confirmar que es un thinking original suyo y no algo
+              que le metiste vos.
+            </li>
+          </ul>
+
+          <h3>Qué mirar</h3>
+          <ul>
+            <li>
+              <b>Panel de pensamiento (violeta para OpenAI, naranja para Claude):</b> es lo que
+              normalmente está escondido detrás del "Pensando…" en una UI de chat. Acá lo ves crudo.
+            </li>
+            <li>
+              <b>Tabla de tokens:</b> en OpenAI se ve <code>reasoning_tokens</code> separado del
+              output visible — el alumno ve literalmente cuántos tokens "pensó" que no entran en
+              la respuesta. En Claude todo entra en <code>output_tokens</code> sin desglose, y la UI
+              lo aclara.
+            </li>
+            <li>
+              <b>Request crudo:</b> en OpenAI no hay <code>temperature</code> (los razonadores la
+              rechazan). En Claude <code>temperature: 1</code> es obligatorio y <code>max_tokens</code>
+              tiene que ser mayor que <code>budget_tokens</code>. Cada API tiene sus reglas raras.
+            </li>
+            <li>
+              <b>Effort:</b> mismo control mapeado a cada proveedor. En OpenAI es
+              <code>reasoning.effort</code> (minimal/low/medium/high), en Claude es
+              <code>thinking.budget_tokens</code> (1k / 2k / 5k / 12k tokens). La UI traduce.
+            </li>
+          </ul>
+
+          <h3>Experimento sugerido</h3>
+          <ol>
+            <li>Elegí el preset <b>🧩 Acertijo lógico</b> con OpenAI / effort medium.</li>
+            <li>
+              Mirá los <b>tokens de razonamiento</b> en la tabla — vas a ver decenas o cientos de
+              tokens "pensados" para un acertijo de 3 personas. Mirá el panel violeta: probablemente
+              te devuelva un resumen muy corto o vacío.
+            </li>
+            <li>
+              Cambiá a <b>Claude</b> con el mismo preset. Misma pregunta, ahora vas a ver párrafos
+              enteros de pensamiento crudo en el panel naranja. <b>Es lo más cerca que vas a estar
+              de leer la cadena de razonamiento de un modelo</b>.
+            </li>
+            <li>
+              Probá ahora con <b>"¿Qué hora es?"</b>. Vas a ver que igual gasta tokens de pensamiento
+              para una pregunta trivial. Esa es la trampa de los razonadores: te cobran
+              "pensamiento" aunque no lo necesites. Por eso existen <code>effort: minimal</code> y
+              modelos no-razonadores como <code>gpt-4o-mini</code> para tareas baratas.
+            </li>
+            <li>
+              Subí <b>effort a high</b> en una pregunta difícil y compará: ¿mejoró la respuesta?
+              ¿Cuánto más tardó? ¿Cuántos tokens extra pagaste? No siempre la respuesta es "sí mejoró".
+            </li>
+          </ol>
+
+          <h3>Modelos que razonan vs los que no</h3>
+          <ul>
+            <li>
+              <b>OpenAI razonadores:</b> <code>gpt-5</code>, <code>gpt-5-mini</code>,
+              <code>o4-mini</code>, <code>o3-mini</code>, <code>o1-mini</code>. El default del Chat
+              de esta app (<code>gpt-4o-mini</code>) <b>no razona</b> — por eso esta página usa una
+              env var separada (<code>VITE_OPENAI_REASONING_MODEL</code>).
+            </li>
+            <li>
+              <b>Anthropic con thinking:</b> Sonnet 3.7+, Opus 4+. <b>Haiku no razona</b>. Por eso
+              el Chat usa Haiku para velocidad pero esta página usa Sonnet 4.5 vía
+              <code>VITE_ANTHROPIC_REASONING_MODEL</code>.
+            </li>
+          </ul>
+
+          <p>
+            <b>Conexión con tu agente del día a día:</b> cuando ves "Reasoning…" en Cursor, Claude
+            Code o Codex, esto es exactamente lo que está pasando. Tokens internos que vos pagás,
+            invisibles en la UI pero presentes en la factura. Saber esto te ayuda a elegir cuándo
+            pedirle a un modelo razonador (problema complejo, riesgo de error caro) y cuándo no
+            (chat casual, generación rápida, tareas determinísticas).
+          </p>
+
+          <TryModeCTA
+            href="/razonamiento"
+            label="Razonamiento"
+            emoji="🧠"
+            hint="Compará cómo OpenAI esconde el pensamiento y Claude lo muestra entero."
+          />
             </div>
           </details>
         </section>

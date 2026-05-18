@@ -3,6 +3,7 @@ import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
@@ -262,6 +263,8 @@ export default function PromptInjection() {
         </label>
 
         {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
+
+        <ReadDocLink section="modo-injection" />
       </ConfigBar>
 
       <div className="layout promptinj-layout">
