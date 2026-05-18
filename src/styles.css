@@ -2152,6 +2152,94 @@ body {
   font-weight: 500;
 }
 
+.docs-toc-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docs-toc-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 14px;
+  padding-left: 8px;
+  border-left: 1px dashed #334155;
+}
+
+.docs-toc-link-child {
+  font-size: 12px;
+  color: #94a3b8;
+  padding: 4px 10px;
+}
+
+.docs-toc-link-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  cursor: default;
+  padding: 6px 10px 2px;
+}
+.docs-toc-link-header:hover {
+  background: transparent;
+  border-left-color: transparent;
+  color: #94a3b8;
+}
+
+/* Header plegable (Labs): botón full-width que toggle-a el grupo */
+.docs-toc-toggle {
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.docs-toc-toggle:hover {
+  background: rgba(59, 130, 246, 0.08);
+  color: #cbd5e1;
+}
+
+/* Fila con link + chevron (Modos): el link navega, el chevron pliega */
+.docs-toc-row {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+.docs-toc-row > .docs-toc-link {
+  flex: 1;
+  min-width: 0;
+}
+.docs-toc-chev-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 8px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: all 120ms ease;
+}
+.docs-toc-chev-btn:hover {
+  background: rgba(59, 130, 246, 0.10);
+  color: #e2e8f0;
+}
+
+.docs-toc-chev {
+  display: inline-block;
+  font-size: 10px;
+  color: #94a3b8;
+  transition: transform 150ms ease;
+  flex-shrink: 0;
+}
+.docs-toc-chev.is-open {
+  transform: rotate(90deg);
+}
+
 /* Colapsar el sidebar en pantallas chicas */
 @media (max-width: 900px) {
   .criollo-content.docs-layout {
@@ -2176,6 +2264,18 @@ body {
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
+  }
+
+  /* En mobile el TOC se aplana en chips: cada grupo y su lista de hijos
+     se desarman para que todos los links convivan al mismo nivel. */
+  .docs-toc-group {
+    display: contents;
+  }
+  .docs-toc-children {
+    display: contents;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
   }
 
   .docs-toc-title {

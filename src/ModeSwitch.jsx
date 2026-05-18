@@ -142,10 +142,19 @@ export default function ModeSwitch({ active }) {
           aria-expanded={labOpen}
           title="Experimentos pedagógicos sueltos: cosas que aíslan un concepto puntual de la API."
         >
-          🧪 Experimentos <span className="app-mode-dropdown-chev">{labOpen ? '▴' : '▾'}</span>
+          🧪 Labs <span className="app-mode-dropdown-chev">{labOpen ? '▴' : '▾'}</span>
         </button>
         {labOpen && (
           <div className="app-mode-menu" role="menu">
+            <a
+              href="/razonamiento"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('razonamiento')}
+            >
+              <b>🧠 Razonamiento</b>
+              <span className="app-mode-menu-sub">modelos que "piensan" antes de responder</span>
+            </a>
             <a
               href="/ventana-contexto"
               className="app-mode-menu-item"
@@ -163,15 +172,6 @@ export default function ModeSwitch({ active }) {
             >
               <b>🛡 Prompt injection</b>
               <span className="app-mode-menu-sub">system vs datos no confiables</span>
-            </a>
-            <a
-              href="/razonamiento"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('razonamiento')}
-            >
-              <b>🧠 Razonamiento</b>
-              <span className="app-mode-menu-sub">modelos que "piensan" antes de responder</span>
             </a>
           </div>
         )}
