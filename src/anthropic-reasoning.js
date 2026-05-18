@@ -36,7 +36,7 @@ const budgetTokensFor = (effort) =>
   ANTHROPIC_BUDGETS.find((b) => b.id === effort)?.tokens ?? 5000
 
 export async function sendClaudeReasoningMessage(
-  userText,
+  userInput,
   {
     model,
     instructions,
@@ -62,6 +62,19 @@ export async function sendClaudeReasoningMessage(
   onLog?.('info', `API key Anthropic detectada (${maskKey(apiKey)})`)
   onLog?.('info', 'Con thinking habilitado, Claude exige temperature = 1 (la API lo impone)')
 
+  // userInput puede ser:
+  //   - string (one-shot): lo envolvemos en messages[]
+  //   - array de mensajes {role, content} (multi-turn con contexto)
+  // No reenviamos los bloques thinking previos — solo turnos user/assistant con el texto final.
+  // Claude solo exige reenviar los thinking blocks cuando el siguiente turno también usa
+  // thinking + tool use; para chat puro alcanza con el texto.
+  const messages = Array.isArray(userInput)
+    ? userInput
+    : [{ role: 'user', content: userInput }]
+  if (Array.isArray(userInput)) {
+    onLog?.('info', `Modo CON CONTEXTO — messages[] con ${userInput.length} mensaje(s)`)
+  }
+
   const body = {
     model: modelId,
     max_tokens: maxTokens,
@@ -70,7 +83,7 @@ export async function sendClaudeReasoningMessage(
       type: 'enabled',
       budget_tokens: budgetTokens,
     },
-    messages: [{ role: 'user', content: userText }],
+    messages,
   }
   if (instructions && instructions.trim()) {
     body.system = instructions

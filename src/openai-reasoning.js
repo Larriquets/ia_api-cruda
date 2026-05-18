@@ -29,7 +29,7 @@ export const REASONING_EFFORTS = [
 ]
 
 export async function sendReasoningMessage(
-  userText,
+  userInput,
   {
     model,
     instructions,
@@ -52,11 +52,20 @@ export async function sendReasoningMessage(
   }
   onLog?.('info', `API key detectada (${maskKey(apiKey)})`)
 
+  // /v1/responses acepta `input` como string (one-shot) o como array de mensajes
+  // {role, content} (multi-turn). Reenviamos el array cuando viene historial — los
+  // bloques de reasoning previos NO se mandan: vienen cifrados en encrypted_content
+  // y el alumno tampoco los ve, así que el contexto que viaja es solo
+  // user+assistant final, igual que en un chat clásico.
+  if (Array.isArray(userInput)) {
+    onLog?.('info', `Modo CON CONTEXTO — input es array de ${userInput.length} mensaje(s)`)
+  }
+
   // Los razonadores no aceptan temperature (la API la ignora o rechaza según versión).
   // No la mandamos a propósito — el alumno va a ver que el body es más chico que en Chat.
   const body = {
     model: modelId,
-    input: userText,
+    input: userInput,
     reasoning: { effort, summary },
   }
   if (instructions && instructions.trim()) {

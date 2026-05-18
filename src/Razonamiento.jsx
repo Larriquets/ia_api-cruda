@@ -21,7 +21,10 @@ const EFFORT_KEY = 'razon_effort'
 const SUMMARY_KEY = 'razon_summary'
 const INSTRUCTIONS_KEY = 'razon_instructions'
 const LOGS_KEY = 'razon_logs'
+const KEEP_CONTEXT_KEY = 'razon_keep_context'
+const HISTORY_KEY = 'razon_history'
 const LOGS_MAX = 300
+const HISTORY_MAX = 40
 
 const DEFAULT_INSTRUCTIONS =
   'Sos un asistente que piensa paso a paso antes de responder. ' +
@@ -108,6 +111,10 @@ export default function Razonamiento() {
   const [usage, setUsage] = useState(null)
   const [elapsedMs, setElapsedMs] = useState(null)
   const [logs, setLogs] = useState(() => safeReadJSON(LOGS_KEY) || [])
+  const [keepContext, setKeepContext] = useState(
+    () => localStorage.getItem(KEEP_CONTEXT_KEY) === 'true',
+  )
+  const [history, setHistory] = useState(() => safeReadJSON(HISTORY_KEY) || [])
 
   const logRef = useRef(null)
   const replyRef = useRef(null)
@@ -124,6 +131,13 @@ export default function Razonamiento() {
       localStorage.setItem(LOGS_KEY, JSON.stringify(trimmed))
     } catch { /* noop */ }
   }, [logs])
+  useEffect(() => { localStorage.setItem(KEEP_CONTEXT_KEY, String(keepContext)) }, [keepContext])
+  useEffect(() => {
+    try {
+      const trimmed = history.slice(-HISTORY_MAX)
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed))
+    } catch { /* noop */ }
+  }, [history])
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
@@ -152,8 +166,16 @@ export default function Razonamiento() {
     setUsage(null)
     setElapsedMs(null)
     appendLog('user', `Pregunta: "${text}"`)
+    appendLog('info', keepContext
+      ? `Modo CON CONTEXTO — incluyendo ${history.length} mensaje(s) previos del historial`
+      : 'Modo SIN CONTEXTO — cada pregunta es independiente')
 
     const startedAt = performance.now()
+
+    const userMsg = { role: 'user', content: text }
+    // Con contexto mandamos array de mensajes (multi-turn). Sin contexto mandamos solo el string.
+    // No reenviamos los bloques thinking previos — solo turnos user/assistant con texto final.
+    const payload = keepContext ? [...history, userMsg] : text
 
     try {
       const commonArgs = {
@@ -164,14 +186,19 @@ export default function Razonamiento() {
         onRawResponse: setRawResponse,
       }
       const result = provider === 'anthropic'
-        ? await sendClaudeReasoningMessage(text, { ...commonArgs, model: modelAnthropic })
-        : await sendReasoningMessage(text, { ...commonArgs, model: modelOpenAI, summary })
+        ? await sendClaudeReasoningMessage(payload, { ...commonArgs, model: modelAnthropic })
+        : await sendReasoningMessage(payload, { ...commonArgs, model: modelOpenAI, summary })
 
       setReply(result.text)
       setReasoningBlocks(result.reasoningBlocks)
       setUsage(result.usage)
       setElapsedMs(Math.round(performance.now() - startedAt))
-      appendLog('success', 'Respuesta lista')
+      if (keepContext) {
+        setHistory((h) => [...h, userMsg, { role: 'assistant', content: result.text }])
+        appendLog('success', `Respuesta agregada al historial (${history.length + 2} mensajes en total)`)
+      } else {
+        appendLog('success', 'Respuesta lista (no se guardó en historial)')
+      }
     } catch (err) {
       const providerLabel = provider === 'anthropic' ? 'Anthropic' : 'OpenAI'
       setError(err.message || `Error al contactar a ${providerLabel}`)
@@ -190,6 +217,12 @@ export default function Razonamiento() {
     setRawResponse(null)
     setError(null)
     appendLog('info', 'Respuesta limpiada')
+  }
+
+  const handleClearHistory = () => {
+    setHistory([])
+    try { localStorage.removeItem(HISTORY_KEY) } catch { /* noop */ }
+    appendLog('info', 'Historial del razonador vaciado')
   }
 
   const handleClearLogs = () => {
@@ -236,6 +269,26 @@ export default function Razonamiento() {
           >
             <option value="openai">🟢 OpenAI (esconde el pensamiento)</option>
             <option value="anthropic">🟠 Claude (muestra el pensamiento)</option>
+          </select>
+        </label>
+
+        <label className="hdr-select">
+          <span className="hdr-select-label">Modo</span>
+          <select
+            value={keepContext ? 'with' : 'without'}
+            onChange={(e) => {
+              const next = e.target.value === 'with'
+              setKeepContext(next)
+              appendLog('info', next
+                ? 'Modo CON CONTEXTO activado — las próximas preguntas incluirán el historial'
+                : 'Modo SIN CONTEXTO activado — cada pregunta será independiente')
+            }}
+            disabled={loading}
+            className={`hdr-select-input mode-select-${keepContext ? 'persistent' : 'conversation'}`}
+            title="Sin contexto: cada pregunta es independiente. Con contexto: el razonador recuerda los turnos anteriores (solo el texto final, no los bloques thinking previos)."
+          >
+            <option value="without">Sin contexto</option>
+            <option value="with">Con contexto</option>
           </select>
         </label>
 
@@ -490,6 +543,7 @@ export default function Razonamiento() {
               </div>
             </div>
           )}
+
         </section>
 
         {/* Panel 2 — Request/Response crudo */}
