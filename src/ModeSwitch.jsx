@@ -72,6 +72,7 @@ export default function ModeSwitch({ active }) {
 
   return (
     <div className="app-mode-switch">
+      <span className="app-mode-switch-label" aria-hidden="true">MODO:</span>
       <a
         href="/"
         className={cls('chat')}

@@ -1852,6 +1852,17 @@ body {
   align-items: center;
 }
 
+/* Label "MODO:" antes de los tabs. Pedagógico: deja explícito que los
+   tabs son variantes del mismo concepto (modo de interacción con la API). */
+.app-mode-switch-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  padding: 0 8px 0 6px;
+  user-select: none;
+}
+
 /* Separador entre los modos principales y el botón Docs.
    Docs es material auxiliar de la clase, no un modo más — el divider
    y el gap extra lo apartan visualmente del grupo principal.
@@ -3900,6 +3911,13 @@ body {
     flex-wrap: wrap;
     overflow: visible;
     align-items: stretch;
+  }
+
+  .app-mode-switch-label {
+    flex: 1 0 100%;
+    display: flex;
+    align-items: center;
+    padding: 2px 6px 4px;
   }
 
   .app-mode-btn {
