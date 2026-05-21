@@ -767,11 +767,11 @@ export default function App() {
             <span>Request → API (crudo)</span>
             <span className="panel-links">
               <a
-                href="https://platform.openai.com/docs/api-reference/chat/create"
+                href="/como-funciona"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="docs-link"
-                title="Documentación oficial: parámetros del request"
+                title="Cómo funciona: system / context / tools en el POST"
               >
                 docs ↗
               </a>
@@ -786,11 +786,11 @@ export default function App() {
             <span>Response ← API (crudo)</span>
             <span className="panel-links">
               <a
-                href="https://platform.openai.com/docs/api-reference/chat/object"
+                href="/como-funciona"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="docs-link"
-                title="Documentación oficial: campos del response (id, choices, usage, etc.)"
+                title="Cómo funciona: anatomía del response"
               >
                 docs ↗
               </a>
