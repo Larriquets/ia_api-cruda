@@ -524,6 +524,11 @@ export default function Docs() {
               conversación, pero seguís controlando su "personalidad" desde el system.
             </li>
           </ul>
+          <p>
+            ¿Querés ver la diferencia entre los tres modos <b>sin gastar API</b>?{' '}
+            Abrí <a href="/modos-chat" target="_blank" rel="noreferrer">/modos-chat</a> —
+            un comparador animado de crudo vs conversación vs persistente, lado a lado.
+          </p>
 
           <h3>Qué mirar</h3>
           <ul>
@@ -585,6 +590,12 @@ export default function Docs() {
               clase" → "instanciá <i>esa</i> clase"). Sin contexto, el "esa" no se entiende.
             </li>
           </ul>
+          <p>
+            ¿Querés ver la diferencia entre los dos modos <b>sin gastar API</b>?{' '}
+            Abrí <a href="/modos-editor" target="_blank" rel="noreferrer">/modos-editor</a> —
+            un comparador animado de sin contexto vs con contexto, lado a lado, sobre la misma
+            sesión de 3 ediciones.
+          </p>
 
           <h3>Por qué es solo "un turno"</h3>
           <p>
@@ -623,7 +634,7 @@ export default function Docs() {
           </p>
           <h3>Qué hace</h3>
           <p>
-            Igual al Editor por fuera (Monaco + prompt), pero por dentro <b>cambia todo</b>.
+            Igual al Editor por fuera, con un área de edición tipo VS Code y un prompt, pero por dentro <b>cambia todo</b>.
             En vez de pedirle a la IA que devuelva código, le damos <b>herramientas</b> que
             puede llamar — <code>read_code</code> (leer el archivo) y <code>edit_code</code>
             (reemplazar un fragmento) — y la dejamos trabajar en un loop.

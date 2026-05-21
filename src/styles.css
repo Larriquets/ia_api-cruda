@@ -5528,3 +5528,94 @@ body {
   color: #fbbf24;
 }
 
+/* ============================================================
+   /modos-editor — reutiliza la paleta de /modos-chat (mch-*).
+   Solo sumamos lo específico del editor: badge, history pill,
+   preview del archivo y content multilínea preservando \n.
+   ============================================================ */
+
+.meditor-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.meditor-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 500;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.meditor-history-pill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 4px;
+  vertical-align: middle;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* El user del Editor es un string largo con saltos de línea. Lo mostramos
+   preservando \n pero capado en altura con scroll, para que la card no se
+   estire infinitamente. */
+.meditor-content-pre {
+  display: block;
+  white-space: pre-wrap;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.45;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.meditor-preview {
+  margin-top: 12px;
+  padding: 0 14px 14px;
+}
+
+.meditor-preview-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.meditor-preview-code {
+  margin: 0;
+  padding: 10px 12px;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-left: 3px solid #475569;
+  border-radius: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Responsive: en pantallas chicas, columnas apiladas */
+@media (max-width: 960px) {
+  .meditor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
