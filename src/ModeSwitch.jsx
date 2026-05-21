@@ -206,6 +206,10 @@ export default function ModeSwitch({ active }) {
               <b>🎬 /modos-editor</b>
               <span className="app-mode-menu-sub">sin contexto vs con contexto, animado</span>
             </a>
+            <a href="/como-edita" className="app-mode-menu-item" role="menuitem">
+              <b>✂️ /como-edita</b>
+              <span className="app-mode-menu-sub">cómo la IA "edita" código sin tocarlo</span>
+            </a>
             <a href="/contexto" className="app-mode-menu-item" role="menuitem">
               <b>🧠 /contexto</b>
               <span className="app-mode-menu-sub">vista en vivo del array messages</span>

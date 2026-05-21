@@ -5619,3 +5619,458 @@ body {
   }
 }
 
+/* ============================================================
+   /como-edita — animación pedagógica de UNA corrida agéntica.
+   Dos columnas grandes: archivo a la izquierda, diálogo a la
+   derecha. Narrador debajo. Sin paneles laterales de tokens.
+   ============================================================ */
+
+/* --- Layout grande de dos columnas --- */
+.ce-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ce-col {
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 480px;
+}
+
+.ce-col-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border-bottom: 1px solid #1e293b;
+}
+
+.ce-col-emoji {
+  font-size: 16px;
+}
+
+.ce-col-title {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.ce-col-sub {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+  margin-left: auto;
+}
+
+.ce-col-foot {
+  padding: 10px 14px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.5);
+  border-top: 1px solid #1e293b;
+}
+
+.ce-col-foot code {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.12);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ce-col-foot b {
+  color: #e2e8f0;
+}
+
+/* --- COL IZQUIERDA: el archivo --- */
+.ce-file {
+  flex: 1;
+  margin: 0;
+  padding: 14px 14px 14px 0;
+  background: #0b1220;
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: #e2e8f0;
+  overflow: auto;
+  white-space: pre;
+  animation: ce-pulse-flash 700ms ease-out;
+}
+
+/* Si el flashKey es 0 (no hay flash) deshabilitamos la animación inicial. */
+.ce-file-flash-0 {
+  animation: none;
+}
+
+@keyframes ce-pulse-flash {
+  0%   { background: #0b1220; box-shadow: inset 0 0 0 0 rgba(96, 165, 250, 0); }
+  20%  { background: #1e293b; box-shadow: inset 0 0 0 200px rgba(96, 165, 250, 0.08); }
+  100% { background: #0b1220; box-shadow: inset 0 0 0 0 rgba(96, 165, 250, 0); }
+}
+
+.ce-file-line {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-left: 3px solid transparent;
+}
+
+.ce-file-lineno {
+  display: inline-block;
+  width: 28px;
+  text-align: right;
+  color: #475569;
+  user-select: none;
+  margin-right: 12px;
+  font-size: 11px;
+}
+
+.ce-file-linetext {
+  flex: 1;
+}
+
+.ce-file-line-new {
+  background: rgba(34, 197, 94, 0.16);
+  border-left-color: #22c55e;
+  animation: ce-line-flash 1.6s ease-out;
+}
+
+@keyframes ce-line-flash {
+  0%   { background: rgba(239, 68, 68, 0.4); border-left-color: #ef4444; }
+  35%  { background: rgba(239, 68, 68, 0.4); border-left-color: #ef4444; }
+  60%  { background: rgba(34, 197, 94, 0.4); border-left-color: #22c55e; }
+  100% { background: rgba(34, 197, 94, 0.16); border-left-color: #22c55e; }
+}
+
+/* --- COL DERECHA: el diálogo --- */
+.ce-dialog {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #0b1220;
+}
+
+.ce-dialog-empty {
+  font-size: 13px;
+  color: #64748b;
+  font-style: italic;
+  text-align: center;
+  padding: 40px 14px;
+}
+
+.ce-dialog-empty b {
+  color: #cbd5e1;
+  font-style: normal;
+}
+
+/* Burbujas: el truco pedagógico está en darle la misma jerarquía visual
+   a la IA y a "TU CÓDIGO" — son dos interlocutores conversando. */
+.ce-bubble {
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.ce-bubble-new {
+  animation: ce-bubble-in 400ms ease-out;
+}
+
+@keyframes ce-bubble-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ce-bubble-user {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.25);
+  align-self: flex-end;
+  max-width: 92%;
+}
+
+.ce-bubble-ai {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.35);
+  align-self: flex-start;
+  max-width: 95%;
+}
+
+.ce-bubble-code {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.35);
+  align-self: flex-start;
+  max-width: 95%;
+}
+
+.ce-bubble-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ce-bubble-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ce-bubble-label-user { color: #94a3b8; }
+.ce-bubble-label-ai   { color: #c4b5fd; }
+.ce-bubble-label-code { color: #86efac; }
+
+.ce-bubble-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.ce-bubble-tag-toolcall {
+  color: #ddd6fe;
+  background: rgba(139, 92, 246, 0.18);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.ce-bubble-tag-toolresult {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.ce-bubble-tag-text {
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.ce-bubble-body {
+  color: #e2e8f0;
+}
+
+.ce-bubble-text {
+  font-size: 13px;
+}
+
+.ce-bubble-stop {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: var(--font-mono, monospace);
+}
+
+.ce-bubble-stop code {
+  color: #fde68a;
+}
+
+.ce-bubble-tool {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  color: #e2e8f0;
+}
+
+.ce-bubble-tool > code {
+  color: #c4b5fd;
+  font-weight: 600;
+}
+
+.ce-bubble-arg-key {
+  color: #fda4af;
+}
+
+.ce-bubble-arg-val {
+  color: #fde68a;
+}
+
+.ce-bubble-args-empty {
+  color: #64748b;
+}
+
+.ce-bubble-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.ce-bubble-result-summary {
+  font-size: 12.5px;
+  color: #bbf7d0;
+  margin-bottom: 6px;
+}
+
+.ce-bubble-result-content {
+  margin: 0;
+  padding: 8px 10px;
+  background: #0b1220;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 5px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* --- Controles arriba: contador grande de paso --- */
+.ce-progress-now {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 5px;
+  margin-left: 4px;
+}
+
+/* --- Narrador --- */
+.ce-narrator {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-left: 4px solid #475569;
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-left-color 200ms ease;
+}
+
+.ce-narrator-active {
+  border-left-color: #fbbf24;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.06), rgba(15, 23, 42, 0.7) 30%);
+}
+
+.ce-narrator-step {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ce-narrator-body {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.ce-narrator-arrow {
+  color: #fbbf24;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ce-narrator-body b {
+  color: #fde68a;
+}
+
+.ce-narrator-body-quiet {
+  color: #64748b;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* --- Cierre con CTAs --- */
+.ce-closing {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.04), rgba(15, 23, 42, 0));
+  border-radius: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.ce-closing ol {
+  margin: 8px 0 16px 18px;
+}
+
+.ce-closing li {
+  margin-bottom: 8px;
+}
+
+.ce-closing-ctas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ce-closing-cta {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  color: #e2e8f0;
+  text-decoration: none;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.ce-closing-cta:hover {
+  border-color: #475569;
+  transform: translateY(-1px);
+}
+
+.ce-closing-cta b {
+  display: block;
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+.ce-closing-cta-emoji {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ce-closing-cta-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: var(--font-mono, monospace);
+}
+
+.ce-closing-note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Responsive: en pantallas chicas, las dos columnas se apilan */
+@media (max-width: 960px) {
+  .ce-grid {
+    grid-template-columns: 1fr;
+  }
+  .ce-col {
+    min-height: 360px;
+  }
+}
+

@@ -20,6 +20,7 @@ import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
 import ModosChat from './ModosChat.jsx'
 import ModosEditor from './ModosEditor.jsx'
+import ComoEdita from './ComoEdita.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -120,6 +121,7 @@ export default function App() {
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
     if (window.location.pathname === '/modos-chat') return 'modos-chat'
     if (window.location.pathname === '/modos-editor') return 'modos-editor'
+    if (window.location.pathname === '/como-edita') return 'como-edita'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -450,6 +452,9 @@ export default function App() {
   }
   if (page === 'modos-editor') {
     return <><WelcomeModal /><ModosEditor /></>
+  }
+  if (page === 'como-edita') {
+    return <><WelcomeModal /><ComoEdita /></>
   }
 
   return (
