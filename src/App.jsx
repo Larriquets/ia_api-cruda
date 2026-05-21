@@ -18,6 +18,7 @@ import PromptInjection from './PromptInjection.jsx'
 import Razonamiento from './Razonamiento.jsx'
 import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
+import ModosChat from './ModosChat.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -116,6 +117,7 @@ export default function App() {
     if (window.location.pathname === '/razonamiento') return 'razonamiento'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
+    if (window.location.pathname === '/modos-chat') return 'modos-chat'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -440,6 +442,9 @@ export default function App() {
   }
   if (page === 'como-funciona') {
     return <><WelcomeModal /><ComoFunciona /></>
+  }
+  if (page === 'modos-chat') {
+    return <><WelcomeModal /><ModosChat /></>
   }
 
   return (

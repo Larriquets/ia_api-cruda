@@ -259,6 +259,10 @@ export default function ComoFunciona() {
                 la rompe OpenAI, no la API en sí.
               </li>
               <li>
+                ¿Querés ver los tres lado a lado, animados, con la misma conversación de 3
+                turnos? Abrí <a href="/modos-chat" target="_blank" rel="noreferrer">/modos-chat</a>.
+              </li>
+              <li>
                 <b>Loop Agéntico</b> — el array crece <i>solo</i>, sin que vos escribas nada. Cada
                 vuelta del loop suma un <code>assistant</code> con <code>tool_calls</code> + un
                 <code> tool</code> con el resultado. Por eso un solo prompt humano puede generar 10

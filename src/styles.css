@@ -5038,3 +5038,493 @@ body {
   background: rgba(96, 165, 250, 0.30);
   color: #dbeafe;
 }
+
+/* ============================================================
+   /modos-chat — comparador animado de modos del Chat
+   ============================================================ */
+
+.mch-aside-tip {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: rgba(251, 191, 36, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #cbd5e1;
+}
+
+.mch-aside-tip-title {
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mch-aside-tip p {
+  margin: 0;
+}
+
+.mch-aside-tip code {
+  background: #1e293b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+}
+
+/* --- Controles --- */
+
+.mch-controls-section {
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 16px 20px !important;
+  margin-bottom: 24px;
+}
+
+.mch-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.mch-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.mch-progress-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.mch-progress-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.mch-progress-dot.is-done {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0f172a;
+}
+
+.mch-progress-meta {
+  margin-left: 6px;
+  font-style: italic;
+  color: #64748b;
+  font-size: 12.5px;
+}
+
+.mch-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mch-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.mch-btn:hover:not(:disabled) {
+  background: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.mch-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mch-btn-primary {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.mch-btn-primary:hover:not(:disabled) {
+  background: #fcd34d;
+  border-color: #fcd34d;
+  color: #0f172a;
+}
+
+.mch-prompt-preview {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 6px;
+  font-size: 13.5px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.mch-prompt-label {
+  color: #64748b;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mch-prompt-text {
+  color: #f1f5f9;
+  font-style: italic;
+}
+
+.mch-prompt-empty {
+  color: #64748b !important;
+  font-style: italic;
+}
+
+/* --- Grid de 3 columnas --- */
+
+.mch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+  .mch-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mch-col {
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;            /* permite que el contenido haga wrap */
+  overflow: hidden;
+}
+
+.mch-col-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid #334155;
+  background: #0f172a;
+}
+
+.mch-col-header-crudo {
+  border-top: 3px solid #ef4444;
+}
+.mch-col-header-conversacion {
+  border-top: 3px solid #22c55e;
+}
+.mch-col-header-persistente {
+  border-top: 3px solid #3b82f6;
+}
+
+.mch-col-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.mch-col-endpoint {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  background: #1e293b;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  word-break: break-all;
+}
+
+.mch-col-desc {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  border-bottom: 1px dashed #334155;
+}
+
+.mch-col-desc code {
+  background: #1e293b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11.5px;
+}
+
+.mch-col-desc b {
+  color: #fbbf24;
+}
+
+/* --- Payload (messages[] o body) --- */
+
+.mch-payload {
+  padding: 12px 14px;
+  flex: 1 0 auto;
+}
+
+.mch-payload-label {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+
+.mch-msglist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mch-msg {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 5px;
+  padding: 7px 9px;
+  font-size: 12px;
+  line-height: 1.5;
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.mch-role {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.mch-role-system {
+  background: rgba(96, 165, 250, 0.18);
+  color: #93c5fd;
+}
+
+.mch-role-user {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+}
+
+.mch-role-assistant {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.mch-content {
+  color: #e2e8f0;
+  word-break: break-word;
+}
+
+/* Fade-in para mensajes recién agregados */
+@keyframes mchFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.15);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: #1e293b;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.mch-msg-new {
+  animation: mchFadeIn 1.6s ease forwards;
+}
+
+/* --- Persistente: cuerpo del request /v1/responses --- */
+
+.mch-pers-body {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.mch-pers-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.mch-pers-row:last-child {
+  margin-bottom: 0;
+}
+
+.mch-pers-key {
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mch-pers-val {
+  color: #e2e8f0;
+  word-break: break-word;
+}
+
+.mch-pers-id {
+  color: #c4b5fd;
+}
+
+.mch-pers-system {
+  color: #93c5fd;
+}
+
+.mch-pers-input {
+  color: #fbbf24;
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.mch-pers-foot {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #334155;
+  font-family: inherit;
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.mch-pers-foot code {
+  background: #1e293b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.mch-pers-foot b {
+  color: #fbbf24;
+}
+
+.mch-pers-empty {
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+  background: #0f172a;
+  border: 1px dashed #334155;
+  border-radius: 5px;
+}
+
+/* --- Stats (contador de mensajes / tokens) --- */
+
+.mch-stats {
+  padding: 8px 14px;
+  border-top: 1px dashed #334155;
+  border-bottom: 1px dashed #334155;
+  background: rgba(15, 23, 42, 0.5);
+  font-size: 11.5px;
+  color: #94a3b8;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.mch-stat-num {
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 13px;
+  transition: color 0.3s;
+}
+
+.mch-stat-sep {
+  color: #475569;
+}
+
+/* --- Reply (respuesta mockeada) --- */
+
+.mch-reply {
+  padding: 10px 14px;
+  border-bottom: 1px dashed #334155;
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.mch-reply-label {
+  font-size: 10.5px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.mch-reply-text {
+  font-size: 12.5px;
+  color: #e2e8f0;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* --- Takeaway al pie de cada columna --- */
+
+.mch-takeaway {
+  padding: 10px 14px 14px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.55;
+  min-height: 42px;
+}
+
+.mch-takeaway b {
+  color: #fbbf24;
+}
+
