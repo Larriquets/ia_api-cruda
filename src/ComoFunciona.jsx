@@ -64,7 +64,7 @@ export default function ComoFunciona() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label="Navegación de documentación">
-          <DocsNav current="docs" />
+          <DocsNav current="como-funciona" />
           <nav className="docs-toc" aria-label="Índice de la página">
             <div className="docs-toc-title">En esta página</div>
             {TOC_ITEMS.map((item) => (
