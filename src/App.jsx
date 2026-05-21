@@ -523,16 +523,6 @@ export default function App() {
             </span>
           </div>
 
-          <FirstTenMinutesGuide
-            active={guideActive}
-            step={guideStep}
-            onStart={startGuide}
-            onStop={stopGuide}
-            onPrepareStep={prepareGuideStep}
-            onUsePrompt={useGuidePrompt}
-            onStepChange={setGuideStep}
-          />
-
           <div className="mode-segmented" role="tablist" aria-label="Modo de envío">
             <span className="mode-segmented-label">Modo</span>
             <button

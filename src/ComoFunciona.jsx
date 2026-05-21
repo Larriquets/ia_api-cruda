@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import ModeSwitch from './ModeSwitch.jsx'
 import DocsNav from './DocsNav.jsx'
 
 const TOC_ITEMS = [
@@ -49,17 +48,10 @@ export default function ComoFunciona() {
     <div className="criollo">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
-          <span className="brand-braces">{'}'}</span>
-          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">⚙️ Cómo funciona</span> · system / context / tools y los prompts del front</span>
+          /como-funciona
+          <span className="docs-header-subtitle">system / context / tools en el POST</span>
         </h1>
-        <div className="header-actions">
-          <ModeSwitch active="docs" />
-        </div>
+        <a href="/" className="clear-btn">← Modos</a>
       </header>
 
       <div className="criollo-content docs-layout">
@@ -612,7 +604,7 @@ export default function ComoFunciona() {
           </section>
 
           <footer className="criollo-footer">
-            <a href="/" className="clear-btn">← Volver al chat</a>
+            <a href="/" className="clear-btn">← Modos</a>
           </footer>
 
         </div>

@@ -14,7 +14,7 @@ const TOC_ITEMS = [
   { id: 'conclusion',    emoji: '📌', label: 'Conclusión' },
 ]
 
-export default function Contexto({ onBack }) {
+export default function Contexto() {
   const [snapshot, setSnapshot] = useState(null)
   const [autoRefresh, setAutoRefresh] = useState(true)
 
@@ -56,8 +56,11 @@ export default function Contexto({ onBack }) {
   return (
     <div className="criollo">
       <header className="header">
-        <h1>Contexto — lo único que el modelo "sabe"</h1>
-        <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
+        <h1>
+          /contexto
+          <span className="docs-header-subtitle">vista en vivo del array messages del chat</span>
+        </h1>
+        <a href="/" className="clear-btn">← Modos</a>
       </header>
 
       <div className="criollo-content docs-layout">
@@ -388,7 +391,7 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
         </section>
 
         <footer className="criollo-footer">
-          <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
+          <a href="/" className="clear-btn">← Modos</a>
         </footer>
 
         </div>

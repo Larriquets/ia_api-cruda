@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import ModeSwitch from './ModeSwitch.jsx'
 import DocsNav from './DocsNav.jsx'
 import TryModeCTA from './TryModeCTA.jsx'
 
@@ -224,17 +223,10 @@ export default function Docs() {
     <div className="criollo">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
-          <span className="brand-braces">{'}'}</span>
-          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">📚 Docs</span> · qué hace cada modo</span>
+          /docs
+          <span className="docs-header-subtitle">qué hace cada modo de la app</span>
         </h1>
-        <div className="header-actions">
-          <ModeSwitch active="docs" />
-        </div>
+        <a href="/" className="clear-btn">← Modos</a>
       </header>
 
       <div className="criollo-content docs-layout">

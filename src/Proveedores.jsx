@@ -14,12 +14,15 @@ const TOC_ITEMS = [
   { id: 'resumen',       emoji: '📌', label: 'Resumiendo' },
 ]
 
-export default function Proveedores({ onBack }) {
+export default function Proveedores() {
   return (
     <div className="criollo">
       <header className="header">
-        <h1>OpenAI vs Anthropic vs local — dónde vive el contexto</h1>
-        <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
+        <h1>
+          /proveedores
+          <span className="docs-header-subtitle">OpenAI vs Anthropic — dónde vive el contexto</span>
+        </h1>
+        <a href="/" className="clear-btn">← Modos</a>
       </header>
 
       <div className="criollo-content docs-layout">
@@ -478,7 +481,7 @@ Authorization: Bearer lm-studio   ← placeholder, no se valida
         </section>
 
         <footer className="criollo-footer">
-          <button onClick={onBack} className="clear-btn" type="button">← Volver al chat</button>
+          <a href="/" className="clear-btn">← Modos</a>
         </footer>
 
         </div>
