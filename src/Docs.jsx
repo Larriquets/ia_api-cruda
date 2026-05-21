@@ -665,6 +665,14 @@ export default function Docs() {
             <li>El loop termina cuando <code>stop_reason !== "tool_use"</code>.</li>
           </ol>
 
+          <p>
+            ¿Querés entender el mecanismo <b>sin gastar API</b> y sin meterte
+            todavía en el JSON crudo?{' '}
+            Abrí <a href="/como-edita" target="_blank" rel="noreferrer">/como-edita</a> —
+            una animación guiada de una sola corrida (8 pasos) que destruye la idea
+            de que "la IA edita tu código". <b>La IA pide ediciones; las hace tu código.</b>
+          </p>
+
           <h3>Comparación rápida con el Editor común</h3>
           <div className="prov-table-wrap">
             <table className="prov-table">
