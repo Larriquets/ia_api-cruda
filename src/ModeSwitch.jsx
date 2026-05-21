@@ -1,20 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Switch de modos del header. Reutilizable entre Chat / Editor / Loop Agéntico / Docs.
- * "Agente + reglas" y "Docs" son dropdowns. El primero tiene dos variantes: solo reglas o con Skills.
+ * Switch de modos del header.
+ * "Modos", "Labs" y "Docs" son dropdowns.
  *
  * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "docs"
  */
 export default function ModeSwitch({ active }) {
+  const [modesOpen, setModesOpen] = useState(false)
   const [docsOpen, setDocsOpen] = useState(false)
-  const [agentsOpen, setAgentsOpen] = useState(false)
   const [labOpen, setLabOpen] = useState(false)
+  const modesDropdownRef = useRef(null)
   const dropdownRef = useRef(null)
-  const agentsDropdownRef = useRef(null)
   const labDropdownRef = useRef(null)
 
   // Cierra el dropdown al hacer click afuera.
+  useEffect(() => {
+    if (!modesOpen) return
+    const onDocClick = (e) => {
+      if (modesDropdownRef.current && !modesDropdownRef.current.contains(e.target)) {
+        setModesOpen(false)
+      }
+    }
+    const onEsc = (e) => { if (e.key === 'Escape') setModesOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [modesOpen])
+
   useEffect(() => {
     if (!docsOpen) return
     const onDocClick = (e) => {
@@ -30,22 +46,6 @@ export default function ModeSwitch({ active }) {
       document.removeEventListener('keydown', onEsc)
     }
   }, [docsOpen])
-
-  useEffect(() => {
-    if (!agentsOpen) return
-    const onDocClick = (e) => {
-      if (agentsDropdownRef.current && !agentsDropdownRef.current.contains(e.target)) {
-        setAgentsOpen(false)
-      }
-    }
-    const onEsc = (e) => { if (e.key === 'Escape') setAgentsOpen(false) }
-    document.addEventListener('mousedown', onDocClick)
-    document.addEventListener('keydown', onEsc)
-    return () => {
-      document.removeEventListener('mousedown', onDocClick)
-      document.removeEventListener('keydown', onEsc)
-    }
-  }, [agentsOpen])
 
   useEffect(() => {
     if (!labOpen) return
@@ -65,74 +65,83 @@ export default function ModeSwitch({ active }) {
 
   const cls = (mode) => `app-mode-btn${active === mode ? ' active' : ''}`
   const aria = (mode) => (active === mode ? { 'aria-current': 'page' } : {})
-  const agentsActive = active === 'agents-md' || active === 'agents-md-skills'
-  const agentsClsBase = `app-mode-btn${agentsActive ? ' active' : ''}`
+  const modes = [
+    {
+      key: 'chat',
+      href: '/',
+      label: '💬 Chat',
+      desc: 'contexto crudo, conversación y persistente',
+      title: 'Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente.',
+    },
+    {
+      key: 'editor',
+      href: '/editor',
+      label: '💻 Editor',
+      desc: 'código como contexto, con o sin historial',
+      title: 'Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto.',
+    },
+    {
+      key: 'loop-agentico',
+      href: '/loop-agentico',
+      label: '🤖 Loop Agéntico',
+      desc: 'tool-use para leer y editar código',
+      title: 'Loop agéntico con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
+    },
+    {
+      key: 'agents-md',
+      href: '/agents-md',
+      label: '📋 Agente + reglas',
+      desc: 'AGENTS.md inyectado al system prompt',
+      title: 'Agente con reglas persistentes (AGENTS.md) inyectadas al system prompt.',
+    },
+    {
+      key: 'agents-md-skills',
+      href: '/agents-md-skills',
+      label: '📋 Agente + 🧪 skills',
+      desc: 'reglas persistentes más herramientas tipo skill',
+      title: 'Agente con reglas persistentes y Skills disponibles como herramientas.',
+    },
+  ]
+  const activeMode = modes.find((mode) => mode.key === active) || modes[0]
+  const modesActive = modes.some((mode) => mode.key === active)
+  const modesClsBase = `app-mode-btn${modesActive ? ' active' : ''}`
+  const modesButtonLabel = modesActive ? activeMode.label : '🎛️ Modos'
   const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento'
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
     <div className="app-mode-switch">
       <span className="app-mode-switch-label" aria-hidden="true">MODO:</span>
-      <a
-        href="/"
-        className={cls('chat')}
-        {...aria('chat')}
-        title="Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente."
-      >
-        💬 Chat
-      </a>
-      <a
-        href="/editor"
-        className={cls('editor')}
-        {...aria('editor')}
-        title="Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto."
-      >
-        💻 Editor
-      </a>
-      <a
-        href="/loop-agentico"
-        className={cls('loop-agentico')}
-        {...aria('loop-agentico')}
-        title="Loop agéntico con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola."
-      >
-        🤖 Loop Agéntico
-      </a>
-      <div className="app-mode-dropdown" ref={agentsDropdownRef}>
+      <div className="app-mode-dropdown" ref={modesDropdownRef}>
         <button
           type="button"
-          className={`${agentsClsBase} app-mode-dropdown-btn`}
-          {...(agentsActive ? { 'aria-current': 'page' } : {})}
-          onClick={() => setAgentsOpen((v) => !v)}
+          className={`${modesClsBase} app-mode-dropdown-btn`}
+          {...(modesActive ? { 'aria-current': 'page' } : {})}
+          onClick={() => setModesOpen((v) => !v)}
           aria-haspopup="menu"
-          aria-expanded={agentsOpen}
-          title="Agente con reglas persistentes (AGENTS.md) inyectadas al system prompt. Elegí solo reglas o sumá Skills."
+          aria-expanded={modesOpen}
+          title="Modos principales de la app: Chat, Editor y Loop Agéntico."
         >
-          📋 Agente + reglas <span className="app-mode-dropdown-chev">{agentsOpen ? '▴' : '▾'}</span>
+          {modesButtonLabel} <span className="app-mode-dropdown-chev">{modesOpen ? '▴' : '▾'}</span>
         </button>
-        {agentsOpen && (
+        {modesOpen && (
           <div className="app-mode-menu" role="menu">
-            <a
-              href="/agents-md"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('agents-md')}
-            >
-              <b>📋 Agente + reglas</b>
-              <span className="app-mode-menu-sub">AGENTS.md en el system prompt</span>
-            </a>
-            <a
-              href="/agents-md-skills"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('agents-md-skills')}
-            >
-              <b>📋 Agente + 🧪 skills</b>
-              <span className="app-mode-menu-sub">suma load_skill / run_skill_test</span>
-            </a>
+            {modes.map((mode) => (
+              <a
+                key={mode.key}
+                href={mode.href}
+                className="app-mode-menu-item"
+                role="menuitem"
+                title={mode.title}
+                {...aria(mode.key)}
+              >
+                <b>{mode.label}</b>
+                <span className="app-mode-menu-sub">{mode.desc}</span>
+              </a>
+            ))}
           </div>
         )}
       </div>
-
       <div className="app-mode-dropdown" ref={labDropdownRef}>
         <button
           type="button"
@@ -201,14 +210,6 @@ export default function ModeSwitch({ active }) {
             <a href="/como-funciona" className="app-mode-menu-item" role="menuitem">
               <b>⚙️ /como-funciona</b>
               <span className="app-mode-menu-sub">system / context / tools en el POST</span>
-            </a>
-            <a href="/modos-editor" className="app-mode-menu-item" role="menuitem">
-              <b>🎬 /modos-editor</b>
-              <span className="app-mode-menu-sub">sin contexto vs con contexto, animado</span>
-            </a>
-            <a href="/como-edita" className="app-mode-menu-item" role="menuitem">
-              <b>✂️ /como-edita</b>
-              <span className="app-mode-menu-sub">cómo la IA "edita" código sin tocarlo</span>
             </a>
             <a href="/contexto" className="app-mode-menu-item" role="menuitem">
               <b>🧠 /contexto</b>

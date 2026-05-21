@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import DocsNav from './DocsNav.jsx'
 
 /**
- * /como-edita — cómo una IA "edita código" sin abrir tu archivo.
+ * /demo/loop — cómo una IA "edita código" sin abrir tu archivo.
  *
  * Idea-fuerza única: la IA solo genera texto. Cuando dice "edito tu código",
  * en realidad escupe un `tool_use` describiendo el cambio. Tu código (el
@@ -346,7 +346,7 @@ export default function ComoEdita() {
     <div className="criollo">
       <header className="header">
         <h1>
-          /como-edita
+          /demo/loop
           <span className="docs-header-subtitle">
             cómo una IA "edita código" sin nunca abrir tu archivo
           </span>
@@ -356,7 +356,7 @@ export default function ComoEdita() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label="Navegación de documentación">
-          <DocsNav current="como-edita" />
+          <DocsNav current="demo-loop" />
           <div className="mch-aside-tip">
             <div className="mch-aside-tip-title">¿Para qué sirve esta página?</div>
             <p>
@@ -562,11 +562,11 @@ export default function ComoEdita() {
                     <span className="ce-closing-cta-sub">→ /agents-md-skills</span>
                   </span>
                 </a>
-                <a href="/modos-editor" className="ce-closing-cta">
+                <a href="/demo/editor" className="ce-closing-cta">
                   <span className="ce-closing-cta-emoji">🎬</span>
                   <span>
                     <b>¿En qué cambia con el Editor (que NO es agéntico)?</b>
-                    <span className="ce-closing-cta-sub">→ /modos-editor</span>
+                    <span className="ce-closing-cta-sub">→ /demo/editor</span>
                   </span>
                 </a>
               </div>

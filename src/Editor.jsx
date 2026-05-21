@@ -387,7 +387,18 @@ export default function Editor({ onBack }) {
           Vaciar editor
         </button>
 
-        <ReadDocLink section="modo-editor" />
+        <div className="config-bar-actions">
+          <a
+            href="/demo/editor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title="Abre la demo automática del Editor en otra pestaña"
+          >
+            🎬 Ver Demo
+          </a>
+          <ReadDocLink section="modo-editor" />
+        </div>
       </ConfigBar>
 
       <div

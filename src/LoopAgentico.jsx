@@ -474,7 +474,18 @@ export default function LoopAgentico() {
           Reset código
         </button>
 
-        <ReadDocLink section="modo-loop" />
+        <div className="config-bar-actions">
+          <a
+            href="/demo/loop"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title="Abre la demo automática del Loop Agéntico en otra pestaña"
+          >
+            ✂️ Ver Demo
+          </a>
+          <ReadDocLink section="modo-loop" />
+        </div>
       </ConfigBar>
 
       <div

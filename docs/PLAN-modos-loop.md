@@ -1,4 +1,4 @@
-# Plan: `/como-edita` — cómo una IA edita código, paso a paso
+# Plan: `/demo/loop` — cómo una IA edita código, paso a paso
 
 > Documento de planificación. Todavía no hay código.
 >
@@ -48,7 +48,7 @@ Pensar la página como **una animación guiada de UNA edición**. Sin escenarios
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ /como-edita                                                          │
+│ /demo/loop                                                           │
 │ cómo una IA edita código sin nunca "abrir" tu archivo               │
 └──────────────────────────────────────────────────────────────────────┘
 
@@ -198,9 +198,9 @@ Y debajo: **CTAs claras a las páginas siguientes**:
 
 - "¿Querés ver el JSON crudo de una corrida real? → [/loop-agentico](/loop-agentico)"
 - "¿Querés ver cómo cambia con reglas (AGENTS.md, skills)? → [/agents-md-skills](/agents-md-skills)"
-- "¿Querés ver la diferencia con el Editor (que NO es agéntico)? → [/modos-editor](/modos-editor)"
+- "¿Querés ver la diferencia con el Editor (que NO es agéntico)? → [/demo/editor](/demo/editor)"
 
-Eso último — el link a `/modos-editor` — es importante pedagógicamente. Cierra la trilogía Chat → Editor → Loop.
+Eso último — el link a `/demo/editor` — es importante pedagógicamente. Cierra la trilogía Chat → Editor → Loop.
 
 ---
 
@@ -210,7 +210,7 @@ Eso último — el link a `/modos-editor` — es importante pedagógicamente. Ci
 
 ### Etapa 1 — el guion + las dos columnas estáticas (1-2 hs)
 - Crear `src/ComoEdita.jsx`.
-- Ruta `/como-edita` en `App.jsx`. Link en `DocsNav` + dropdown Docs (siguiendo el patrón de `/modos-editor`).
+- Ruta `/demo/loop` en `App.jsx`. Link en `DocsNav` + dropdown Docs (siguiendo el patrón de `/demo/editor`).
 - Mock fijo de los 7 pasos como array de objetos.
 - Layout 2 columnas con `<pre>` izquierda y lista de burbujas derecha.
 - Botones ▶ siguiente / ◀ atrás / ↺ reset / ▶▶ auto.
@@ -251,6 +251,6 @@ Si te cierra el enfoque, arranco con Etapa 1: archivo `ComoEdita.jsx` + ruta + m
 
 Tres cosas a confirmar antes:
 
-1. ¿Te cierra el nombre `/como-edita`? Otras opciones: `/edit-flow`, `/como-edita-ia`, `/dialogo`, o quedarse en `/modos-loop` aunque sea menos descriptivo.
+1. ¿Te cierra el nombre `/demo/loop`? Otras opciones: `/edit-flow`, `/dialogo`, o quedarse en una ruta menos descriptiva.
 2. ¿Te cierra que sean **6-7 pasos fijos** sin variantes? (vs hacer el guion configurable).
 3. ¿Te cierra que el archivo de la corrida sea Java? (consistente con el resto de la app). Podría ser JS o algo más universal — pero Java mantiene la línea narrativa.

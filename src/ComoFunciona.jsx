@@ -260,7 +260,7 @@ export default function ComoFunciona() {
               </li>
               <li>
                 ¿Querés ver los tres lado a lado, animados, con la misma conversación de 3
-                turnos? Abrí <a href="/modos-chat" target="_blank" rel="noreferrer">/modos-chat</a>.
+                turnos? Abrí <a href="/demo/chat" target="_blank" rel="noreferrer">/demo/chat</a>.
               </li>
               <li>
                 <b>Loop Agéntico</b> — el array crece <i>solo</i>, sin que vos escribas nada. Cada

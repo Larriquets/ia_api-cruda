@@ -184,7 +184,7 @@ export default function ModosChat() {
     <div className="criollo">
       <header className="header">
         <h1>
-          /modos-chat
+          /demo/chat
           <span className="docs-header-subtitle">crudo vs conversación vs persistente, lado a lado</span>
         </h1>
         <a href="/" className="clear-btn">← Modos</a>
@@ -192,7 +192,7 @@ export default function ModosChat() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label="Navegación de documentación">
-          <DocsNav current="modos-chat" />
+          <DocsNav current="demo-chat" />
           <div className="mch-aside-tip">
             <div className="mch-aside-tip-title">¿Para qué sirve esta página?</div>
             <p>

@@ -119,9 +119,9 @@ export default function App() {
     if (window.location.pathname === '/razonamiento') return 'razonamiento'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
-    if (window.location.pathname === '/modos-chat') return 'modos-chat'
-    if (window.location.pathname === '/modos-editor') return 'modos-editor'
-    if (window.location.pathname === '/como-edita') return 'como-edita'
+    if (window.location.pathname === '/demo/chat') return 'demo-chat'
+    if (window.location.pathname === '/demo/editor') return 'demo-editor'
+    if (window.location.pathname === '/demo/loop') return 'demo-loop'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -447,13 +447,13 @@ export default function App() {
   if (page === 'como-funciona') {
     return <><WelcomeModal /><ComoFunciona /></>
   }
-  if (page === 'modos-chat') {
+  if (page === 'demo-chat') {
     return <><WelcomeModal /><ModosChat /></>
   }
-  if (page === 'modos-editor') {
+  if (page === 'demo-editor') {
     return <><WelcomeModal /><ModosEditor /></>
   }
-  if (page === 'como-edita') {
+  if (page === 'demo-loop') {
     return <><WelcomeModal /><ComoEdita /></>
   }
 
@@ -508,7 +508,18 @@ export default function App() {
 
         <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
 
-        <ReadDocLink section="modo-chat" />
+        <div className="config-bar-actions">
+          <a
+            href="/demo/chat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title="Abre la demo automática de Chat en otra pestaña"
+          >
+            🎞️ Ver Demo
+          </a>
+          <ReadDocLink section="modo-chat" />
+        </div>
       </ConfigBar>
 
       <div className="layout">

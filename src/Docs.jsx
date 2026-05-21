@@ -526,7 +526,7 @@ export default function Docs() {
           </ul>
           <p>
             ¿Querés ver la diferencia entre los tres modos <b>sin gastar API</b>?{' '}
-            Abrí <a href="/modos-chat" target="_blank" rel="noreferrer">/modos-chat</a> —
+            Abrí <a href="/demo/chat" target="_blank" rel="noreferrer">/demo/chat</a> —
             un comparador animado de crudo vs conversación vs persistente, lado a lado.
           </p>
 
@@ -543,6 +543,12 @@ export default function Docs() {
             label="Chat"
             emoji="💬"
             hint="Probá los tres modos de contexto (Crudo / Conversación / Persistente) y mirá cómo cambia el JSON que sale."
+          />
+          <TryModeCTA
+            href="/demo/chat"
+            label="Demo Chat"
+            emoji="🎞️"
+            hint="Compará crudo, conversación y persistente sin gastar API."
           />
             </div>
           </details>
@@ -592,7 +598,7 @@ export default function Docs() {
           </ul>
           <p>
             ¿Querés ver la diferencia entre los dos modos <b>sin gastar API</b>?{' '}
-            Abrí <a href="/modos-editor" target="_blank" rel="noreferrer">/modos-editor</a> —
+            Abrí <a href="/demo/editor" target="_blank" rel="noreferrer">/demo/editor</a> —
             un comparador animado de sin contexto vs con contexto, lado a lado, sobre la misma
             sesión de 3 ediciones.
           </p>
@@ -616,6 +622,12 @@ export default function Docs() {
             label="Editor"
             emoji="💻"
             hint="Pegá código, pedí un cambio, comparalo con/sin contexto."
+          />
+          <TryModeCTA
+            href="/demo/loop"
+            label="Demo Loop"
+            emoji="✂️"
+            hint="Mirá paso a paso qué pasa cuando la IA pide una edición."
           />
             </div>
           </details>
@@ -668,7 +680,7 @@ export default function Docs() {
           <p>
             ¿Querés entender el mecanismo <b>sin gastar API</b> y sin meterte
             todavía en el JSON crudo?{' '}
-            Abrí <a href="/como-edita" target="_blank" rel="noreferrer">/como-edita</a> —
+            Abrí <a href="/demo/loop" target="_blank" rel="noreferrer">/demo/loop</a> —
             una animación guiada de una sola corrida (8 pasos) que destruye la idea
             de que "la IA edita tu código". <b>La IA pide ediciones; las hace tu código.</b>
           </p>
@@ -736,6 +748,12 @@ export default function Docs() {
             label="Loop Agéntico"
             emoji="🤖"
             hint="Dale una instrucción y mirá el ciclo tool_use → tool_result en vivo."
+          />
+          <TryModeCTA
+            href="/demo/loop"
+            label="Demo Loop"
+            emoji="✂️"
+            hint="Mirá una corrida guiada de una edición pedida por tools."
           />
             </div>
           </details>

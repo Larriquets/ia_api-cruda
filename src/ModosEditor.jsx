@@ -301,7 +301,7 @@ export default function ModosEditor() {
     <div className="criollo">
       <header className="header">
         <h1>
-          /modos-editor
+          /demo/editor
           <span className="docs-header-subtitle">sin contexto vs con contexto, lado a lado</span>
         </h1>
         <a href="/" className="clear-btn">← Modos</a>
@@ -309,7 +309,7 @@ export default function ModosEditor() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label="Navegación de documentación">
-          <DocsNav current="modos-editor" />
+          <DocsNav current="demo-editor" />
           <div className="mch-aside-tip">
             <div className="mch-aside-tip-title">¿Para qué sirve esta página?</div>
             <p>
