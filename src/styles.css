@@ -699,6 +699,204 @@ body {
   border-top: 1px solid #334155;
 }
 
+/* === Guia "Primeros 10 minutos" === */
+.guide-entry {
+  margin: 10px 12px 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guide-entry-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.guide-entry-copy b {
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.guide-entry-copy span {
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.guide-panel {
+  margin: 10px 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  border-radius: 8px;
+  background: #0b1220;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-top,
+.guide-nav,
+.guide-actions,
+.guide-progress {
+  display: flex;
+  align-items: center;
+}
+
+.guide-top,
+.guide-nav {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.guide-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #60a5fa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.guide-top h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.guide-progress {
+  gap: 6px;
+}
+
+.guide-dot {
+  width: 26px;
+  height: 24px;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.75);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guide-dot.active {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.2);
+  color: #dbeafe;
+}
+
+.guide-card {
+  padding: 10px;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.guide-mode {
+  width: fit-content;
+  margin-bottom: 7px;
+  padding: 2px 8px;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 999px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.guide-goal,
+.guide-body {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.guide-goal {
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.guide-body {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.guide-actions {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.guide-primary-btn,
+.guide-secondary-btn,
+.guide-link-btn {
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guide-primary-btn {
+  padding: 7px 12px;
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: white;
+}
+
+.guide-primary-btn:hover {
+  background: #1d4ed8;
+  border-color: #3b82f6;
+}
+
+.guide-secondary-btn,
+.guide-link-btn {
+  padding: 7px 10px;
+  border: 1px solid #334155;
+  background: rgba(30, 41, 59, 0.65);
+  color: #cbd5e1;
+}
+
+.guide-secondary-btn:hover,
+.guide-link-btn:hover:not(:disabled) {
+  border-color: #475569;
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.guide-link-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.guide-nav {
+  color: #64748b;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .guide-entry {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guide-entry .guide-primary-btn {
+    width: 100%;
+  }
+}
+
 /* === Chat === */
 .chat-panel {
   border-right: 1px solid #334155;
@@ -4674,4 +4872,163 @@ body {
   color: #94a3b8;
   font-size: 11px;
   line-height: 1.4;
+}
+
+/* ============== /como-funciona — JSON resaltado por pieza ============== */
+
+.cf-json-legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0 8px;
+}
+
+.cf-json-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Consolas', 'Monaco', monospace;
+  border: 1px solid;
+}
+
+.cf-pill-system  { color: #93c5fd; background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.5); }
+.cf-pill-context { color: #fcd34d; background: rgba(234, 179, 8, 0.10);  border-color: rgba(234, 179, 8, 0.5); }
+.cf-pill-tools   { color: #86efac; background: rgba(34, 197, 94, 0.10);  border-color: rgba(34, 197, 94, 0.5); }
+
+.cf-json {
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 4px 0 14px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  overflow-x: auto;
+  white-space: pre;
+  word-break: normal;
+  tab-size: 2;
+}
+
+.cf-json code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+}
+
+.cf-json-url {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.cf-json-str { color: #93c5fd; }
+.cf-json-num { color: #f0abfc; }
+
+/* Anotación al margen ("← turno 1", "← personalidad"). No es parte del JSON. */
+.cf-json-note {
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Bloques resaltados — cada uno con un color de fondo distinto.
+   El tag (system / context / tools) flota a la derecha vía ::after, así
+   el contenido del <pre> sigue siendo JSON limpio y copiable. */
+.cf-hl {
+  display: block;
+  border-left: 3px solid;
+  padding: 4px 8px 4px 10px;
+  margin: 4px -8px;
+  border-radius: 3px;
+  position: relative;
+}
+
+.cf-hl::after {
+  content: attr(data-tag);
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 1px 8px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.cf-hl-system {
+  background: rgba(59, 130, 246, 0.10);
+  border-left-color: #3b82f6;
+}
+.cf-hl-system::after {
+  background: rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+}
+
+.cf-hl-context {
+  background: rgba(234, 179, 8, 0.08);
+  border-left-color: #eab308;
+  padding-top: 22px; /* deja espacio para el badge arriba a la derecha */
+}
+.cf-hl-context::after {
+  background: rgba(234, 179, 8, 0.22);
+  color: #fde68a;
+}
+
+.cf-hl-tools {
+  background: rgba(34, 197, 94, 0.08);
+  border-left-color: #22c55e;
+  padding-top: 22px;
+}
+.cf-hl-tools::after {
+  background: rgba(34, 197, 94, 0.22);
+  color: #bbf7d0;
+}
+
+/* Cuando un bloque está dentro de otro (system dentro de context) */
+.cf-hl-nested {
+  display: block;
+  border-left: 3px solid;
+  padding: 2px 8px 2px 10px;
+  margin: 2px -2px;
+  border-radius: 3px;
+  position: relative;
+}
+
+.cf-hl-nested::after {
+  content: attr(data-tag);
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 1px 8px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.cf-hl-nested.cf-hl-system {
+  background: rgba(59, 130, 246, 0.18);
+  border-left-color: #60a5fa;
+  padding-top: 20px;
+}
+.cf-hl-nested.cf-hl-system::after {
+  background: rgba(96, 165, 250, 0.30);
+  color: #dbeafe;
 }

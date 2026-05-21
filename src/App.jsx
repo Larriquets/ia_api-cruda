@@ -17,6 +17,7 @@ import VentanaContexto from './VentanaContexto.jsx'
 import PromptInjection from './PromptInjection.jsx'
 import Razonamiento from './Razonamiento.jsx'
 import Docs from './Docs.jsx'
+import ComoFunciona from './ComoFunciona.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -24,6 +25,7 @@ import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 import SystemEditor from './SystemEditor.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
+import FirstTenMinutesGuide from './FirstTenMinutesGuide.jsx'
 import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
@@ -34,9 +36,24 @@ const SYSTEM_KEY = 'chat_system_prompt'
 const SYSTEM_OPEN_KEY = 'chat_system_open'
 const TEMP_KEY = 'chat_temperature'
 const LOGS_MAX = 500
+const GUIDE_JSON_SYSTEM = 'Responde siempre como JSON valido. No uses Markdown. La raiz debe ser un objeto con las claves "respuesta" y "items".'
 
 const buildInitialMessages = (systemPrompt) => [
   { role: 'system', content: systemPrompt || CHAT_DEFAULT_SYSTEM },
+]
+
+const buildGuideContextMessages = (systemPrompt) => [
+  { role: 'system', content: systemPrompt || CHAT_DEFAULT_SYSTEM },
+  { role: 'user', content: 'Estoy armando una app para aprender IA desde la API. Quiero entender que viaja en cada request.' },
+  { role: 'assistant', content: 'Buen punto de partida: mira el array messages, el system prompt y el mensaje actual. Esa es la parte visible del contexto.' },
+  { role: 'user', content: 'Tambien quiero mostrar que el historial no vive magicamente dentro del modelo.' },
+  { role: 'assistant', content: 'Entonces conviene comparar un modo crudo con un modo conversacion. En crudo solo viaja el ultimo turno; en conversacion viaja el historial.' },
+  { role: 'user', content: 'Agrega mucho ruido conceptual: tokens, memoria, providers, razonamiento y agentes.' },
+  { role: 'assistant', content: 'Eso permite una segunda capa didactica: cuando el contexto crece, la app tiene que decidir que conservar, resumir o dejar afuera.' },
+  { role: 'user', content: 'Este mensaje representa informacion vieja que tal vez ya no entre completa en una ventana chica de contexto.' },
+  { role: 'assistant', content: 'Exacto. En una estrategia FIFO se perderia primero lo mas antiguo. En sliding window se conservan los ultimos turnos completos.' },
+  { role: 'user', content: 'Ultima pregunta: si ahora mando un request nuevo, que deberia mirar?' },
+  { role: 'assistant', content: 'Mira que mensajes aparecen marcados como parte del request y cuantos tokens estimados consume cada bloque.' },
 ]
 
 export default function App() {
@@ -54,6 +71,8 @@ export default function App() {
     const parsed = raw != null ? parseFloat(raw) : NaN
     return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : 0.7
   })
+  const [guideActive, setGuideActive] = useState(false)
+  const [guideStep, setGuideStep] = useState(0)
   const [messages, setMessages] = useState(() => buildInitialMessages(
     typeof window === 'undefined' ? CHAT_DEFAULT_SYSTEM : (localStorage.getItem(SYSTEM_KEY) ?? CHAT_DEFAULT_SYSTEM),
   ))
@@ -96,6 +115,7 @@ export default function App() {
     if (window.location.pathname === '/prompt-injection') return 'prompt-injection'
     if (window.location.pathname === '/razonamiento') return 'razonamiento'
     if (window.location.pathname === '/docs') return 'docs'
+    if (window.location.pathname === '/como-funciona') return 'como-funciona'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -177,6 +197,74 @@ export default function App() {
     const timestamp = new Date().toLocaleTimeString('es-AR', { hour12: false })
     setLogs((prev) => [...prev, { level, message, timestamp }])
   }, [])
+
+  const resetLocalConversation = (nextSystem = systemPrompt) => {
+    setMessages(buildInitialMessages(nextSystem))
+    setError(null)
+    setRawRequest(null)
+    setRawResponse(null)
+    setServerHistory([])
+  }
+
+  const startGuide = () => {
+    setGuideActive(true)
+    setGuideStep(0)
+    setRawMode(true)
+    setPersistentMode(false)
+    resetLocalConversation(systemPrompt)
+    appendLog('info', 'Guia Primeros 10 minutos iniciada: paso 1 en modo crudo')
+  }
+
+  const stopGuide = () => {
+    setGuideActive(false)
+    appendLog('info', 'Guia Primeros 10 minutos cerrada')
+  }
+
+  const prepareGuideStep = (step) => {
+    setGuideStep(step)
+    setError(null)
+    setRawRequest(null)
+    setRawResponse(null)
+    setServerHistory([])
+
+    if (step === 0) {
+      setRawMode(true)
+      setPersistentMode(false)
+      setMessages(buildInitialMessages(systemPrompt))
+      appendLog('info', 'Guia paso 1: modo crudo preparado')
+      return
+    }
+
+    if (step === 1) {
+      setRawMode(false)
+      setPersistentMode(false)
+      setMessages(buildInitialMessages(systemPrompt))
+      appendLog('info', 'Guia paso 2: modo conversacion preparado')
+      return
+    }
+
+    if (step === 2) {
+      setRawMode(true)
+      setPersistentMode(false)
+      setSystemPrompt(GUIDE_JSON_SYSTEM)
+      setSystemOpen(true)
+      setMessages(buildInitialMessages(GUIDE_JSON_SYSTEM))
+      appendLog('info', 'Guia paso 3: system JSON cargado')
+      return
+    }
+
+    if (step === 3) {
+      setRawMode(false)
+      setPersistentMode(false)
+      setMessages(buildGuideContextMessages(systemPrompt))
+      appendLog('info', 'Guia paso 4: contexto inflado con conversacion de ejemplo')
+    }
+  }
+
+  const useGuidePrompt = (prompt) => {
+    setInput(prompt)
+    appendLog('info', `Guia: frase cargada en el composer: "${prompt}"`)
+  }
 
   const ensureConversationId = async () => {
     if (conversationId) return conversationId
@@ -350,6 +438,9 @@ export default function App() {
   if (page === 'docs') {
     return <><WelcomeModal /><Docs /></>
   }
+  if (page === 'como-funciona') {
+    return <><WelcomeModal /><ComoFunciona /></>
+  }
 
   return (
     <div className="app">
@@ -431,6 +522,16 @@ export default function App() {
               </a>
             </span>
           </div>
+
+          <FirstTenMinutesGuide
+            active={guideActive}
+            step={guideStep}
+            onStart={startGuide}
+            onStop={stopGuide}
+            onPrepareStep={prepareGuideStep}
+            onUsePrompt={useGuidePrompt}
+            onStepChange={setGuideStep}
+          />
 
           <div className="mode-segmented" role="tablist" aria-label="Modo de envío">
             <span className="mode-segmented-label">Modo</span>

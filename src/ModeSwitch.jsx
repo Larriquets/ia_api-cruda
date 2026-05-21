@@ -198,6 +198,10 @@ export default function ModeSwitch({ active }) {
             </a>
             <div className="app-mode-menu-divider" />
             <div className="app-mode-menu-section">Anexos</div>
+            <a href="/como-funciona" className="app-mode-menu-item" role="menuitem">
+              <b>⚙️ /como-funciona</b>
+              <span className="app-mode-menu-sub">system / context / tools en el POST</span>
+            </a>
             <a href="/contexto" className="app-mode-menu-item" role="menuitem">
               <b>🧠 /contexto</b>
               <span className="app-mode-menu-sub">vista en vivo del array messages</span>
