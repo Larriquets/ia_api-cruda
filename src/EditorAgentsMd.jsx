@@ -582,6 +582,18 @@ export default function EditorAgentsMd({ withSkills = true }) {
           Reset todo
         </button>
 
+        {!withSkills && (
+          <a
+            href="/demo/agents-md"
+            target="_blank"
+            rel="noreferrer"
+            className="read-doc-link view-demo-link"
+            title="Abre la demo automatica de AGENTS.md en otra pestaña"
+          >
+            Ver Demo
+          </a>
+        )}
+
         <ReadDocLink section={withSkills ? 'modo-skills' : 'modo-agentsmd'} />
       </ConfigBar>
 

@@ -1,21 +1,22 @@
 const LINKS = [
-  { key: 'docs',          href: '/docs',          emoji: '📚', name: '/docs',          desc: 'qué hace cada modo de la app' },
-  { key: 'como-funciona', href: '/como-funciona', emoji: '⚙️', name: '/como-funciona', desc: 'system / context / tools en el POST' },
-  { key: 'contexto',      href: '/contexto',      emoji: '🧠', name: '/contexto',      desc: 'vista en vivo del array messages del chat' },
-  { key: 'proveedores',   href: '/proveedores',   emoji: '⚖️', name: '/proveedores',   desc: 'OpenAI vs Anthropic — dónde vive el contexto' },
+  { key: 'docs', href: '/docs', emoji: 'D', name: '/docs', desc: 'que hace cada modo de la app' },
+  { key: 'como-funciona', href: '/como-funciona', emoji: 'C', name: '/como-funciona', desc: 'system / context / tools en el POST' },
+  { key: 'contexto', href: '/contexto', emoji: 'M', name: '/contexto', desc: 'vista en vivo del array messages del chat' },
+  { key: 'proveedores', href: '/proveedores', emoji: 'P', name: '/proveedores', desc: 'OpenAI vs Anthropic: donde vive el contexto' },
 ]
 
 const DEMO_LINKS = [
-  { key: 'demo-chat',   href: '/demo/chat',   emoji: '🎞️', name: '/demo/chat',   desc: 'demo automática del Chat: crudo vs conversación vs persistente' },
-  { key: 'demo-editor', href: '/demo/editor', emoji: '🎬', name: '/demo/editor', desc: 'demo automática del Editor: sin contexto vs con contexto' },
-  { key: 'demo-loop',   href: '/demo/loop',   emoji: '✂️', name: '/demo/loop',   desc: 'demo automática del Loop: edición agéntica con tools' },
+  { key: 'demo-chat', href: '/demo/chat', emoji: 'C', name: '/demo/chat', desc: 'demo automatica del Chat: crudo vs conversacion vs persistente' },
+  { key: 'demo-editor', href: '/demo/editor', emoji: 'E', name: '/demo/editor', desc: 'demo automatica del Editor: sin contexto vs con contexto' },
+  { key: 'demo-loop', href: '/demo/loop', emoji: 'L', name: '/demo/loop', desc: 'demo automatica del Loop: edicion agentica con tools' },
+  { key: 'demo-agents-md', href: '/demo/agents-md', emoji: 'A', name: '/demo/agents-md', desc: 'demo automatica de AGENTS.md: mismas tools, distinto system' },
 ]
 
 export default function DocsNav({ current }) {
   const isDemo = current?.startsWith('demo-')
   const links = isDemo ? DEMO_LINKS : LINKS
-  const title = isDemo ? 'Mas demos' : 'Más docs:'
-  const ariaLabel = isDemo ? 'Páginas de demos' : 'Páginas de documentación'
+  const title = isDemo ? 'Mas demos' : 'Mas docs:'
+  const ariaLabel = isDemo ? 'Paginas de demos' : 'Paginas de documentacion'
 
   return (
     <nav className="docs-nav" aria-label={ariaLabel}>

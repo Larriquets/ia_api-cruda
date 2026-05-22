@@ -851,6 +851,15 @@ export default function Docs() {
           </details>
         </section>
 
+        <section className="criollo-section">
+          <TryModeCTA
+            href="/demo/agents-md"
+            label="Demo AGENTS.md"
+            emoji="A"
+            hint="Misma tarea, mismo agente: compara que cambia cuando AGENTS.md viaja en el system."
+          />
+        </section>
+
         {/* ============== AGENTS.MD + SKILLS ============== */}
         <section className="criollo-section" id="modo-skills">
           <details className="docs-collapsible docs-section-collapsible">

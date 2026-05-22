@@ -6097,3 +6097,318 @@ body {
   }
 }
 
+/* ============================================================
+   /demo/agents-md - comparador de system base vs system+AGENTS.md
+   ============================================================ */
+
+.mag-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.mag-agents-panel,
+.mag-run {
+  display: flex;
+  flex-direction: column;
+  min-height: 640px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mag-agents-header,
+.mag-run-header {
+  padding: 13px 14px;
+  border-bottom: 1px solid #1e293b;
+  background: rgba(15, 23, 42, 0.76);
+}
+
+.mag-agents-header h3,
+.mag-run-header h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #e2e8f0;
+}
+
+.mag-agents-header p,
+.mag-run-header p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.mag-run-with {
+  border-color: rgba(34, 197, 94, 0.34);
+}
+
+.mag-run-with .mag-run-header {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.09), rgba(15, 23, 42, 0.76));
+}
+
+.mag-run-with .mag-run-header h3 {
+  color: #bbf7d0;
+}
+
+.mag-run-without {
+  border-color: rgba(96, 165, 250, 0.24);
+}
+
+.mag-run-without .mag-run-header {
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.08), rgba(15, 23, 42, 0.76));
+}
+
+.mag-run-without .mag-run-header h3 {
+  color: #bfdbfe;
+}
+
+.mag-agents-file {
+  margin: 0;
+  padding: 14px;
+  background: #0b1220;
+  border-bottom: 1px solid #1e293b;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+}
+
+.mag-agents-line {
+  display: block;
+  padding: 2px 5px;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.mag-agents-line.is-active {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.09);
+  border-left-color: #fbbf24;
+}
+
+.mag-system-preview {
+  margin: 14px;
+  padding: 12px;
+  background: rgba(251, 191, 36, 0.07);
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 8px;
+}
+
+.mag-system-title {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fde68a;
+}
+
+.mag-system-preview code {
+  display: block;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+}
+
+.mag-agents-foot {
+  margin-top: auto;
+  padding: 12px 14px;
+  border-top: 1px solid #1e293b;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.mag-timeline {
+  flex: 1;
+  min-height: 250px;
+  padding: 12px;
+  background: #0b1220;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.mag-empty {
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.mag-bubble {
+  padding: 9px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.mag-bubble.is-new {
+  animation: ce-bubble-in 360ms ease-out;
+}
+
+.mag-bubble-user {
+  border-color: rgba(148, 163, 184, 0.26);
+}
+
+.mag-bubble-ai {
+  border-color: rgba(167, 139, 250, 0.32);
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.mag-bubble-code {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.07);
+}
+
+.mag-bubble-request {
+  border-color: rgba(251, 191, 36, 0.34);
+  background: rgba(251, 191, 36, 0.07);
+}
+
+.mag-bubble-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.mag-bubble-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #cbd5e1;
+}
+
+.mag-bubble-tag {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.mag-bubble-tag-tool_use {
+  color: #ddd6fe;
+  border-color: rgba(139, 92, 246, 0.36);
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.mag-bubble-tag-tool_result {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.34);
+  background: rgba(34, 197, 94, 0.13);
+}
+
+.mag-bubble-tag-system {
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.36);
+  background: rgba(251, 191, 36, 0.13);
+}
+
+.mag-bubble-body code {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+}
+
+.mag-bubble-note {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
+.mag-code-wrap {
+  border-top: 1px solid #1e293b;
+  background: #0f172a;
+}
+
+.mag-code-label {
+  padding: 9px 12px 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.mag-code {
+  margin: 0;
+  padding: 9px 12px 12px 0;
+  max-height: 275px;
+  overflow: auto;
+  background: #0b1220;
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  white-space: pre;
+}
+
+.mag-code-line {
+  display: flex;
+  padding: 0 10px;
+  border-left: 3px solid transparent;
+}
+
+.mag-code-line.is-highlighted {
+  background: rgba(34, 197, 94, 0.14);
+  border-left-color: #22c55e;
+}
+
+.mag-code-lineno {
+  width: 28px;
+  margin-right: 11px;
+  text-align: right;
+  color: #475569;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.mag-code-text {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .mag-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mag-agents-panel {
+    grid-column: 1 / -1;
+    min-height: auto;
+  }
+
+  .mag-agents-file {
+    max-height: 190px;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .mag-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mag-run {
+    min-height: 520px;
+  }
+}
+

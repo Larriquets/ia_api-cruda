@@ -21,6 +21,7 @@ import ComoFunciona from './ComoFunciona.jsx'
 import ModosChat from './ModosChat.jsx'
 import ModosEditor from './ModosEditor.jsx'
 import ComoEdita from './ComoEdita.jsx'
+import ModosAgentsMd from './ModosAgentsMd.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -122,6 +123,7 @@ export default function App() {
     if (window.location.pathname === '/demo/chat') return 'demo-chat'
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
+    if (window.location.pathname === '/demo/agents-md') return 'demo-agents-md'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -455,6 +457,9 @@ export default function App() {
   }
   if (page === 'demo-loop') {
     return <><WelcomeModal /><ComoEdita /></>
+  }
+  if (page === 'demo-agents-md') {
+    return <><WelcomeModal /><ModosAgentsMd /></>
   }
 
   return (
