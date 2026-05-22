@@ -556,6 +556,13 @@ export default function ModosAgentsMd() {
                     <span className="ce-closing-cta-sub">/agents-md-skills</span>
                   </span>
                 </a>
+                <a href="/demo/agents-md-skills" className="ce-closing-cta">
+                  <span className="ce-closing-cta-emoji">D</span>
+                  <span>
+                    <b>Demo: lazy load + test deterministico</b>
+                    <span className="ce-closing-cta-sub">/demo/agents-md-skills</span>
+                  </span>
+                </a>
                 <a href="/demo/loop" className="ce-closing-cta">
                   <span className="ce-closing-cta-emoji">L</span>
                   <span>

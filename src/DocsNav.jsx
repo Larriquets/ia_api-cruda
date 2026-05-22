@@ -10,6 +10,7 @@ const DEMO_LINKS = [
   { key: 'demo-editor', href: '/demo/editor', emoji: 'E', name: '/demo/editor', desc: 'demo automatica del Editor: sin contexto vs con contexto' },
   { key: 'demo-loop', href: '/demo/loop', emoji: 'L', name: '/demo/loop', desc: 'demo automatica del Loop: edicion agentica con tools' },
   { key: 'demo-agents-md', href: '/demo/agents-md', emoji: 'A', name: '/demo/agents-md', desc: 'demo automatica de AGENTS.md: mismas tools, distinto system' },
+  { key: 'demo-agents-md-skills', href: '/demo/agents-md-skills', emoji: 'S', name: '/demo/agents-md-skills', desc: 'demo automatica de skills: lazy load + test deterministico vs reglas inline' },
 ]
 
 export default function DocsNav({ current }) {

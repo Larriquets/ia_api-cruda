@@ -22,6 +22,7 @@ import ModosChat from './ModosChat.jsx'
 import ModosEditor from './ModosEditor.jsx'
 import ComoEdita from './ComoEdita.jsx'
 import ModosAgentsMd from './ModosAgentsMd.jsx'
+import ModosAgentsMdSkills from './ModosAgentsMdSkills.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -124,6 +125,7 @@ export default function App() {
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
     if (window.location.pathname === '/demo/agents-md') return 'demo-agents-md'
+    if (window.location.pathname === '/demo/agents-md-skills') return 'demo-agents-md-skills'
     return 'chat'
   })
   const chatRef = useRef(null)
@@ -460,6 +462,9 @@ export default function App() {
   }
   if (page === 'demo-agents-md') {
     return <><WelcomeModal /><ModosAgentsMd /></>
+  }
+  if (page === 'demo-agents-md-skills') {
+    return <><WelcomeModal /><ModosAgentsMdSkills /></>
   }
 
   return (
