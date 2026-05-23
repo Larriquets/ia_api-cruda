@@ -118,6 +118,17 @@ export default function Razonamiento() {
 
   const logRef = useRef(null)
   const replyRef = useRef(null)
+  const recognitionRef = useRef(null)
+  const recognitionBaseRef = useRef('')
+  const [isListening, setIsListening] = useState(false)
+  const speechSupported =
+    typeof window !== 'undefined' &&
+    !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+  const utteranceRef = useRef(null)
+  // 'reply' | 'thinking' | null — qué se está leyendo en voz alta ahora mismo.
+  const [speakingTarget, setSpeakingTarget] = useState(null)
+  const ttsSupported =
+    typeof window !== 'undefined' && 'speechSynthesis' in window
 
   useEffect(() => { localStorage.setItem(PROVIDER_KEY, provider) }, [provider])
   useEffect(() => { localStorage.setItem(MODEL_OPENAI_KEY, modelOpenAI) }, [modelOpenAI])
@@ -152,11 +163,145 @@ export default function Razonamiento() {
     setLogs((prev) => [...prev, { level, message, timestamp }])
   }, [])
 
+  useEffect(() => {
+    return () => {
+      try { recognitionRef.current?.stop() } catch { /* noop */ }
+      try { window.speechSynthesis?.cancel() } catch { /* noop */ }
+    }
+  }, [])
+
+  const stopSpeaking = useCallback(() => {
+    if (!ttsSupported) return
+    try { window.speechSynthesis.cancel() } catch { /* noop */ }
+    utteranceRef.current = null
+    setSpeakingTarget(null)
+  }, [ttsSupported])
+
+  const speakText = (text, target) => {
+    if (!ttsSupported || !text) return
+    // Toggle: si ya estaba leyendo este mismo target, paramos.
+    if (speakingTarget === target) {
+      stopSpeaking()
+      appendLog('info', '🔊 Lectura detenida')
+      return
+    }
+    try {
+      window.speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = 'es-AR'
+      utterance.rate = 1
+      utterance.pitch = 1
+      const voices = window.speechSynthesis.getVoices()
+      const esVoice =
+        voices.find((v) => v.lang === 'es-AR') ||
+        voices.find((v) => v.lang?.startsWith('es-')) ||
+        null
+      if (esVoice) utterance.voice = esVoice
+      utterance.onend = () => {
+        if (utteranceRef.current !== utterance) return
+        utteranceRef.current = null
+        setSpeakingTarget(null)
+        appendLog('info', '🔊 Lectura finalizada')
+      }
+      utterance.onerror = (event) => {
+        if (utteranceRef.current !== utterance) return
+        utteranceRef.current = null
+        setSpeakingTarget(null)
+        if (event.error !== 'interrupted' && event.error !== 'canceled') {
+          appendLog('error', `🔊 TTS error: ${event.error}`)
+        }
+      }
+      utteranceRef.current = utterance
+      setSpeakingTarget(target)
+      window.speechSynthesis.speak(utterance)
+      const label = target === 'thinking' ? 'el thinking del modelo' : 'la respuesta final'
+      appendLog('info', `🔊 Leyendo ${label} — Web Speech API · ${esVoice?.lang || 'es-AR'} (corre 100% en el browser)`)
+    } catch (err) {
+      setSpeakingTarget(null)
+      appendLog('error', `🔊 No se pudo iniciar TTS: ${err.message || err}`)
+    }
+  }
+
+  const toggleListening = () => {
+    if (!speechSupported || loading) return
+
+    if (isListening) {
+      try { recognitionRef.current?.stop() } catch { /* noop */ }
+      return
+    }
+
+    // Si está leyendo en voz alta, cortamos: si no, el mic se escucha a sí mismo.
+    stopSpeaking()
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'es-AR'
+    recognition.continuous = true
+    recognition.interimResults = true
+
+    recognitionBaseRef.current = input
+    let finalText = ''
+
+    recognition.onstart = () => {
+      setIsListening(true)
+      appendLog('info', '🎤 Grabación iniciada — Web Speech API · es-AR (corre 100% en el browser, no se manda audio a OpenAI/Claude)')
+    }
+
+    recognition.onresult = (event) => {
+      let interim = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalText += transcript
+        } else {
+          interim += transcript
+        }
+      }
+      const base = recognitionBaseRef.current
+      const dictated = (finalText + interim).trim()
+      const sep = base && dictated ? (base.endsWith(' ') ? '' : ' ') : ''
+      setInput(base + sep + dictated)
+    }
+
+    recognition.onerror = (event) => {
+      appendLog('error', `🎤 Speech error: ${event.error}${event.message ? ` — ${event.message}` : ''}`)
+      if (recognitionRef.current === recognition) recognitionRef.current = null
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
+      // Guardia anti-race: si el usuario togglea off→on rápido, el onend viejo
+      // no debe pisar el estado del nuevo reconocimiento.
+      if (recognitionRef.current && recognitionRef.current !== recognition) return
+      setIsListening(false)
+      if (finalText.trim()) {
+        appendLog('success', `🎤 Grabación finalizada — dictado: "${finalText.trim().slice(0, 80)}${finalText.trim().length > 80 ? '…' : ''}"`)
+      } else {
+        appendLog('info', '🎤 Grabación detenida')
+      }
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    try {
+      recognition.start()
+    } catch (err) {
+      appendLog('error', `🎤 No se pudo iniciar el micrófono: ${err.message || err}`)
+      setIsListening(false)
+    }
+  }
+
   const handleSend = async (e) => {
     e.preventDefault()
     const text = input.trim()
     if (!text || loading) return
 
+    // Si el usuario estaba dictando, cortamos el mic al enviar.
+    if (isListening) {
+      try { recognitionRef.current?.stop() } catch { /* noop */ }
+    }
+    stopSpeaking()
     setLoading(true)
     setError(null)
     setRawRequest(null)
@@ -209,6 +354,10 @@ export default function Razonamiento() {
   }
 
   const handleClear = () => {
+    if (isListening) {
+      try { recognitionRef.current?.stop() } catch { /* noop */ }
+    }
+    stopSpeaking()
     setReply('')
     setReasoningBlocks([])
     setUsage(null)
@@ -216,13 +365,9 @@ export default function Razonamiento() {
     setRawRequest(null)
     setRawResponse(null)
     setError(null)
-    appendLog('info', 'Respuesta limpiada')
-  }
-
-  const handleClearHistory = () => {
     setHistory([])
     try { localStorage.removeItem(HISTORY_KEY) } catch { /* noop */ }
-    appendLog('info', 'Historial del razonador vaciado')
+    appendLog('info', 'Reseteado: respuesta + contexto (historial vaciado)')
   }
 
   const handleClearLogs = () => {
@@ -238,6 +383,13 @@ export default function Razonamiento() {
   const reasoningRatio = outputTokens > 0
     ? Math.round((reasoningTokens / outputTokens) * 100)
     : 0
+
+  // Texto unificado de todos los bloques de thinking para que la API de TTS lo lea.
+  // OpenAI puede no devolver summary en algunos bloques — los filtramos.
+  const thinkingText = reasoningBlocks
+    .map((b, i) => b.summary ? (reasoningBlocks.length > 1 ? `Bloque ${i + 1}. ${b.summary}` : b.summary) : '')
+    .filter(Boolean)
+    .join('\n\n')
 
   return (
     <div className="app">
@@ -414,13 +566,32 @@ export default function Razonamiento() {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Hacele una pregunta que requiera pensar — un acertijo, un problema, un análisis…"
+              placeholder={isListening
+                ? '🎤 Te estoy escuchando… hablá y aparece acá lo dictado.'
+                : 'Hacele una pregunta que requiera pensar — un acertijo, un problema, un análisis…'}
               disabled={loading}
               rows={5}
             />
-            <button type="submit" disabled={loading || !input.trim()}>
-              {loading ? 'Pensando…' : 'Enviar al razonador'}
-            </button>
+            <div className="razon-composer-actions">
+              <button
+                type="button"
+                onClick={toggleListening}
+                disabled={loading || !speechSupported}
+                className={`razon-mic-btn${isListening ? ' razon-mic-btn-active' : ''}`}
+                title={speechSupported
+                  ? (isListening
+                    ? 'Detener la grabación de voz'
+                    : 'Dictar por voz (Web Speech API, es-AR). Corre en el browser — no se manda audio al modelo.')
+                  : 'Tu navegador no soporta Web Speech API. Probá en Chrome/Edge.'}
+              >
+                {isListening
+                  ? <><span className="razon-mic-dot" /> Detener dictado</>
+                  : <>🎤 {speechSupported ? 'Hablar' : 'Hablar (no soportado)'}</>}
+              </button>
+              <button type="submit" disabled={loading || !input.trim()}>
+                {loading ? 'Pensando…' : 'Enviar al razonador'}
+              </button>
+            </div>
           </form>
 
           {error && <div className="error">{error}</div>}
@@ -451,9 +622,28 @@ export default function Razonamiento() {
                   <span>
                     🧠 {provider === 'anthropic' ? 'Thinking (crudo)' : 'Razonamiento (resumen)'}
                   </span>
-                  <span className="context-meta">
-                    {reasoningBlocks.length} bloque(s)
-                    {reasoningTokens > 0 ? ` · ${reasoningTokens} token(s)` : ''}
+                  <span className="razon-answer-header-right">
+                    <span className="context-meta">
+                      {reasoningBlocks.length} bloque(s)
+                      {reasoningTokens > 0 ? ` · ${reasoningTokens} token(s)` : ''}
+                    </span>
+                    {thinkingText && (
+                      <button
+                        type="button"
+                        onClick={() => speakText(thinkingText, 'thinking')}
+                        disabled={!ttsSupported}
+                        className={`razon-tts-btn${speakingTarget === 'thinking' ? ' razon-tts-btn-active' : ''}`}
+                        title={ttsSupported
+                          ? (speakingTarget === 'thinking'
+                            ? 'Detener la lectura del thinking'
+                            : 'Leer el thinking en voz alta (Web Speech API, es-AR). Corre en el browser — no se manda texto al servidor.')
+                          : 'Tu navegador no soporta speechSynthesis. Probá en Chrome/Edge.'}
+                      >
+                        {speakingTarget === 'thinking'
+                          ? <><span className="razon-tts-wave"><span></span><span></span><span></span></span> Detener</>
+                          : <>🔊 Escuchar thinking</>}
+                      </button>
+                    )}
                   </span>
                 </div>
                 {provider === 'anthropic' && (
@@ -492,7 +682,24 @@ export default function Razonamiento() {
               <div className="razon-answer">
                 <div className="razon-answer-header">
                   <span>💬 Respuesta final</span>
-                  <span className="context-meta">{reply.length} chars · {visibleOutputTokens} token(s) visibles</span>
+                  <span className="razon-answer-header-right">
+                    <span className="context-meta">{reply.length} chars · {visibleOutputTokens} token(s) visibles</span>
+                    <button
+                      type="button"
+                      onClick={() => speakText(reply, 'reply')}
+                      disabled={!ttsSupported}
+                      className={`razon-tts-btn${speakingTarget === 'reply' ? ' razon-tts-btn-active' : ''}`}
+                      title={ttsSupported
+                        ? (speakingTarget === 'reply'
+                          ? 'Detener la lectura en voz alta'
+                          : 'Leer la respuesta en voz alta (Web Speech API, es-AR). Corre en el browser — no se manda texto al servidor.')
+                        : 'Tu navegador no soporta speechSynthesis. Probá en Chrome/Edge.'}
+                    >
+                      {speakingTarget === 'reply'
+                        ? <><span className="razon-tts-wave"><span></span><span></span><span></span></span> Detener</>
+                        : <>🔊 Escuchar</>}
+                    </button>
+                  </span>
                 </div>
                 <pre className="razon-answer-text">{reply}</pre>
               </div>
