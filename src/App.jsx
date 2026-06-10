@@ -17,6 +17,7 @@ import EditorAgentsMd from './EditorAgentsMd.jsx'
 import VentanaContexto from './VentanaContexto.jsx'
 import PromptInjection from './PromptInjection.jsx'
 import Razonamiento from './Razonamiento.jsx'
+import Logprobs from './Logprobs.jsx'
 import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
 import ModosChat from './ModosChat.jsx'
@@ -130,6 +131,7 @@ export default function App() {
     if (window.location.pathname === '/ventana-contexto') return 'ventana-contexto'
     if (window.location.pathname === '/prompt-injection') return 'prompt-injection'
     if (window.location.pathname === '/razonamiento') return 'razonamiento'
+    if (window.location.pathname === '/logprobs') return 'logprobs'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
     if (window.location.pathname === '/demo/chat') return 'demo-chat'
@@ -488,6 +490,9 @@ export default function App() {
   }
   if (page === 'razonamiento') {
     return <><WelcomeModal /><Razonamiento /></>
+  }
+  if (page === 'logprobs') {
+    return <><WelcomeModal /><Logprobs /></>
   }
   if (page === 'docs') {
     return <><WelcomeModal /><Docs /></>

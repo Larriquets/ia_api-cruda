@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
  * Switch de modos del header.
  * "Modos", "Labs" y "Docs" son dropdowns.
  *
- * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const [modesOpen, setModesOpen] = useState(false)
@@ -106,7 +106,7 @@ export default function ModeSwitch({ active }) {
   const modesActive = modes.some((mode) => mode.key === active)
   const modesClsBase = `app-mode-btn${modesActive ? ' active' : ''}`
   const modesButtonLabel = modesActive ? activeMode.label : '🎛️ Modos'
-  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento'
+  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs'
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
@@ -164,6 +164,15 @@ export default function ModeSwitch({ active }) {
             >
               <b>🧠 Razonamiento</b>
               <span className="app-mode-menu-sub">modelos que "piensan" antes de responder</span>
+            </a>
+            <a
+              href="/logprobs"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('logprobs')}
+            >
+              <b>🎲 Logprobs</b>
+              <span className="app-mode-menu-sub">la IA es un predictor de tokens</span>
             </a>
             <a
               href="/ventana-contexto"

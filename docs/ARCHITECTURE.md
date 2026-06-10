@@ -49,6 +49,7 @@ window.location.pathname → switch → componente de página
 | `/ventana-contexto` | [VentanaContexto.jsx](../src/VentanaContexto.jsx) | FIFO / sliding window / compaction en vivo |
 | `/prompt-injection` | [PromptInjection.jsx](../src/PromptInjection.jsx) | System vs datos no confiables |
 | `/razonamiento` | [Razonamiento.jsx](../src/Razonamiento.jsx) | Modelos razonadores de OpenAI con `reasoning_effort` |
+| `/logprobs` | [Logprobs.jsx](../src/Logprobs.jsx) | Probabilidad token por token (`logprobs` de OpenAI) |
 | `/contexto` | [Contexto.jsx](../src/Contexto.jsx) | Vista en vivo del array `messages[]` del Chat |
 | `/proveedores` | [Proveedores.jsx](../src/Proveedores.jsx) | Comparación OpenAI vs Claude |
 | `/criollo` | (página presentacional) | Glosario de la API en lunfardo |
@@ -302,6 +303,18 @@ Los dos wrappers devuelven el **mismo shape** para que la UI no ramifique:
 - **Contraste pedagógico**: el panel de pensamiento usa color violeta para OpenAI y naranja para Claude (matchea con la paleta del provider-badge del resto de la app). El alumno ve de un vistazo qué proveedor está usando.
 - **Tabla de tokens diferenciada**: en OpenAI se muestra `reasoning_tokens` separado (`usage.output_tokens_details.reasoning_tokens`); en Claude no se puede — el thinking entra dentro de `output_tokens` sin desglose, y la UI lo aclara explícitamente.
 
+## 7.6. Logprobs (`/logprobs`)
+
+Experimento aislado para mostrar que **la IA es un predictor de tokens**: la respuesta se renderiza token por token, cada uno coloreado por la probabilidad que el modelo le asignó, y al tocar un token se ven las alternativas (`top_logprobs`) que el modelo consideró en ese paso.
+
+- Wrapper: [openai-logprobs.js](../src/openai-logprobs.js) (`sendLogprobsMessage`). Mismo contrato de hooks de debug que el resto.
+- Endpoint: `POST /v1/chat/completions` con `logprobs: true` y `top_logprobs: N` (selector en la UI, 3–20).
+- **Solo OpenAI**: Anthropic no expone logprobs en su API — la página lo dice explícitamente (decisión de producto, mismo contraste pedagógico que en `/razonamiento`). Los razonadores de OpenAI (gpt-5, o-*) tampoco devuelven logprobs, por eso el selector reusa `OPENAI_CHAT_MODELS`.
+- El wrapper devuelve shape propio para que la UI no parsee el response: `{text, tokens: [{token, logprob, prob, alternatives}], usage, raw}`. `prob = Math.exp(logprob)`.
+- `max_tokens: 300` fijo en el wrapper: con logprobs el response crece rápido (cada token viaja con sus N alternativas) y para la clase alcanzan respuestas cortas.
+- La temperatura conecta con la lección de sampling: con temperatura alta el token elegido puede no estar en el top-N, y la UI lo señala.
+- Espacios y saltos de línea se muestran como `␣` y `⏎` — son parte del token.
+
 ## 8. Diagrama de flujo (Chat — modo Conversación)
 
 ```
@@ -391,6 +404,10 @@ Cada modo persiste su propio estado para no pisarse con los otros.
 ### Razonamiento (`/razonamiento`)
 
 `razon_provider`, `razon_model_openai`, `razon_model_anthropic`, `razon_effort`, `razon_summary`, `razon_instructions`, `razon_logs`.
+
+### Logprobs (`/logprobs`)
+
+`logprobs_model`, `logprobs_temperature`, `logprobs_top`, `logprobs_system`, `logprobs_logs`.
 
 ### LM Studio
 

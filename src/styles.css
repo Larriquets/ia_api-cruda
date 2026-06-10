@@ -6760,3 +6760,193 @@ body {
   color: #fecaca;
 }
 
+/* ============== Logprobs (/logprobs) ============== */
+
+.lp-temp-hint {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.lp-result {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-strip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* La respuesta renderizada token por token. Cada token es un botón
+   pintado según la probabilidad que el modelo le asignó. */
+.lp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 12px;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  line-height: 1.9;
+}
+
+.lp-token {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: #e2e8f0;
+  padding: 2px 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: pre;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.lp-token:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.lp-token-selected {
+  outline: 2px solid #60a5fa;
+  outline-offset: 1px;
+}
+
+.lp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.lp-legend-chip {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  color: #e2e8f0;
+  padding: 1px 7px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+/* Detalle del token seleccionado: las alternativas que el modelo consideró. */
+.lp-detail {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.lp-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.lp-detail-token {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.12);
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+.lp-alts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.lp-alt {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) 1fr 64px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.lp-alt-chosen {
+  background: rgba(34, 197, 94, 0.1);
+  outline: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.lp-alt-token {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  color: #e2e8f0;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-alt-bar-track {
+  height: 12px;
+  background: rgba(148, 163, 184, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.lp-alt-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  border-radius: 3px;
+}
+
+.lp-alt-chosen .lp-alt-bar {
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+}
+
+.lp-alt-pct {
+  font-family: var(--font-mono, monospace);
+  font-size: 11.5px;
+  color: #cbd5e1;
+  text-align: right;
+}
+
+.lp-alt-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.lp-detail-foot {
+  margin-top: 10px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #fbbf24;
+}
+
+.lp-jump-btn {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #93c5fd;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.lp-jump-btn:hover {
+  color: #bfdbfe;
+}
+
