@@ -4777,6 +4777,27 @@ body {
   border-top-color: rgba(251, 146, 60, 0.25);
 }
 
+/* LM Studio: azul para matchear con la paleta de provider-badge-lmstudio */
+.razon-thinking-lmstudio {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.razon-thinking-lmstudio .razon-thinking-header { color: #60a5fa; }
+.razon-thinking-lmstudio .razon-thinking-tag {
+  background: rgba(59, 130, 246, 0.22);
+  color: #bfdbfe;
+}
+.razon-thinking-lmstudio .razon-thinking-text { color: #bfdbfe; }
+.razon-thinking-lmstudio .razon-thinking-block + .razon-thinking-block {
+  border-top-color: rgba(59, 130, 246, 0.25);
+}
+
+.razon-thinking-note-lmstudio {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.08);
+}
+
 .razon-thinking-note {
   font-size: 11px;
   color: #fdba74;
