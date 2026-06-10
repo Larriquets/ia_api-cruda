@@ -4,8 +4,9 @@ import {
   sendResponseMessage,
   createConversation,
   fetchConversationItems,
+  OPENAI_CHAT_MODELS,
 } from './openai.js'
-import { sendClaudeMessage } from './anthropic.js'
+import { sendClaudeMessage, ANTHROPIC_CHAT_MODELS } from './anthropic.js'
 import { sendOllamaMessage } from './ollama.js'
 import { sendLmStudioMessage } from './lmstudio.js'
 import Contexto from './Contexto.jsx'
@@ -36,6 +37,8 @@ import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 const CONTEXT_STORAGE_KEY = 'chat_context_snapshot'
 const CONV_ID_KEY = 'openai_conversation_id'
 const PROVIDER_KEY = 'chat_provider'
+const MODEL_OPENAI_KEY = 'chat_model_openai'
+const MODEL_ANTHROPIC_KEY = 'chat_model_anthropic'
 const LOGS_KEY = 'chat_logs'
 const SYSTEM_KEY = 'chat_system_prompt'
 const SYSTEM_OPEN_KEY = 'chat_system_open'
@@ -102,6 +105,14 @@ export default function App() {
     const saved = localStorage.getItem(PROVIDER_KEY)
     if (saved === 'openai' || saved === 'anthropic' || saved === 'lmstudio') return saved
     return 'openai'
+  })
+  const [modelOpenAI, setModelOpenAI] = useState(() => {
+    if (typeof window === 'undefined') return 'gpt-4o-mini'
+    return localStorage.getItem(MODEL_OPENAI_KEY) || import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
+  })
+  const [modelAnthropic, setModelAnthropic] = useState(() => {
+    if (typeof window === 'undefined') return 'claude-haiku-4-5'
+    return localStorage.getItem(MODEL_ANTHROPIC_KEY) || import.meta.env.VITE_ANTHROPIC_MODEL || 'claude-haiku-4-5'
   })
   const [conversationId, setConversationId] = useState(() => {
     if (typeof window === 'undefined') return null
@@ -321,6 +332,7 @@ export default function App() {
           onRawResponse: setRawResponse,
           instructions: effectiveSystem,
           temperature,
+          model: modelOpenAI,
         })
 
         setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
@@ -332,10 +344,17 @@ export default function App() {
           ? [...buildInitialMessages(systemPrompt), { role: 'user', content: text }]
           : [...messages, { role: 'user', content: text }]
 
-        if (!rawMode) {
-          setMessages([...messages, { role: 'user', content: text }])
+        const userMsg = { role: 'user', content: text }
+        const baseMessages = rawMode ? buildInitialMessages(systemPrompt) : [...messages]
+
+        if (provider === 'lmstudio') {
+          // Streaming: agrega user + placeholder de assistant antes del fetch
+          // para que el usuario vea el mensaje propio de inmediato.
+          setMessages([...baseMessages, userMsg, { role: 'assistant', content: '' }])
+        } else if (!rawMode) {
+          setMessages([...messages, userMsg])
         } else {
-          setMessages([...buildInitialMessages(systemPrompt), { role: 'user', content: text }])
+          setMessages([...buildInitialMessages(systemPrompt), userMsg])
         }
 
         if (rawMode) {
@@ -362,21 +381,46 @@ export default function App() {
                 : 'OpenAI'
         appendLog('info', `Proveedor: ${providerLabel}`)
 
+        // onToken: solo para LM Studio. Actualiza el último mensaje del assistant
+        // en tiempo real a medida que llegan los chunks SSE.
+        let streamingText = ''
+        const onToken = provider === 'lmstudio'
+          ? (chunk) => {
+              streamingText += chunk
+              setMessages((prev) => {
+                if (prev.length === 0 || prev[prev.length - 1].role !== 'assistant') return prev
+                return [...prev.slice(0, -1), { role: 'assistant', content: streamingText }]
+              })
+            }
+          : undefined
+
+        // LM Studio y Ollama resuelven su modelo adentro del wrapper
+        // (localStorage / env), así que solo OpenAI y Claude reciben override.
+        const model =
+          provider === 'anthropic' ? modelAnthropic
+            : provider === 'openai' ? modelOpenAI
+              : undefined
+
         const reply = await sendFn(payload, {
           onLog: appendLog,
           onRawRequest: setRawRequest,
           onRawResponse: setRawResponse,
           temperature,
+          onToken,
+          model,
         })
 
-        if (rawMode) {
-          setMessages([
-            ...buildInitialMessages(systemPrompt),
-            { role: 'user', content: text },
-            { role: 'assistant', content: reply },
-          ])
-        } else {
-          setMessages([...messages, { role: 'user', content: text }, { role: 'assistant', content: reply }])
+        if (provider !== 'lmstudio') {
+          // Para proveedores no-streaming, setear el array completo al final
+          if (rawMode) {
+            setMessages([
+              ...buildInitialMessages(systemPrompt),
+              userMsg,
+              { role: 'assistant', content: reply },
+            ])
+          } else {
+            setMessages([...messages, userMsg, { role: 'assistant', content: reply }])
+          }
         }
         appendLog('success', 'Mensaje agregado al chat')
       }
@@ -514,7 +558,47 @@ export default function App() {
           </select>
         </label>
 
-        {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
+        {provider === 'lmstudio' ? (
+          <LmStudioModelPicker onLog={appendLog} />
+        ) : provider === 'anthropic' ? (
+          <label className="hdr-select">
+            <span className="hdr-select-label">Modelo</span>
+            <select
+              value={modelAnthropic}
+              onChange={(e) => {
+                setModelAnthropic(e.target.value)
+                localStorage.setItem(MODEL_ANTHROPIC_KEY, e.target.value)
+                appendLog('info', `Modelo Claude cambiado a ${e.target.value}`)
+              }}
+              disabled={loading}
+              className="hdr-select-input"
+              title="Modelo de Claude para el chat. El campo model del request crudo muestra cuál viajó."
+            >
+              {ANTHROPIC_CHAT_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <label className="hdr-select">
+            <span className="hdr-select-label">Modelo</span>
+            <select
+              value={modelOpenAI}
+              onChange={(e) => {
+                setModelOpenAI(e.target.value)
+                localStorage.setItem(MODEL_OPENAI_KEY, e.target.value)
+                appendLog('info', `Modelo OpenAI cambiado a ${e.target.value}`)
+              }}
+              disabled={loading}
+              className="hdr-select-input"
+              title="Modelo de OpenAI para el chat. Los razonadores (gpt-5, o-*) viven en /razonamiento."
+            >
+              {OPENAI_CHAT_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+              ))}
+            </select>
+          </label>
+        )}
 
         <button onClick={handleClear} className="clear-btn" type="button">Limpiar</button>
 

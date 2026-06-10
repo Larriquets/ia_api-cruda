@@ -7,10 +7,20 @@ const getModel = () => import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
+// Modelos de chat seleccionables desde la UI. Solo modelos no-razonadores:
+// los razonadores (gpt-5 y familia o-*) viven en /razonamiento y no aceptan
+// temperature, así que romperían el control de temperatura de esta página.
+export const OPENAI_CHAT_MODELS = [
+  { id: 'gpt-4o-mini', label: 'gpt-4o-mini', note: 'barato — recomendado para clase' },
+  { id: 'gpt-4o', label: 'gpt-4o', note: 'más capaz' },
+  { id: 'gpt-4.1-mini', label: 'gpt-4.1-mini', note: 'rápido, contexto grande' },
+  { id: 'gpt-4.1', label: 'gpt-4.1', note: 'el más capaz (no razonador)' },
+]
+
 // ============== /chat/completions (modo clásico) ==============
-export async function sendChatMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
+export async function sendChatMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7, model: modelOverride } = {}) {
   const apiKey = getApiKey()
-  const model = getModel()
+  const model = modelOverride || getModel()
 
   onLog?.('info', `Modelo seleccionado: ${model}`)
 
@@ -107,10 +117,10 @@ export async function createConversation({ onLog } = {}) {
 export async function sendResponseMessage(
   text,
   conversationId,
-  { onLog, onRawRequest, onRawResponse, instructions, temperature = 0.7 } = {},
+  { onLog, onRawRequest, onRawResponse, instructions, temperature = 0.7, model: modelOverride } = {},
 ) {
   const apiKey = getApiKey()
-  const model = getModel()
+  const model = modelOverride || getModel()
 
   onLog?.('info', `Modelo: ${model} (modo persistente)`)
   onLog?.('info', `Conversation ID: ${conversationId}`)
