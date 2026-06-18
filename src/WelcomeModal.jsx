@@ -1,42 +1,25 @@
 import { useState, useEffect } from 'react'
+import { useT } from './i18n/useT.js'
 
 const DISMISS_KEY = 'welcome_dismissed_v1'
 
 const STEPS = [
-  {
-    emoji: '💬',
-    title: 'Chat',
-    desc: 'Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente.',
-    href: '/',
-  },
-  {
-    emoji: '💻',
-    title: 'Editor',
-    desc: 'Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto.',
-    href: '/editor',
-  },
-  {
-    emoji: '🤖',
-    title: 'Loop Agéntico',
-    desc: 'Loop con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
-    href: '/loop-agentico',
-  },
+  { emoji: '💬', titleKey: 'welcome.chatTitle', descKey: 'welcome.chatDesc', href: '/' },
+  { emoji: '💻', titleKey: 'welcome.editorTitle', descKey: 'welcome.editorDesc', href: '/editor' },
+  { emoji: '🤖', titleKey: 'welcome.loopTitle', descKey: 'welcome.loopDesc', href: '/loop-agentico' },
   {
     emoji: '📋',
-    title: 'Agente + reglas',
-    desc: 'Agente con un archivo AGENTS.md inyectado en el system prompt: instrucciones persistentes que sigue siempre (estilo, restricciones, convenciones del proyecto).',
+    titleKey: 'welcome.agentsTitle',
+    descKey: 'welcome.agentsDesc',
     href: '/agents-md',
     subSteps: [
-      {
-        emoji: '🧪',
-        title: 'Agente + skills',
-        desc: 'Sub-tema del modo anterior. Una vez que entendés cómo funciona AGENTS.md, probá los Skills: instrucciones cargadas bajo demanda + un test determinístico que la IA corre después de editar.',
-      },
+      { emoji: '🧪', titleKey: 'welcome.skillsTitle', descKey: 'welcome.skillsDesc' },
     ],
   },
 ]
 
 export default function WelcomeModal() {
+  const { t } = useT()
   const [open, setOpen] = useState(false)
   const [dontShowAgain, setDontShowAgain] = useState(false)
 
@@ -76,22 +59,20 @@ export default function WelcomeModal() {
             <span className="brand-braces">{'{'}</span>
             <span className="brand">La IA Cruda</span>
             <span className="brand-braces">{'}'}</span>
-            <span className="brand-subtitle">// todo es contexto — request, response y contexto, todo crudo</span>
+            <span className="brand-subtitle">{t('welcome.subtitle')}</span>
           </h2>
           <button
             type="button"
             className="welcome-close"
             onClick={handleClose}
-            aria-label="Cerrar"
+            aria-label={t('welcome.close')}
           >
             ×
           </button>
         </div>
 
         <p className="welcome-intro">
-          Esta app no esconde nada: ves el JSON que sale, el JSON que vuelve, y cómo se acumula el
-          contexto entre llamadas. Tiene 4 modos — cada uno muestra una capa distinta de cómo se
-          trabaja con la API de un LLM. Recorrelos en orden.
+          {t('welcome.intro')}
         </p>
 
         <ol className="welcome-steps">
@@ -101,17 +82,17 @@ export default function WelcomeModal() {
               <div className="welcome-step-body">
                 <div className="welcome-step-title">
                   <span className="welcome-step-emoji">{step.emoji}</span>
-                  <b>{step.title}</b>
+                  <b>{t(step.titleKey)}</b>
                 </div>
-                <div className="welcome-step-desc">{step.desc}</div>
+                <div className="welcome-step-desc">{t(step.descKey)}</div>
                 {step.subSteps && (
                   <ul className="welcome-substeps">
                     {step.subSteps.map((sub) => (
-                      <li key={sub.title} className="welcome-substep">
+                      <li key={sub.titleKey} className="welcome-substep">
                         <span className="welcome-substep-emoji">{sub.emoji}</span>
                         <div>
-                          <b>{sub.title}</b>
-                          <div className="welcome-step-desc">{sub.desc}</div>
+                          <b>{t(sub.titleKey)}</b>
+                          <div className="welcome-step-desc">{t(sub.descKey)}</div>
                         </div>
                       </li>
                     ))}
@@ -129,14 +110,14 @@ export default function WelcomeModal() {
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
             />
-            <span>No volver a mostrar</span>
+            <span>{t('welcome.dontShow')}</span>
           </label>
           <button
             type="button"
             className="welcome-cta"
             onClick={handleClose}
           >
-            Empezar →
+            {t('welcome.cta')}
           </button>
         </div>
       </div>

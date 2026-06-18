@@ -1,43 +1,25 @@
+import { useT } from './i18n/useT.js'
+
 const STEPS = [
   {
-    title: '1. La IA no recuerda sola',
-    mode: 'Modo Crudo',
-    goal: 'Proba que el segundo request no recibe el mensaje anterior.',
-    body: 'Primero manda tu nombre. Despues pregunta como te llamas. En el panel Request deberias ver que solo viaja el ultimo mensaje.',
-    primary: 'Preparar crudo',
-    prompts: [
-      'Mi nombre es Laura. Recordalo.',
-      'Como me llamo?',
-    ],
+    titleKey: 'guide.s1Title', modeKey: 'guide.s1Mode', goalKey: 'guide.s1Goal',
+    bodyKey: 'guide.s1Body', primaryKey: 'guide.s1Primary',
+    promptKeys: ['guide.s1p1', 'guide.s1p2'],
   },
   {
-    title: '2. La memoria es payload',
-    mode: 'Modo Conversacion',
-    goal: 'Ver que la continuidad aparece cuando el historial vuelve a viajar.',
-    body: 'Repeti el mismo experimento, ahora con historial del cliente. El Request deberia incluir los turnos anteriores.',
-    primary: 'Preparar conversacion',
-    prompts: [
-      'Mi nombre es Laura. Recordalo.',
-      'Como me llamo?',
-    ],
+    titleKey: 'guide.s2Title', modeKey: 'guide.s2Mode', goalKey: 'guide.s2Goal',
+    bodyKey: 'guide.s2Body', primaryKey: 'guide.s2Primary',
+    promptKeys: ['guide.s2p1', 'guide.s2p2'],
   },
   {
-    title: '3. El system manda',
-    mode: 'System prompt',
-    goal: 'Cambiar el comportamiento sin cambiar la pregunta.',
-    body: 'La guia abre el editor y carga un system que fuerza JSON. Despues manda una consigna simple y mira como cambia la salida.',
-    primary: 'Cargar system JSON',
-    prompts: [
-      'Dame tres ideas para aprender IA.',
-    ],
+    titleKey: 'guide.s3Title', modeKey: 'guide.s3Mode', goalKey: 'guide.s3Goal',
+    bodyKey: 'guide.s3Body', primaryKey: 'guide.s3Primary',
+    promptKeys: ['guide.s3p1'],
   },
   {
-    title: '4. El contexto tiene limite',
-    mode: 'Contexto inflado',
-    goal: 'Entender que alguien decide que entra y que queda afuera.',
-    body: 'La demo carga una conversacion larga falsa. Mira los tokens estimados y compara que mensajes viajarian en los labs de ventana de contexto.',
-    primary: 'Inflar contexto',
-    prompts: [],
+    titleKey: 'guide.s4Title', modeKey: 'guide.s4Mode', goalKey: 'guide.s4Goal',
+    bodyKey: 'guide.s4Body', primaryKey: 'guide.s4Primary',
+    promptKeys: [],
   },
 ]
 
@@ -50,15 +32,17 @@ export default function FirstTenMinutesGuide({
   onUsePrompt,
   onStepChange,
 }) {
+  const { t } = useT()
+
   if (!active) {
     return (
       <div className="guide-entry">
         <div className="guide-entry-copy">
-          <b>Primeros 10 minutos</b>
-          <span>Un recorrido corto para ver requests, memoria, system y contexto sin teoria pesada.</span>
+          <b>{t('guide.entryTitle')}</b>
+          <span>{t('guide.entryCopy')}</span>
         </div>
         <button type="button" className="guide-primary-btn" onClick={onStart}>
-          Empezar guia
+          {t('guide.start')}
         </button>
       </div>
     )
@@ -67,27 +51,27 @@ export default function FirstTenMinutesGuide({
   const current = STEPS[step] || STEPS[0]
 
   return (
-    <section className="guide-panel" aria-label="Primeros 10 minutos">
+    <section className="guide-panel" aria-label={t('guide.kicker')}>
       <div className="guide-top">
         <div>
-          <span className="guide-kicker">Primeros 10 minutos</span>
-          <h2>{current.title}</h2>
+          <span className="guide-kicker">{t('guide.kicker')}</span>
+          <h2>{t(current.titleKey)}</h2>
         </div>
         <button type="button" className="guide-link-btn" onClick={onStop}>
-          salir
+          {t('guide.exit')}
         </button>
       </div>
 
-      <div className="guide-progress" role="tablist" aria-label="Pasos de la guia">
+      <div className="guide-progress" role="tablist" aria-label={t('guide.stepsAria')}>
         {STEPS.map((item, index) => (
           <button
-            key={item.title}
+            key={item.titleKey}
             type="button"
             role="tab"
             aria-selected={index === step}
             className={`guide-dot${index === step ? ' active' : ''}`}
             onClick={() => onStepChange(index)}
-            title={item.title}
+            title={t(item.titleKey)}
           >
             {index + 1}
           </button>
@@ -95,23 +79,23 @@ export default function FirstTenMinutesGuide({
       </div>
 
       <div className="guide-card">
-        <div className="guide-mode">{current.mode}</div>
-        <p className="guide-goal">{current.goal}</p>
-        <p className="guide-body">{current.body}</p>
+        <div className="guide-mode">{t(current.modeKey)}</div>
+        <p className="guide-goal">{t(current.goalKey)}</p>
+        <p className="guide-body">{t(current.bodyKey)}</p>
 
         <div className="guide-actions">
           <button type="button" className="guide-primary-btn" onClick={() => onPrepareStep(step)}>
-            {current.primary}
+            {t(current.primaryKey)}
           </button>
-          {current.prompts.map((prompt, index) => (
+          {current.promptKeys.map((promptKey, index) => (
             <button
-              key={prompt}
+              key={promptKey}
               type="button"
               className="guide-secondary-btn"
-              onClick={() => onUsePrompt(prompt)}
-              title={prompt}
+              onClick={() => onUsePrompt(t(promptKey))}
+              title={t(promptKey)}
             >
-              Usar frase {index + 1}
+              {t('guide.usePrompt', { n: index + 1 })}
             </button>
           ))}
         </div>
@@ -124,7 +108,7 @@ export default function FirstTenMinutesGuide({
           onClick={() => onStepChange(Math.max(0, step - 1))}
           disabled={step === 0}
         >
-          anterior
+          {t('guide.prev')}
         </button>
         <span>{step + 1} / {STEPS.length}</span>
         <button
@@ -133,7 +117,7 @@ export default function FirstTenMinutesGuide({
           onClick={() => onStepChange(Math.min(STEPS.length - 1, step + 1))}
           disabled={step === STEPS.length - 1}
         >
-          siguiente
+          {t('guide.next')}
         </button>
       </div>
     </section>

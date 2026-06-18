@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { listLmStudioModels, LMSTUDIO_MODEL_KEY, LMSTUDIO_HOST_KEY, getLmStudioModel, getLmStudioHost } from './lmstudio.js'
+import { useT } from './i18n/useT.js'
 
 /**
  * Selector del modelo de LM Studio (local). Se renderiza dentro de la ConfigBar
@@ -10,6 +11,7 @@ import { listLmStudioModels, LMSTUDIO_MODEL_KEY, LMSTUDIO_HOST_KEY, getLmStudioM
  * Acepta onLog opcional para escribir en el log del modo correspondiente.
  */
 export default function LmStudioModelPicker({ onLog }) {
+  const { t } = useT()
   const [model, setModel] = useState(() => getLmStudioModel())
   const [host, setHost] = useState(() => getLmStudioHost())
   const [detecting, setDetecting] = useState(false)
@@ -33,7 +35,7 @@ export default function LmStudioModelPicker({ onLog }) {
     } else {
       localStorage.removeItem(LMSTUDIO_MODEL_KEY)
     }
-    onLog?.('info', next ? `Modelo LM Studio: ${next}` : 'Modelo LM Studio: (vacío)')
+    onLog?.('info', next ? t('lmstudio.logModel', { model: next }) : t('lmstudio.logModelEmpty'))
   }
 
   const persistHost = (next) => {
@@ -53,20 +55,20 @@ export default function LmStudioModelPicker({ onLog }) {
       const models = await listLmStudioModels({ onLog })
       setAvailable(models)
       if (models.length === 0) {
-        const msg = 'LM Studio no tiene modelos cargados. Cargá uno en Developer → Load Model.'
+        const msg = t('lmstudio.noModels')
         setError(msg)
         onLog?.('error', msg)
       } else {
         const firstId = models[0]?.id
         if (firstId && firstId !== model) {
           persistModel(firstId)
-          onLog?.('success', `Detectados ${models.length} modelo(s). Usando: ${firstId}`)
+          onLog?.('success', t('lmstudio.detected', { n: models.length, id: firstId }))
         } else {
-          onLog?.('info', `Detectados ${models.length} modelo(s). El actual sigue siendo válido.`)
+          onLog?.('info', t('lmstudio.detectedSame', { n: models.length }))
         }
       }
     } catch (err) {
-      const msg = `No pude consultar ${host}/v1/models: ${err.message}. ¿Está corriendo LM Studio?`
+      const msg = t('lmstudio.queryError', { host, error: err.message })
       setError(msg)
       onLog?.('error', msg)
     } finally {
@@ -75,9 +77,9 @@ export default function LmStudioModelPicker({ onLog }) {
   }
 
   return (
-    <div className="lmstudio-picker" title="Configuración del modelo local de LM Studio">
+    <div className="lmstudio-picker" title={t('lmstudio.pickerTitle')}>
       <label className="hdr-select">
-        <span className="hdr-select-label">Host LM Studio</span>
+        <span className="hdr-select-label">{t('lmstudio.hostLabel')}</span>
         <input
           type="text"
           value={host}
@@ -88,7 +90,7 @@ export default function LmStudioModelPicker({ onLog }) {
         />
       </label>
       <label className="hdr-select">
-        <span className="hdr-select-label">Modelo LM Studio</span>
+        <span className="hdr-select-label">{t('lmstudio.modelLabel')}</span>
         {available.length > 0 ? (
           <select
             value={model}
@@ -96,7 +98,7 @@ export default function LmStudioModelPicker({ onLog }) {
             className="hdr-select-input lmstudio-model-input"
           >
             {!available.some((m) => m.id === model) && model && (
-              <option value={model}>{model} (no cargado)</option>
+              <option value={model}>{model} {t('lmstudio.notLoaded')}</option>
             )}
             {available.map((m) => (
               <option key={m.id} value={m.id}>{m.id}</option>
@@ -107,7 +109,7 @@ export default function LmStudioModelPicker({ onLog }) {
             type="text"
             value={model}
             onChange={(e) => persistModel(e.target.value)}
-            placeholder="ej: google/gemma-4-26b-a4b"
+            placeholder={t('lmstudio.modelPlaceholder')}
             className="hdr-select-input lmstudio-model-input"
             spellCheck={false}
           />
@@ -118,9 +120,9 @@ export default function LmStudioModelPicker({ onLog }) {
         onClick={detect}
         disabled={detecting}
         className="lmstudio-detect-btn"
-        title="Llama a GET /v1/models contra el host y lista los modelos cargados"
+        title={t('lmstudio.detectTitle')}
       >
-        {detecting ? '…' : '🔎 Detectar'}
+        {detecting ? '…' : t('lmstudio.detect')}
       </button>
       {error && <span className="lmstudio-picker-error" title={error}>⚠ {error.slice(0, 60)}…</span>}
     </div>

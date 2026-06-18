@@ -6,16 +6,19 @@
  * @param {string} section - id de la sección destino dentro de /docs (sin "#")
  * @param {string} [label] - texto opcional; por defecto "Leer doc"
  */
-export default function ReadDocLink({ section, label = 'Leer doc' }) {
+import { useT } from './i18n/useT.js'
+
+export default function ReadDocLink({ section, label }) {
+  const { t } = useT()
   return (
     <a
       href={`/docs#${section}`}
       target="_blank"
       rel="noopener noreferrer"
       className="read-doc-link"
-      title="Abre la sección correspondiente en /docs (otra pestaña)"
+      title={t('readdoc.title')}
     >
-      📖 {label}
+      📖 {label || t('readdoc.label')}
     </a>
   )
 }

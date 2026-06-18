@@ -302,10 +302,11 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
             le estás dando demasiado material irrelevante donde buscar la respuesta.
           </p>
           <p>
-            Esto es lo que el <b>modo Ruido</b> de esta app simula a propósito: la función
-            <code> bloatToolResult</code> en <code>src/noise.js</code> infla cada
-            <code> tool_result</code> con logs falsos. Es la misma degradación que ocurre
-            naturalmente en agentes reales después de muchos pasos.
+            Esto es lo que el lab <a href="/ruido" target="_blank" rel="noreferrer"><code>/ruido</code></a>{' '}
+            simula a propósito: la función <code>bloatToolResult</code> en{' '}
+            <code>src/noise.js</code> infla cada <code>tool_result</code> con logs falsos,
+            y podés correr la misma tarea con y sin ruido para comparar. Es la misma
+            degradación que ocurre naturalmente en agentes reales después de muchos pasos.
           </p>
         </section>
 

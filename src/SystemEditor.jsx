@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useT } from './i18n/useT.js'
 
 /**
  * Editor plegable de system prompt, reusable entre Chat / Editor / Loop Agéntico.
@@ -25,6 +26,7 @@ export default function SystemEditor({
   onLog,
   hint,
 }) {
+  const { t } = useT()
   const [presetsOpen, setPresetsOpen] = useState(false)
   const presetsRef = useRef(null)
 
@@ -50,13 +52,13 @@ export default function SystemEditor({
 
   const handleRestore = () => {
     onChange(defaultPrompt)
-    onLog?.('info', 'System prompt restaurado al default')
+    onLog?.('info', t('systemEditor.logRestored'))
   }
 
   const applyPreset = (preset) => {
     onChange(preset.prompt)
     setPresetsOpen(false)
-    onLog?.('info', `System prompt: preset "${preset.label}" aplicado`)
+    onLog?.('info', t('systemEditor.logPreset', { label: preset.label }))
   }
 
   return (
@@ -65,14 +67,14 @@ export default function SystemEditor({
         type="button"
         className="system-editor-toggle"
         onClick={() => onToggleOpen(!open)}
-        title="El system prompt es la instrucción base que recibe el modelo antes de tu mensaje. Editalo para ver cómo cambia el comportamiento."
+        title={t('systemEditor.toggleTitle')}
       >
         <span className="system-editor-chev">{open ? '▾' : '▸'}</span>
         <span className="system-editor-label">
           <code>"role": "system"</code> · {effectiveLen} chars
         </span>
         <span className={`system-editor-flag${!isDefault ? ' system-editor-flag-dirty' : ''}`}>
-          {isEmpty ? 'vacío → default' : isDefault ? 'default' : 'editado'}
+          {isEmpty ? t('systemEditor.flagEmpty') : isDefault ? t('systemEditor.flagDefault') : t('systemEditor.flagDirty')}
         </span>
       </button>
       {open && (
@@ -84,7 +86,7 @@ export default function SystemEditor({
             disabled={disabled}
             spellCheck={false}
             rows={8}
-            placeholder="Si lo dejás vacío, se manda el system default."
+            placeholder={t('systemEditor.placeholder')}
           />
           <div className="system-editor-actions">
             {presets.length > 0 && (
@@ -96,9 +98,9 @@ export default function SystemEditor({
                   disabled={disabled}
                   aria-haspopup="menu"
                   aria-expanded={presetsOpen}
-                  title="Probá personalidades distintas con un click — el mismo 'hola' produce respuestas totalmente diferentes."
+                  title={t('systemEditor.presetsTitle')}
                 >
-                  Presets {presetsOpen ? '▴' : '▾'}
+                  {t('systemEditor.presetsBtn')} {presetsOpen ? '▴' : '▾'}
                 </button>
                 {presetsOpen && (
                   <div className="system-editor-presets-menu" role="menu">
@@ -127,10 +129,10 @@ export default function SystemEditor({
               onClick={handleRestore}
               disabled={disabled || isDefault}
             >
-              Restaurar default
+              {t('systemEditor.restore')}
             </button>
             <span className="system-editor-hint">
-              {hint || 'Reemplaza el system base que viaja en cada request. Vacío = se usa el default.'}
+              {hint || t('systemEditor.hintDefault')}
             </span>
           </div>
         </>

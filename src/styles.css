@@ -2144,6 +2144,39 @@ body {
   color: #dbeafe;
 }
 
+/* === Toggle de idioma ES | EN === */
+.lang-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+}
+
+.lang-toggle-btn {
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.lang-toggle-btn:hover {
+  color: #e2e8f0;
+}
+
+.lang-toggle-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
 /* === Dropdown de Docs en el switch === */
 .app-mode-dropdown {
   position: relative;
@@ -6950,3 +6983,707 @@ body {
   color: #bfdbfe;
 }
 
+/* ============== MCP (/mcp) ============== */
+
+.mcp-host-field {
+  flex: 0 1 320px;
+}
+
+.mcp-host-input {
+  font-family: var(--font-mono, monospace);
+  width: 100%;
+  min-width: 220px;
+}
+
+.mcp-status {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.mcp-status-on {
+  color: #4ade80;
+}
+
+/* Contenedor scrolleable de los pasos del ciclo de vida. */
+.mcp-flow {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mcp-intro {
+  text-align: left;
+  line-height: 1.55;
+}
+
+.mcp-cmd {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  color: #86efac;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+/* Cada paso del ciclo de vida: initialize / tools/list / tools/call. */
+.mcp-step {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mcp-step-done {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.mcp-step-locked {
+  opacity: 0.55;
+}
+
+.mcp-step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mcp-step-num {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid #475569;
+  border-radius: 50%;
+}
+
+.mcp-step-done .mcp-step-num {
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.mcp-step-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.mcp-step-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.mcp-step-btn {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: #1d4ed8;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.mcp-step-btn:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.mcp-step-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mcp-server-card {
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+/* Cards de tools descubiertas vía tools/list. */
+.mcp-tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mcp-tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.mcp-tool-card:hover:not(:disabled) {
+  border-color: #475569;
+}
+
+.mcp-tool-selected {
+  border-color: #3b82f6;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.mcp-tool-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.mcp-tool-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+
+.mcp-tool-params {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+/* Formulario generado desde el inputSchema de la tool elegida. */
+.mcp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mcp-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mcp-form-label {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.mcp-form-label em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: #fbbf24;
+}
+
+.mcp-form-hint {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.mcp-form input,
+.mcp-form select {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: #e2e8f0;
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+
+.mcp-form input:focus,
+.mcp-form select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Resultado de tools/call: lo que el modelo vería como tool_result. */
+.mcp-result {
+  background: rgba(34, 197, 94, 0.07);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.mcp-result-error {
+  background: rgba(239, 68, 68, 0.07);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.mcp-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.mcp-result-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Paso 4 — el agente. El header aloja el select de proveedor. */
+.mcp-step-agent .mcp-step-header select {
+  max-width: 140px;
+}
+
+.mcp-agent-task {
+  font-family: inherit;
+  font-size: 13px;
+  color: #e2e8f0;
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.mcp-agent-task:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Timeline del loop: alterna turnos del modelo y respuestas del server MCP. */
+.mcp-agent-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: #0b1220;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.mcp-agent-iter {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  color: #64748b;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.mcp-agent-step {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  word-break: break-word;
+}
+
+.mcp-agent-tooluse {
+  background: rgba(168, 85, 247, 0.08);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.mcp-agent-toolresult {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.mcp-agent-error {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.mcp-agent-tag {
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ============== /tokens — tokenizer visual local ============== */
+
+/* Dos paneles en vez de tres: acá no hay log porque no hay proceso — la
+   tokenización es instantánea y local. */
+.tk-layout {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+@media (max-width: 1100px) {
+  .tk-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+}
+
+.tk-input {
+  margin: 10px;
+  padding: 10px 12px;
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.tk-input:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.tk-hint {
+  margin: 8px 10px 0;
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 6px;
+}
+
+.tk-detail {
+  margin: 0 10px 10px;
+}
+
+.tk-cost {
+  margin: 0 10px 10px;
+}
+
+.tk-cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.tk-cost-table th {
+  text-align: left;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-bottom: 1px solid #334155;
+}
+
+.tk-cost-table td {
+  padding: 4px 8px;
+  color: #cbd5e1;
+  border-bottom: 1px dashed rgba(51, 65, 85, 0.5);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.tk-cost-table td code {
+  color: #93c5fd;
+}
+
+
+/* ============== Ruido en el contexto (/ruido) ============== */
+
+.ruido-layout {
+  grid-template-columns: 1.1fr 0.95fr 0.95fr;
+}
+
+.ruido-seed-input {
+  width: 72px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ruido-block {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.38);
+  margin-bottom: 10px;
+}
+
+.ruido-block-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+.ruido-code {
+  margin: 0;
+  padding: 10px;
+  color: #e2e8f0;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.ruido-turn-slider {
+  width: 90px;
+  accent-color: #f59e0b;
+}
+
+.ruido-preview {
+  margin: 0;
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.ruido-preview-signal {
+  color: #4ade80;
+}
+
+.ruido-preview-noise {
+  color: #b45309;
+}
+
+.ruido-preview-meter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 7px 10px;
+  font-size: 11px;
+  border-top: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+.ruido-run-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ruido-iters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ruido-iter-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+
+.ruido-iter-label {
+  color: #93c5fd;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ruido-iter-meta {
+  color: #94a3b8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ruido-iter-noise {
+  color: #fbbf24;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ruido-iter-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(51, 65, 85, 0.5);
+  overflow: hidden;
+}
+
+.ruido-iter-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #3b82f6, #f59e0b);
+  transition: width 0.3s ease;
+}
+
+.ruido-verdict {
+  border-top: 1px solid #334155;
+  padding: 10px;
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.ruido-verdict-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.ruido-verdict-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+  padding: 3px 0;
+}
+
+.ruido-verdict-row b {
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.ruido-verdict-foot {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.ruido-verdict-foot a {
+  color: #93c5fd;
+}
+
+@media (max-width: 1100px) {
+  .ruido-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(560px, 1fr) minmax(380px, 1fr) minmax(380px, 1fr);
+  }
+}
+
+/* ===== Lab de especificidad (/especificidad) ===== */
+
+.espec-criteria {
+  margin: 0;
+  padding: 8px 10px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.espec-criteria-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.espec-criteria-id {
+  color: #93c5fd;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: nowrap;
+}
+
+.espec-prompt {
+  border-left: 3px solid transparent;
+  padding-left: 8px;
+  margin-bottom: 10px;
+}
+
+.espec-prompt-vago {
+  border-left-color: #64748b;
+}
+
+.espec-prompt-especifico {
+  border-left-color: #4ade80;
+}
+
+.espec-prompt-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.espec-prompt .instr-input {
+  width: 100%;
+}
+
+.espec-checks {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.38);
+  padding: 8px 10px;
+}
+
+.espec-checks-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.espec-check {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  padding: 2px 0;
+  line-height: 1.4;
+}
+
+.espec-check-mark {
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.espec-check-pass {
+  color: #4ade80;
+}
+
+.espec-check-fail {
+  color: #f87171;
+}
+
+.espec-code-details summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: #93c5fd;
+}
+
+.espec-code-final {
+  margin-top: 6px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  max-height: 240px;
+}

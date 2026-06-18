@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
+import { useT } from './i18n/useT.js'
+import LanguageToggle from './LanguageToggle.jsx'
 
 /**
  * Switch de modos del header.
  * "Modos", "Labs" y "Docs" son dropdowns.
  *
- * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "especificidad" | "docs"
  */
 export default function ModeSwitch({ active }) {
+  const { t } = useT()
   const [modesOpen, setModesOpen] = useState(false)
   const [docsOpen, setDocsOpen] = useState(false)
   const [labOpen, setLabOpen] = useState(false)
@@ -69,49 +72,49 @@ export default function ModeSwitch({ active }) {
     {
       key: 'chat',
       href: '/',
-      label: '💬 Chat',
-      desc: 'contexto crudo, conversación y persistente',
-      title: 'Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente.',
+      label: t('modeswitch.chatLabel'),
+      desc: t('modeswitch.chatDesc'),
+      title: t('modeswitch.chatTitle'),
     },
     {
       key: 'editor',
       href: '/editor',
-      label: '💻 Editor',
-      desc: 'código como contexto, con o sin historial',
-      title: 'Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto.',
+      label: t('modeswitch.editorLabel'),
+      desc: t('modeswitch.editorDesc'),
+      title: t('modeswitch.editorTitle'),
     },
     {
       key: 'loop-agentico',
       href: '/loop-agentico',
-      label: '🤖 Loop Agéntico',
-      desc: 'tool-use para leer y editar código',
-      title: 'Loop agéntico con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
+      label: t('modeswitch.loopLabel'),
+      desc: t('modeswitch.loopDesc'),
+      title: t('modeswitch.loopTitle'),
     },
     {
       key: 'agents-md',
       href: '/agents-md',
-      label: '📋 Agente + reglas',
-      desc: 'AGENTS.md inyectado al system prompt',
-      title: 'Agente con reglas persistentes (AGENTS.md) inyectadas al system prompt.',
+      label: t('modeswitch.agentsLabel'),
+      desc: t('modeswitch.agentsDesc'),
+      title: t('modeswitch.agentsTitle'),
     },
     {
       key: 'agents-md-skills',
       href: '/agents-md-skills',
-      label: '📋 Agente + 🧪 skills',
-      desc: 'reglas persistentes más herramientas tipo skill',
-      title: 'Agente con reglas persistentes y Skills disponibles como herramientas.',
+      label: t('modeswitch.skillsLabel'),
+      desc: t('modeswitch.skillsDesc'),
+      title: t('modeswitch.skillsTitle'),
     },
   ]
   const activeMode = modes.find((mode) => mode.key === active) || modes[0]
   const modesActive = modes.some((mode) => mode.key === active)
   const modesClsBase = `app-mode-btn${modesActive ? ' active' : ''}`
-  const modesButtonLabel = modesActive ? activeMode.label : '🎛️ Modos'
-  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs'
+  const modesButtonLabel = modesActive ? activeMode.label : t('modeswitch.modesBtn')
+  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs' || active === 'tokens' || active === 'mcp' || active === 'ruido' || active === 'especificidad'
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
     <div className="app-mode-switch">
-      <span className="app-mode-switch-label" aria-hidden="true">MODO:</span>
+      <span className="app-mode-switch-label" aria-hidden="true">{t('modeswitch.label')}</span>
       <div className="app-mode-dropdown" ref={modesDropdownRef}>
         <button
           type="button"
@@ -120,7 +123,7 @@ export default function ModeSwitch({ active }) {
           onClick={() => setModesOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={modesOpen}
-          title="Modos principales de la app: Chat, Editor y Loop Agéntico."
+          title={t('modeswitch.modesTitle')}
         >
           {modesButtonLabel} <span className="app-mode-dropdown-chev">{modesOpen ? '▴' : '▾'}</span>
         </button>
@@ -150,9 +153,9 @@ export default function ModeSwitch({ active }) {
           onClick={() => setLabOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={labOpen}
-          title="Experimentos pedagógicos sueltos: cosas que aíslan un concepto puntual de la API."
+          title={t('modeswitch.labsTitle')}
         >
-          🧪 Labs <span className="app-mode-dropdown-chev">{labOpen ? '▴' : '▾'}</span>
+          {t('modeswitch.labsBtn')} <span className="app-mode-dropdown-chev">{labOpen ? '▴' : '▾'}</span>
         </button>
         {labOpen && (
           <div className="app-mode-menu" role="menu">
@@ -162,8 +165,17 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('razonamiento')}
             >
-              <b>🧠 Razonamiento</b>
-              <span className="app-mode-menu-sub">modelos que "piensan" antes de responder</span>
+              <b>{t('modeswitch.razonLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.razonDesc')}</span>
+            </a>
+            <a
+              href="/tokens"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('tokens')}
+            >
+              <b>{t('modeswitch.tokensLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.tokensDesc')}</span>
             </a>
             <a
               href="/logprobs"
@@ -171,8 +183,17 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('logprobs')}
             >
-              <b>🎲 Logprobs</b>
-              <span className="app-mode-menu-sub">la IA es un predictor de tokens</span>
+              <b>{t('modeswitch.logprobsLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.logprobsDesc')}</span>
+            </a>
+            <a
+              href="/mcp"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('mcp')}
+            >
+              <b>{t('modeswitch.mcpLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.mcpDesc')}</span>
             </a>
             <a
               href="/ventana-contexto"
@@ -180,8 +201,26 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('ventana-contexto')}
             >
-              <b>🪟 Ventana de contexto</b>
-              <span className="app-mode-menu-sub">FIFO / window / compaction en vivo</span>
+              <b>{t('modeswitch.ctxwinLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.ctxwinDesc')}</span>
+            </a>
+            <a
+              href="/ruido"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('ruido')}
+            >
+              <b>{t('modeswitch.ruidoLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.ruidoDesc')}</span>
+            </a>
+            <a
+              href="/especificidad"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('especificidad')}
+            >
+              <b>{t('modeswitch.especLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.especDesc')}</span>
             </a>
             <a
               href="/prompt-injection"
@@ -189,8 +228,8 @@ export default function ModeSwitch({ active }) {
               role="menuitem"
               {...aria('prompt-injection')}
             >
-              <b>🛡 Prompt injection</b>
-              <span className="app-mode-menu-sub">system vs datos no confiables</span>
+              <b>{t('modeswitch.piLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.piDesc')}</span>
             </a>
           </div>
         )}
@@ -204,33 +243,35 @@ export default function ModeSwitch({ active }) {
           onClick={() => setDocsOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={docsOpen}
-          title="Material de la clase: resumen de los modos y anexos pedagógicos (contexto en vivo, OpenAI vs Claude, la API en argentino)."
+          title={t('modeswitch.docsTitle')}
         >
-          📚 Docs <span className="app-mode-dropdown-chev">{docsOpen ? '▴' : '▾'}</span>
+          {t('modeswitch.docsBtn')} <span className="app-mode-dropdown-chev">{docsOpen ? '▴' : '▾'}</span>
         </button>
         {docsOpen && (
           <div className="app-mode-menu" role="menu">
             <a href="/docs" className="app-mode-menu-item" role="menuitem">
-              <b>📚 Docs principal</b>
-              <span className="app-mode-menu-sub">resumen de los 3 modos</span>
+              <b>{t('modeswitch.docsMain')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.docsMainSub')}</span>
             </a>
             <div className="app-mode-menu-divider" />
-            <div className="app-mode-menu-section">Anexos</div>
+            <div className="app-mode-menu-section">{t('modeswitch.annexes')}</div>
             <a href="/como-funciona" className="app-mode-menu-item" role="menuitem">
-              <b>⚙️ /como-funciona</b>
-              <span className="app-mode-menu-sub">system / context / tools en el POST</span>
+              <b>{t('modeswitch.comoFuncLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.comoFuncSub')}</span>
             </a>
             <a href="/contexto" className="app-mode-menu-item" role="menuitem">
-              <b>🧠 /contexto</b>
-              <span className="app-mode-menu-sub">vista en vivo del array messages</span>
+              <b>{t('modeswitch.contextoLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.contextoSub')}</span>
             </a>
             <a href="/proveedores" className="app-mode-menu-item" role="menuitem">
-              <b>⚖️ /proveedores</b>
-              <span className="app-mode-menu-sub">OpenAI vs Anthropic</span>
+              <b>{t('modeswitch.provLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.provSub')}</span>
             </a>
           </div>
         )}
       </div>
+
+      <LanguageToggle />
     </div>
   )
 }
