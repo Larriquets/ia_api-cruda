@@ -121,6 +121,13 @@ export const es = {
     provLmstudio: 'LM Studio (local)',
   },
 
+  docpage: {
+    backToModes: '← Modos',
+    onThisPage: 'En esta página',
+    navAria: 'Navegación de documentación',
+    pageIndexAria: 'Índice de la página',
+  },
+
   toggle: {
     aria: 'Idioma',
     es: 'ES',
