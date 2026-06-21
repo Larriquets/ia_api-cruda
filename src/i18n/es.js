@@ -190,6 +190,8 @@ export const es = {
     docsMain: '📚 Docs principal',
     docsMainSub: 'resumen de los 3 modos',
     annexes: 'Anexos',
+    recorridoLabel: '🧭 /recorrido',
+    recorridoSub: 'la IA para no programadores, en 6 paradas',
     comoFuncLabel: '⚙️ /como-funciona',
     comoFuncSub: 'system / context / tools en el POST',
     contextoLabel: '🧠 /contexto',
@@ -261,12 +263,23 @@ export const es = {
     label: 'Probar {label} ahora',
   },
 
+  speech: {
+    title: '🔊 Escuchar',
+    listen: 'Escuchar',
+    pause: 'Pausar',
+    resume: 'Seguir',
+    stop: 'Detener',
+    speed: 'Velocidad',
+    unsupported: 'Tu navegador no soporta lectura en voz alta. Probá con Chrome o Edge.',
+  },
+
   docsnav: {
     moreDocs: 'Mas docs:',
     moreDemos: 'Mas demos',
     ariaDocs: 'Paginas de documentacion',
     ariaDemos: 'Paginas de demos',
     docsDesc: 'que hace cada modo de la app',
+    recorridoDesc: 'la IA para no programadores, en 6 paradas',
     comoFuncDesc: 'system / context / tools en el POST',
     contextoDesc: 'vista en vivo del array messages del chat',
     provDesc: 'OpenAI vs Anthropic: donde vive el contexto',

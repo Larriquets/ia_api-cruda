@@ -59,6 +59,7 @@ window.location.pathname → state `page` → if-chain → componente de página
 | `/proveedores` | [Proveedores.jsx](../src/Proveedores.jsx) | Comparación OpenAI vs Claude |
 | `/docs` | [Docs.jsx](../src/Docs.jsx) | Material de clase |
 | `/como-funciona` | [ComoFunciona.jsx](../src/ComoFunciona.jsx) | Explicación guiada: las tres piezas de cada POST (system / context / user) |
+| `/recorrido` | [Recorrido.jsx](../src/Recorrido.jsx) | Recorrido guiado para NO programadores: 6 paradas con metáfora + CTA "probalo de verdad" a cada lab. Prosa en [content/RecorridoBody.jsx](../src/content/RecorridoBody.jsx) |
 | `/demo/chat` | [ModosChat.jsx](../src/ModosChat.jsx) | Comparador animado de los 3 modos del Chat (sin API) |
 | `/demo/editor` | [ModosEditor.jsx](../src/ModosEditor.jsx) | Comparador animado de los 2 modos del Editor (sin API) |
 | `/demo/loop` | [ComoEdita.jsx](../src/ComoEdita.jsx) | Demo de cómo la IA "edita código" vía `tool_use` (sin API) |
@@ -554,3 +555,30 @@ i18n minimalista **sin librería** — coherente con "la simplicidad es el mater
   - **Swap de default al cambiar idioma**: si el system actual es todavía un default (de cualquier idioma) o está vacío, App.jsx lo swapea al default del nuevo idioma; si el alumno lo personalizó, se respeta (regla `.trim()` intacta).
   - `appendLog` formatea el timestamp con `en-US`/`es-AR` según `lang`.
 - **Cobertura actual (Fase 1)**: infra + chrome interactivo del Chat ([App.jsx](../src/App.jsx)) y todos los componentes compartidos. Pendiente (Fase 2): la prosa larga de [Docs.jsx](../src/Docs.jsx), [ComoFunciona.jsx](../src/ComoFunciona.jsx), demos y los párrafos explicativos de cada lab — recomendado migrarlos como **módulos de contenido por idioma** (no como miles de claves `t()`).
+
+---
+
+## 12. Recorrido para no programadores (`/recorrido`) + lector TTS
+
+Página narrada pensada como **puerta de entrada para profesionales no técnicos** que ya usan IA en el trabajo y quieren intuición sobre por qué falla, alucina o "se olvida". No es una versión simplificada de la app: es la **misma verdad** contada con metáforas, y cada parada termina con un botón "probalo de verdad" ([TryModeCTA.jsx](../src/TryModeCTA.jsx)) que lleva al lab real.
+
+### Estructura
+
+Mismo patrón que `/como-funciona` (§route map): el andamiaje (header + TOC con scroll-spy vía `IntersectionObserver`) vive en [Recorrido.jsx](../src/Recorrido.jsx); la prosa vive en **módulos de contenido por idioma** [content/RecorridoBody.jsx](../src/content/RecorridoBody.jsx) (`RecorridoBodyEs` / `RecorridoBodyEn`), elegidos por `lang`. Los `id` de sección son anclas internas, **idénticas en ambos idiomas**. Las 6 paradas: predictor de tokens → tokens → memoria (carta nueva) → ventana de contexto → especificidad → ruido, cada una con su CTA a `/logprobs`, `/tokens`, `/` (modo Crudo), `/ventana-contexto`, `/especificidad`, `/ruido`.
+
+Navegación: link en el dropdown **Docs** de [ModeSwitch.jsx](../src/ModeSwitch.jsx) (primer anexo) y en [DocsNav.jsx](../src/DocsNav.jsx).
+
+### Lector text-to-speech
+
+[SpeechReader.jsx](../src/SpeechReader.jsx) permite **escuchar** el recorrido. Usa la **Web Speech API nativa** del browser (`window.speechSynthesis`) — sin librería ni API externa, coherente con "la simplicidad es el material". Montado en el `aside` sticky del sidebar (queda visible al scrollear).
+
+Cómo funciona:
+
+- **Trocea por fragmento**: lee los `h2`/`p`/`li` que cuelgan de `containerSelector` (`.docs-main`) en orden de DOM, **un `SpeechSynthesisUtterance` por elemento**. Trocear así evita el bug de Chrome que corta los utterances largos (~15s) y permite **resaltar** (clase `.speech-reading`) y auto-scrollear el fragmento en curso.
+- **Voz por idioma**: `pickVoice` prioriza `es-AR` → LatAm → cualquier `es-*` en español, y `en-US` → cualquier `en-*` en inglés. Las voces llegan async en varios browsers → se escucha `voiceschanged`. Caveat: las voces dependen del SO; si no hay voz del idioma instalada, el SO puede caer a otra.
+- **Saca emojis** del texto que va al motor (`stripEmoji`, vía `\p{Extended_Pictographic}`) para no leerlos en voz alta; el resaltado visual los conserva.
+- **Controles**: play/pause/resume (`speechSynthesis.pause()`/`.resume()`), stop, y selector de velocidad (`rate`, 0.8×–1.5×).
+- **Robustez de callbacks**: un `sessionRef` (contador) invalida los `onend`/`onstart` de utterances viejos tras un stop/cambio de idioma, para que `cancel()` no dispare la cadena `speakFrom` siguiente. Se hace `hardStop()` al desmontar y al cambiar `lang` (el texto en pantalla cambió).
+- **No persiste nada** en `localStorage` (estado efímero de reproducción). Si el browser no soporta `speechSynthesis`, muestra un aviso (`speech.unsupported`) en vez de un botón muerto.
+
+i18n: namespace `speech.*` en [es.js](../src/i18n/es.js) / [en.js](../src/i18n/en.js). Estilos: bloque `.speech-reader` + `.speech-reading` en [styles.css](../src/styles.css).

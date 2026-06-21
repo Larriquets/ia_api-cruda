@@ -2,6 +2,7 @@ import { useT } from './i18n/useT.js'
 
 const LINKS = [
   { key: 'docs', href: '/docs', emoji: 'D', name: '/docs', descKey: 'docsnav.docsDesc' },
+  { key: 'recorrido', href: '/recorrido', emoji: 'R', name: '/recorrido', descKey: 'docsnav.recorridoDesc' },
   { key: 'como-funciona', href: '/como-funciona', emoji: 'C', name: '/como-funciona', descKey: 'docsnav.comoFuncDesc' },
   { key: 'contexto', href: '/contexto', emoji: 'M', name: '/contexto', descKey: 'docsnav.contextoDesc' },
   { key: 'proveedores', href: '/proveedores', emoji: 'P', name: '/proveedores', descKey: 'docsnav.provDesc' },

@@ -25,6 +25,7 @@ import Ruido from './Ruido.jsx'
 import Especificidad from './Especificidad.jsx'
 import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
+import Recorrido from './Recorrido.jsx'
 import ModosChat from './ModosChat.jsx'
 import ModosEditor from './ModosEditor.jsx'
 import ComoEdita from './ComoEdita.jsx'
@@ -145,6 +146,7 @@ export default function App() {
     if (window.location.pathname === '/especificidad') return 'especificidad'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
+    if (window.location.pathname === '/recorrido') return 'recorrido'
     if (window.location.pathname === '/demo/chat') return 'demo-chat'
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
@@ -530,6 +532,9 @@ export default function App() {
   }
   if (page === 'como-funciona') {
     return <><WelcomeModal /><ComoFunciona /></>
+  }
+  if (page === 'recorrido') {
+    return <><WelcomeModal /><Recorrido /></>
   }
   if (page === 'demo-chat') {
     return <><WelcomeModal /><ModosChat /></>

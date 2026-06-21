@@ -255,6 +255,10 @@ export default function ModeSwitch({ active }) {
             </a>
             <div className="app-mode-menu-divider" />
             <div className="app-mode-menu-section">{t('modeswitch.annexes')}</div>
+            <a href="/recorrido" className="app-mode-menu-item" role="menuitem">
+              <b>{t('modeswitch.recorridoLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.recorridoSub')}</span>
+            </a>
             <a href="/como-funciona" className="app-mode-menu-item" role="menuitem">
               <b>{t('modeswitch.comoFuncLabel')}</b>
               <span className="app-mode-menu-sub">{t('modeswitch.comoFuncSub')}</span>

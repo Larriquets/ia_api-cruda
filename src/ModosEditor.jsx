@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import DocsNav from './DocsNav.jsx'
+import { useT } from './i18n/useT.js'
 
 /**
  * Comparador animado de los 2 modos del Editor de código:
@@ -10,10 +11,11 @@ import DocsNav from './DocsNav.jsx'
  *
  * El guion son 3 instrucciones encadenadas sobre el mismo archivo Java.
  * Las respuestas de la IA están mockeadas a propósito: la página es
- * pedagógica, no consume API.
+ * pedagógica, no consume API. Bilingüe ES/EN.
  */
 
-const SYSTEM_TEXT = 'Sos un asistente de código. Devolvé únicamente código en un bloque ``` con el lenguaje correspondiente. Sin explicaciones.'
+const SYSTEM_TEXT_ES = 'Sos un asistente de código. Devolvé únicamente código en un bloque ``` con el lenguaje correspondiente. Sin explicaciones.'
+const SYSTEM_TEXT_EN = 'You are a code assistant. Return only code in a ``` block with the corresponding language. No explanations.'
 
 // El archivo inicial. Se va modificando turno a turno.
 const INITIAL_CODE = `public class CuentaBancaria {
@@ -43,19 +45,21 @@ public class Cliente {
 
 // El guion: 3 turnos. `user` es la instrucción que escribe el alumno en el
 // textarea de instrucción del Editor. Las respuestas son código (bloques ```).
-const SCRIPT = [
-  {
-    instruction: 'Agregá otra clase llamada Cliente con un nombre.',
-    // La respuesta de la IA (siempre es código en un bloque). Lo extraemos con
-    // extractCodeBlock y reemplaza el editor.
-    replyConContexto: CODE_AFTER_T1,
-    replySinContexto: CODE_AFTER_T1,
-  },
-  {
-    instruction: 'Sumale a esa clase un método saludar() que imprima el nombre.',
-    // CON contexto: la IA "se acuerda" que la clase nueva se llama Cliente y
-    // que el método saludar() es sobre Cliente.
-    replyConContexto: `public class CuentaBancaria {
+// Bilingüe: el copy y los strings/comentarios del Java generado pasan por L().
+function buildScript(L) {
+  return [
+    {
+      instruction: L('Agregá otra clase llamada Cliente con un nombre.', 'Add another class called Cliente with a name.'),
+      // La respuesta de la IA (siempre es código en un bloque). Lo extraemos con
+      // extractCodeBlock y reemplaza el editor.
+      replyConContexto: CODE_AFTER_T1,
+      replySinContexto: CODE_AFTER_T1,
+    },
+    {
+      instruction: L('Sumale a esa clase un método saludar() que imprima el nombre.', 'Add a saludar() method to that class that prints the name.'),
+      // CON contexto: la IA "se acuerda" que la clase nueva se llama Cliente y
+      // que el método saludar() es sobre Cliente.
+      replyConContexto: `public class CuentaBancaria {
     private double saldo;
 
     public void depositar(double monto) {
@@ -71,12 +75,12 @@ public class Cliente {
     }
 
     public void saludar() {
-        System.out.println("Hola, soy " + nombre);
+        System.out.println("${L('Hola, soy ', "Hi, I'm ")}" + nombre);
     }
 }`,
-    // SIN contexto: la IA no sabe qué clase es "esa clase". Se la juega y le
-    // mete saludar() a CuentaBancaria, que es la única que ve en el código.
-    replySinContexto: `public class CuentaBancaria {
+      // SIN contexto: la IA no sabe qué clase es "esa clase". Se la juega y le
+      // mete saludar() a CuentaBancaria, que es la única que ve en el código.
+      replySinContexto: `public class CuentaBancaria {
     private double saldo;
 
     public void depositar(double monto) {
@@ -84,7 +88,7 @@ public class Cliente {
     }
 
     public void saludar() {
-        System.out.println("Hola desde CuentaBancaria");
+        System.out.println("${L('Hola desde CuentaBancaria', 'Hi from CuentaBancaria')}");
     }
 }
 
@@ -95,32 +99,36 @@ public class Cliente {
         this.nombre = nombre;
     }
 }`,
-  },
-  {
-    instruction: '¿En qué clase pusiste el método saludar?',
-    // CON contexto: la IA sabe que lo puso en Cliente porque tiene el historial.
-    // Pero ojo: la IA está configurada para devolver SOLO código. Así que devuelve
-    // un comentario dentro de un bloque. Ese mismatch entre "instrucción de
-    // pregunta" y "system que pide solo código" también es pedagógico.
-    replyConContexto: `// Lo puse en la clase Cliente.
+    },
+    {
+      instruction: L('¿En qué clase pusiste el método saludar?', 'Which class did you put the saludar method in?'),
+      // CON contexto: la IA sabe que lo puso en Cliente porque tiene el historial.
+      // Pero ojo: la IA está configurada para devolver SOLO código. Así que devuelve
+      // un comentario dentro de un bloque. Ese mismatch entre "instrucción de
+      // pregunta" y "system que pide solo código" también es pedagógico.
+      replyConContexto: `// ${L('Lo puse en la clase Cliente.', 'I put it in the Cliente class.')}
 public class Cliente {
     public void saludar() { /* ... */ }
 }`,
-    // SIN contexto: la IA no puede responder porque no tiene memoria de qué
-    // hizo. Improvisa devolviendo algo genérico.
-    replySinContexto: `// No tengo registro del turno anterior. En el código que veo, saludar() no aparece.
+      // SIN contexto: la IA no puede responder porque no tiene memoria de qué
+      // hizo. Improvisa devolviendo algo genérico.
+      replySinContexto: `// ${L('No tengo registro del turno anterior. En el código que veo, saludar() no aparece.', "I have no record of the previous turn. In the code I see, saludar() doesn't appear.")}
 public class CuentaBancaria {
     // ...
 }`,
-  },
-]
+    },
+  ]
+}
 
 const estTokens = (s) => Math.max(1, Math.ceil((s || '').length / 4))
 
 // Construye el userMsg que el Editor real arma — un solo string que embebe
 // instrucción + código actual. Ver buildUserMessage() en Editor.jsx.
-function buildUserMessage(instruction, code) {
-  return `Lenguaje: java\n\nInstrucción:\n${instruction}\n\nCódigo actual:\n\`\`\`java\n${code}\n\`\`\``
+function buildUserMessage(instruction, code, L) {
+  return L(
+    `Lenguaje: java\n\nInstrucción:\n${instruction}\n\nCódigo actual:\n\`\`\`java\n${code}\n\`\`\``,
+    `Language: java\n\nInstruction:\n${instruction}\n\nCurrent code:\n\`\`\`java\n${code}\n\`\`\``,
+  )
 }
 
 // Estado en cada modo después de N turnos (turn = cantidad completada, 0..3).
@@ -131,21 +139,7 @@ function buildUserMessage(instruction, code) {
 //
 // Con contexto: igual al anterior con el editor, PERO además acumula history.
 // El messages[] del turno N es [system, ...history(2*(N-1) msgs), userN].
-function buildSnapshots(turn) {
-  // El "código en el editor" antes del turno actual. Después del turno N, el
-  // editor muestra el resultado de la replyConContexto de ese turno (porque
-  // ahí asumimos que el alumno toca "Aplicar al editor").
-  //
-  // Para SIN contexto, el código del editor evoluciona distinto porque las
-  // replies son distintas — pero para mantener el comparativo justo, mostramos
-  // el código del editor "Con contexto" en ambas columnas (es el mismo editor,
-  // los modos son del messages[], no del archivo). En la práctica del Editor
-  // real, el alumno tendría que elegir un modo y mantenerlo. Acá modelamos:
-  // "imaginá que arrancás de nuevo con cada modo, con la misma intención".
-  //
-  // Decisión pedagógica: cada modo lleva su propio editor. Así el alumno ve
-  // cómo "sin contexto" termina dejándolo en un estado distinto del archivo
-  // porque la 2ª edición se desvía.
+function buildSnapshots(turn, script, systemText, L) {
   let editorConContexto = INITIAL_CODE
   let editorSinContexto = INITIAL_CODE
   const conMessagesByTurn = []
@@ -153,14 +147,14 @@ function buildSnapshots(turn) {
   const history = [] // se va llenando solo en "Con contexto"
 
   for (let i = 0; i < turn; i += 1) {
-    const step = SCRIPT[i]
+    const step = script[i]
     // CON CONTEXTO: el messages[] del turno i es system + history acumulado + nuevo user
     const userMsgCon = {
       role: 'user',
-      content: buildUserMessage(step.instruction, editorConContexto),
+      content: buildUserMessage(step.instruction, editorConContexto, L),
     }
     const conMsgsThisTurn = [
-      { role: 'system', content: SYSTEM_TEXT },
+      { role: 'system', content: systemText },
       ...history,
       userMsgCon,
     ]
@@ -169,10 +163,10 @@ function buildSnapshots(turn) {
     // SIN CONTEXTO: el messages[] del turno i es solo system + el user de ese turno
     const userMsgSin = {
       role: 'user',
-      content: buildUserMessage(step.instruction, editorSinContexto),
+      content: buildUserMessage(step.instruction, editorSinContexto, L),
     }
     const sinMsgsThisTurn = [
-      { role: 'system', content: SYSTEM_TEXT },
+      { role: 'system', content: systemText },
       userMsgSin,
     ]
     sinMessagesByTurn.push(sinMsgsThisTurn)
@@ -251,12 +245,17 @@ function EditorPreview({ code, label }) {
 }
 
 export default function ModosEditor() {
+  const { t, lang } = useT()
+  const L = (es, en) => (lang === 'en' ? en : es)
+  const SYSTEM_TEXT = lang === 'en' ? SYSTEM_TEXT_EN : SYSTEM_TEXT_ES
+  const SCRIPT = buildScript(L)
+
   const [turn, setTurn] = useState(0)
   const [autoPlaying, setAutoPlaying] = useState(false)
   const [lastTurnAt, setLastTurnAt] = useState(0)
   const autoTimerRef = useRef(null)
 
-  const snap = buildSnapshots(turn)
+  const snap = buildSnapshots(turn, SCRIPT, SYSTEM_TEXT, L)
   const isDone = turn >= SCRIPT.length
   const isFresh = turn === 0
 
@@ -289,7 +288,7 @@ export default function ModosEditor() {
     return () => {
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
     }
-  }, [autoPlaying, turn])
+  }, [autoPlaying, turn, SCRIPT.length])
 
   const isNew = (idx, total, modeNewCount) => {
     if (!lastTurnAt) return false
@@ -302,20 +301,18 @@ export default function ModosEditor() {
       <header className="header">
         <h1>
           /demo/editor
-          <span className="docs-header-subtitle">sin contexto vs con contexto, lado a lado</span>
+          <span className="docs-header-subtitle">{L('sin contexto vs con contexto, lado a lado', 'no context vs with context, side by side')}</span>
         </h1>
-        <a href="/" className="clear-btn">← Modos</a>
+        <a href="/" className="clear-btn">{t('docpage.backToModes')}</a>
       </header>
 
       <div className="criollo-content docs-layout">
-        <aside className="docs-sidebar" aria-label="Navegación de documentación">
+        <aside className="docs-sidebar" aria-label={t('docpage.navAria')}>
           <DocsNav current="demo-editor" />
           <div className="mch-aside-tip">
-            <div className="mch-aside-tip-title">¿Para qué sirve esta página?</div>
+            <div className="mch-aside-tip-title">{L('¿Para qué sirve esta página?', "What's this page for?")}</div>
             <p>
-              Misma sesión de edición, dos modos. Mirá cómo el modo <b>sin contexto</b>
-              hace que la IA se desvíe en el segundo turno porque <b>no tiene cómo saber</b>
-              a qué te referís cuando decís <i>"esa clase"</i>.
+              {L('Misma sesión de edición, dos modos. Mirá cómo el modo', 'Same editing session, two modes. Watch how the')} <b>{L('sin contexto', 'no context')}</b> {L('hace que la IA se desvíe en el segundo turno porque', 'mode makes the AI go off track on the second turn because')} <b>{L('no tiene cómo saber', 'it has no way to know')}</b> {L('a qué te referís cuando decís', 'what you mean when you say')} <i>{L('"esa clase"', '"that class"')}</i>.
             </p>
           </div>
         </aside>
@@ -323,18 +320,14 @@ export default function ModosEditor() {
         <div className="docs-main">
 
           <section className="criollo-section" id="intro">
-            <h2>🎯 La pregunta del millón (versión Editor)</h2>
+            <h2>🎯 {L('La pregunta del millón (versión Editor)', 'The million-dollar question (Editor edition)')}</h2>
             <p>
-              En el <a href="/editor">Editor</a> hay un checkbox: <b>"mantener contexto"</b>.
-              ¿Qué cambia? Mucho. Esta página simula la misma serie de 3 instrucciones sobre el
-              mismo archivo Java en los dos modos, y muestra lado a lado qué JSON sale del
-              navegador en cada caso y cómo termina el archivo.
+              {L('En el', 'In the')} <a href="/editor">Editor</a> {L('hay un checkbox:', "there's a checkbox:")} <b>{L('"mantener contexto"', '"keep context"')}</b>.
+              {L('¿Qué cambia? Mucho. Esta página simula la misma serie de 3 instrucciones sobre el mismo archivo Java en los dos modos, y muestra lado a lado qué JSON sale del navegador en cada caso y cómo termina el archivo.', ' What changes? A lot. This page simulates the same series of 3 instructions over the same Java file in both modes, and shows side by side what JSON leaves the browser in each case and how the file ends up.')}
             </p>
             <div className="prov-callout">
               <p>
-                Las respuestas de la IA acá están <b>mockeadas</b> (no consumen API). El foco
-                pedagógico es lo que viaja en el <code>POST</code> y cómo evoluciona el editor.
-                Para ver el request real, andá al <a href="/editor">/editor</a>.
+                {L('Las respuestas de la IA acá están', "The AI's responses here are")} <b>{L('mockeadas', 'mocked')}</b> {L('(no consumen API). El foco pedagógico es lo que viaja en el', "(they don't consume API). The teaching focus is what travels in the")} <code>POST</code> {L('y cómo evoluciona el editor. Para ver el request real, andá al', 'and how the editor evolves. To see the real request, go to')} <a href="/editor">/editor</a>.
               </p>
             </div>
           </section>
@@ -343,20 +336,20 @@ export default function ModosEditor() {
           <section className="criollo-section mch-controls-section">
             <div className="mch-controls">
               <div className="mch-progress">
-                <span className="mch-progress-label">Turno:</span>
+                <span className="mch-progress-label">{L('Turno:', 'Turn:')}</span>
                 {[1, 2, 3].map((n) => (
                   <span
                     key={n}
                     className={`mch-progress-dot${turn >= n ? ' is-done' : ''}`}
-                    aria-label={`turno ${n} ${turn >= n ? 'completado' : 'pendiente'}`}
+                    aria-label={`${L('turno', 'turn')} ${n} ${turn >= n ? L('completado', 'completed') : L('pendiente', 'pending')}`}
                   >
                     {n}
                   </span>
                 ))}
                 <span className="mch-progress-meta">
-                  {isFresh && '— el editor está en estado inicial'}
-                  {!isFresh && !isDone && `— turno ${turn} de 3 aplicado`}
-                  {isDone && '— sesión completa'}
+                  {isFresh && L('— el editor está en estado inicial', '— the editor is in its initial state')}
+                  {!isFresh && !isDone && L(`— turno ${turn} de 3 aplicado`, `— turn ${turn} of 3 applied`)}
+                  {isDone && L('— sesión completa', '— session complete')}
                 </span>
               </div>
               <div className="mch-buttons">
@@ -365,36 +358,36 @@ export default function ModosEditor() {
                   className="mch-btn mch-btn-primary"
                   onClick={advance}
                   disabled={isDone || autoPlaying}
-                  title="Avanza un turno: muestra el POST que sale en cada modo y cómo queda el editor"
+                  title={L('Avanza un turno: muestra el POST que sale en cada modo y cómo queda el editor', 'Advances one turn: shows the POST that goes out in each mode and how the editor ends up')}
                 >
-                  ▶ Siguiente edición
+                  ▶ {L('Siguiente edición', 'Next edit')}
                 </button>
                 <button
                   type="button"
                   className="mch-btn"
                   onClick={() => setAutoPlaying((v) => !v)}
                   disabled={isDone}
-                  title="Encadena las 3 ediciones con un delay"
+                  title={L('Encadena las 3 ediciones con un delay', 'Chains the 3 edits with a delay')}
                 >
-                  {autoPlaying ? '⏸ Pausar' : '▶▶ Auto'}
+                  {autoPlaying ? L('⏸ Pausar', '⏸ Pause') : L('▶▶ Auto', '▶▶ Auto')}
                 </button>
                 <button
                   type="button"
                   className="mch-btn"
                   onClick={reset}
                   disabled={turn === 0 && !autoPlaying}
-                  title="Volver al estado inicial"
+                  title={L('Volver al estado inicial', 'Back to the initial state')}
                 >
-                  ↺ Reiniciar
+                  ↺ {L('Reiniciar', 'Reset')}
                 </button>
               </div>
             </div>
 
             <div className="mch-prompt-preview">
-              <span className="mch-prompt-label">Próxima instrucción:</span>
+              <span className="mch-prompt-label">{L('Próxima instrucción:', 'Next instruction:')}</span>
               {isDone ? (
                 <span className="mch-prompt-text mch-prompt-empty">
-                  (no hay más turnos en el guion — tocá Reiniciar para volver a empezar)
+                  {L('(no hay más turnos en el guion — tocá Reiniciar para volver a empezar)', '(no more turns in the script — hit Reset to start over)')}
                 </span>
               ) : (
                 <span className="mch-prompt-text">
@@ -412,19 +405,18 @@ export default function ModosEditor() {
               <div className="mch-col mch-col-crudo">
                 <ColumnHeader
                   emoji="🔴"
-                  name="Sin contexto"
+                  name={L('Sin contexto', 'No context')}
                   endpoint="POST /v1/chat/completions"
                   color="crudo"
                   badge="keep_context = false"
                 />
                 <div className="mch-col-desc">
-                  Cada "Aplicar" manda <b>solo</b> system + un único <code>user</code> que
-                  embebe la instrucción y el código actual. <b>Sin</b> historial.
+                  {L('Cada "Aplicar" manda', 'Each "Apply" sends')} <b>{L('solo', 'only')}</b> {L('system + un único', 'system + a single')} <code>user</code> {L('que embebe la instrucción y el código actual.', 'that embeds the instruction and the current code.')} <b>{L('Sin', 'No')}</b> {L('historial.', 'history.')}
                 </div>
 
                 <div className="mch-payload">
                   <div className="mch-payload-label">
-                    messages[] del último POST
+                    {L('messages[] del último POST', 'messages[] of the last POST')}
                   </div>
                   {snap.sinLastMessages ? (
                     <div className="mch-msglist">
@@ -439,7 +431,7 @@ export default function ModosEditor() {
                     </div>
                   ) : (
                     <div className="mch-pers-empty">
-                      (aún no se mandó nada — tocá "Siguiente edición")
+                      {L('(aún no se mandó nada — tocá "Siguiente edición")', '(nothing sent yet — hit "Next edit")')}
                     </div>
                   )}
                 </div>
@@ -450,24 +442,21 @@ export default function ModosEditor() {
                 />
 
                 <EditorPreview
-                  label="Estado del editor después del turno:"
+                  label={L('Estado del editor después del turno:', 'Editor state after the turn:')}
                   code={snap.editorSinContexto}
                 />
 
                 <div className="mch-takeaway">
-                  {turn === 0 && '↑ El archivo arranca igual en los dos modos.'}
-                  {turn === 1 && '↑ Primera edición: la IA tiene info suficiente, los dos modos coinciden.'}
+                  {turn === 0 && L('↑ El archivo arranca igual en los dos modos.', '↑ The file starts the same in both modes.')}
+                  {turn === 1 && L('↑ Primera edición: la IA tiene info suficiente, los dos modos coinciden.', '↑ First edit: the AI has enough info, both modes match.')}
                   {turn === 2 && (
                     <>
-                      <b>¡Boom!</b> "Esa clase" para la IA es ambiguo: como solo ve el código,
-                      le mete <code>saludar()</code> a <b>CuentaBancaria</b>, no a Cliente.
+                      <b>{L('¡Boom!', 'Boom!')}</b> {L('"Esa clase" para la IA es ambiguo: como solo ve el código, le mete', '"That class" is ambiguous for the AI: since it only sees the code, it adds')} <code>saludar()</code> {L('a', 'to')} <b>CuentaBancaria</b>, {L('no a Cliente.', 'not Cliente.')}
                     </>
                   )}
                   {turn === 3 && (
                     <>
-                      <b>Game over.</b> La pregunta "¿en qué clase pusiste el método?" no
-                      tiene respuesta — la IA <b>nunca recibió</b> que en el turno anterior
-                      había puesto un método.
+                      <b>{L('Game over.', 'Game over.')}</b> {L('La pregunta "¿en qué clase pusiste el método?" no tiene respuesta — la IA', 'The question "which class did you put the method in?" has no answer — the AI')} <b>{L('nunca recibió', 'never received')}</b> {L('que en el turno anterior había puesto un método.', 'that it had added a method on the previous turn.')}
                     </>
                   )}
                 </div>
@@ -477,19 +466,18 @@ export default function ModosEditor() {
               <div className="mch-col mch-col-conversacion">
                 <ColumnHeader
                   emoji="🟢"
-                  name="Con contexto"
+                  name={L('Con contexto', 'With context')}
                   endpoint="POST /v1/chat/completions"
                   color="conversacion"
                   badge="keep_context = true"
                 />
                 <div className="mch-col-desc">
-                  El cliente <b>acumula</b> <code>history[]</code> con cada par
-                  (user, assistant) y lo reenvía completo en cada "Aplicar".
+                  {L('El cliente', 'The client')} <b>{L('acumula', 'accumulates')}</b> <code>history[]</code> {L('con cada par (user, assistant) y lo reenvía completo en cada "Aplicar".', 'with each (user, assistant) pair and resends it whole on each "Apply".')}
                 </div>
 
                 <div className="mch-payload">
                   <div className="mch-payload-label">
-                    messages[] del último POST
+                    {L('messages[] del último POST', 'messages[] of the last POST')}
                     {snap.historyLength > 0 && (
                       <span className="meditor-history-pill">
                         history: {snap.historyLength} msg
@@ -509,7 +497,7 @@ export default function ModosEditor() {
                     </div>
                   ) : (
                     <div className="mch-pers-empty">
-                      (aún no se mandó nada — tocá "Siguiente edición")
+                      {L('(aún no se mandó nada — tocá "Siguiente edición")', '(nothing sent yet — hit "Next edit")')}
                     </div>
                   )}
                 </div>
@@ -520,23 +508,22 @@ export default function ModosEditor() {
                 />
 
                 <EditorPreview
-                  label="Estado del editor después del turno:"
+                  label={L('Estado del editor después del turno:', 'Editor state after the turn:')}
                   code={snap.editorConContexto}
                 />
 
                 <div className="mch-takeaway">
-                  {turn === 0 && '↑ El archivo arranca igual en los dos modos.'}
-                  {turn === 1 && '↑ Primera edición. Después de "Aplicar" se guardan user + assistant en history.'}
+                  {turn === 0 && L('↑ El archivo arranca igual en los dos modos.', '↑ The file starts the same in both modes.')}
+                  {turn === 1 && L('↑ Primera edición. Después de "Aplicar" se guardan user + assistant en history.', '↑ First edit. After "Apply" the user + assistant are saved in history.')}
                   {turn === 2 && (
                     <>
-                      ↑ "Esa clase" ahora se resuelve bien porque la IA ve en
-                      <code> history </code> que recién creó Cliente.
+                      {L('↑ "Esa clase" ahora se resuelve bien porque la IA ve en', '↑ "That class" now resolves correctly because the AI sees in')}
+                      <code> history </code> {L('que recién creó Cliente.', 'that it just created Cliente.')}
                     </>
                   )}
                   {turn === 3 && (
                     <>
-                      <b>Memoria útil.</b> La IA puede responder porque tiene el assistant
-                      anterior en <code>history</code>. Costo: el POST crece turno a turno.
+                      <b>{L('Memoria útil.', 'Useful memory.')}</b> {L('La IA puede responder porque tiene el assistant anterior en', 'The AI can answer because it has the previous assistant in')} <code>history</code>. {L('Costo: el POST crece turno a turno.', 'Cost: the POST grows turn by turn.')}
                     </>
                   )}
                 </div>
@@ -547,42 +534,29 @@ export default function ModosEditor() {
 
           {/* ============== CIERRE ============== */}
           <section className="criollo-section" id="cierre">
-            <h2>📌 Lo que importa</h2>
+            <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
-                <b>El código viaja embebido en el <code>user</code></b>, no como campo
-                aparte. La API no tiene noción de "archivo": para ella es texto en un
-                mensaje. Por eso "el contexto" del Editor en realidad son las
-                <i> instrucciones anteriores y sus respuestas</i>, no el código en sí.
+                <b>{L('El código viaja embebido en el', 'The code travels embedded in the')} <code>user</code></b>, {L('no como campo aparte. La API no tiene noción de "archivo": para ella es texto en un mensaje. Por eso "el contexto" del Editor en realidad son las', 'not as a separate field. The API has no notion of "file": to it, it\'s text in a message. That\'s why the Editor\'s "context" is really the')} <i>{L('instrucciones anteriores y sus respuestas', 'previous instructions and their responses')}</i>, {L('no el código en sí.', 'not the code itself.')}
               </li>
               <li>
-                <b>Cada "Aplicar" reemplaza el editor entero.</b> El modelo devuelve el
-                archivo completo en un bloque <code>```</code> — no hace diff. Por eso el
-                Editor cuesta más tokens que un agente con tool <code>edit_code(old,new)</code>
-                (mirá <a href="/loop-agentico">/loop-agentico</a>).
+                <b>{L('Cada "Aplicar" reemplaza el editor entero.', 'Each "Apply" replaces the whole editor.')}</b> {L('El modelo devuelve el archivo completo en un bloque', 'The model returns the whole file in a')} <code>```</code> {L('— no hace diff. Por eso el Editor cuesta más tokens que un agente con tool', 'block — it doesn\'t diff. That\'s why the Editor costs more tokens than an agent with the')} <code>edit_code(old,new)</code> {L('(mirá', 'tool (see')} <a href="/loop-agentico">/loop-agentico</a>).
               </li>
               <li>
-                <b>Sin contexto, las referencias se rompen.</b> Frases como "esa clase",
-                "el método que agregaste", "como te dije antes" requieren historial.
-                Si no, la IA improvisa con lo único que ve: el código actual.
+                <b>{L('Sin contexto, las referencias se rompen.', 'Without context, references break.')}</b> {L('Frases como "esa clase", "el método que agregaste", "como te dije antes" requieren historial. Si no, la IA improvisa con lo único que ve: el código actual.', 'Phrases like "that class", "the method you added", "as I told you before" require history. Otherwise the AI improvises with the only thing it sees: the current code.')}
               </li>
               <li>
-                <b>Con contexto el costo crece rápido.</b> Cada turno suma el código
-                completo otra vez (porque está embebido en el user del turno anterior).
-                Después de N turnos, el POST tiene ~N copias del código. Para sesiones
-                largas, mejor el modo agéntico.
+                <b>{L('Con contexto el costo crece rápido.', 'With context the cost grows fast.')}</b> {L('Cada turno suma el código completo otra vez (porque está embebido en el user del turno anterior). Después de N turnos, el POST tiene ~N copias del código. Para sesiones largas, mejor el modo agéntico.', 'Each turn adds the whole code again (because it\'s embedded in the previous turn\'s user). After N turns, the POST has ~N copies of the code. For long sessions, the agentic mode is better.')}
               </li>
             </ul>
             <p style={{ marginTop: 12 }}>
-              Para ver esto con un request <i>real</i>, andá al <a href="/editor">Editor</a> y
-              prendé/apagá el checkbox "mantener contexto" mientras mirás el panel
-              "Request → API (crudo)". Para entender la anatomía completa del POST,{' '}
+              {L('Para ver esto con un request', 'To see this with a')} <i>{L('real', 'real')}</i> {L('request, andá al', 'request, go to the')} <a href="/editor">Editor</a> {L('y prendé/apagá el checkbox "mantener contexto" mientras mirás el panel "Request → API (crudo)". Para entender la anatomía completa del POST,', 'and toggle the "keep context" checkbox while you watch the "Request → API (raw)" panel. To understand the full anatomy of the POST,')}{' '}
               <a href="/como-funciona">/como-funciona</a>.
             </p>
           </section>
 
           <footer className="criollo-footer">
-            <a href="/" className="clear-btn">← Modos</a>
+            <a href="/" className="clear-btn">{t('docpage.backToModes')}</a>
           </footer>
 
         </div>

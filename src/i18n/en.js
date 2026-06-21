@@ -189,6 +189,8 @@ export const en = {
     docsMain: '📚 Main docs',
     docsMainSub: 'summary of the 3 modes',
     annexes: 'Appendices',
+    recorridoLabel: '🧭 /tour',
+    recorridoSub: 'AI for non-programmers, in 6 stops',
     comoFuncLabel: '⚙️ /how-it-works',
     comoFuncSub: 'system / context / tools in the POST',
     contextoLabel: '🧠 /context',
@@ -260,12 +262,23 @@ export const en = {
     label: 'Try {label} now',
   },
 
+  speech: {
+    title: '🔊 Listen',
+    listen: 'Listen',
+    pause: 'Pause',
+    resume: 'Resume',
+    stop: 'Stop',
+    speed: 'Speed',
+    unsupported: "Your browser doesn't support text-to-speech. Try Chrome or Edge.",
+  },
+
   docsnav: {
     moreDocs: 'More docs:',
     moreDemos: 'More demos',
     ariaDocs: 'Documentation pages',
     ariaDemos: 'Demo pages',
     docsDesc: 'what each app mode does',
+    recorridoDesc: 'AI for non-programmers, in 6 stops',
     comoFuncDesc: 'system / context / tools in the POST',
     contextoDesc: "live view of the chat's messages array",
     provDesc: 'OpenAI vs Anthropic: where context lives',
