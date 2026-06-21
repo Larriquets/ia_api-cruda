@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
+import Brand from './Brand.jsx'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
@@ -232,7 +233,7 @@ export default function Ruido() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Ruido en el contexto</span></span>
         </h1>

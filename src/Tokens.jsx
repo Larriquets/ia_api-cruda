@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Brand from './Brand.jsx'
 import {
   encode as encodeO200k,
   decode as decodeO200k,
@@ -151,7 +152,7 @@ export default function Tokens() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Tokens</span></span>
         </h1>

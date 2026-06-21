@@ -3,6 +3,7 @@
 
 export const en = {
   app: {
+    brand: 'Raw AI',
     subtitlePre: '// everything is context · ',
     subtitlePost: ' mode',
     modeChat: 'Chat',

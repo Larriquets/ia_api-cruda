@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Brand from './Brand.jsx'
 import { mcpInitialize, mcpListTools, mcpCallTool, DEFAULT_MCP_HOST, MCP_PROTOCOL_VERSION } from './mcp-client.js'
 import { runMcpAgent, MCP_AGENT_DEFAULT_SYSTEM } from './mcp-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
@@ -221,7 +222,7 @@ export default function Mcp() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">MCP</span></span>
         </h1>

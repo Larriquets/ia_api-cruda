@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Brand from './Brand.jsx'
 import { useT } from './i18n/useT.js'
 
 const DISMISS_KEY = 'welcome_dismissed_v1'
@@ -57,7 +58,7 @@ export default function WelcomeModal() {
           <h2 id="welcome-title">
             <img src="/logo.png" alt="" className="brand-logo" />
             <span className="brand-braces">{'{'}</span>
-            <span className="brand">La IA Cruda</span>
+            <Brand />
             <span className="brand-braces">{'}'}</span>
             <span className="brand-subtitle">{t('welcome.subtitle')}</span>
           </h2>

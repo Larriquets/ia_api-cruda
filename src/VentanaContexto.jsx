@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Brand from './Brand.jsx'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
@@ -303,7 +304,7 @@ export default function VentanaContexto() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">🪟 Ventana de contexto</span></span>
         </h1>

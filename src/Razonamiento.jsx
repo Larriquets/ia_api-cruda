@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Brand from './Brand.jsx'
 import {
   sendReasoningMessage,
   REASONING_MODELS,
@@ -422,7 +423,7 @@ export default function Razonamiento() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Razonamiento</span></span>
         </h1>

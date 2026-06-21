@@ -4,6 +4,7 @@
 
 export const es = {
   app: {
+    brand: 'La IA Cruda',
     subtitlePre: '// todo es contexto · modo ',
     subtitlePost: '',
     modeChat: 'Chat',

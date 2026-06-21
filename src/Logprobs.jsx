@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Brand from './Brand.jsx'
 import { sendLogprobsMessage, TOP_LOGPROBS_OPTIONS } from './openai-logprobs.js'
 import { OPENAI_CHAT_MODELS } from './openai.js'
 import ModeSwitch from './ModeSwitch.jsx'
@@ -204,7 +205,7 @@ export default function Logprobs() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Logprobs</span></span>
         </h1>

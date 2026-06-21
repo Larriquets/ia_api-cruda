@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import Brand from './Brand.jsx'
 import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
@@ -8,6 +9,7 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import { useT } from './i18n/useT.js'
 
 const CODE_KEY = 'agentmd_code_snapshot'
 const AGENTS_KEY = 'agentmd_agents_md_v4'
@@ -29,7 +31,9 @@ const DEFAULT_CODE = `public class CuentaBancaria {
 }
 `
 
-const DEFAULT_AGENTS_MD = `# AGENTS.md
+// AGENTS.md y skills semilla: copy visible y editable. Bilingüe — castellano
+// rioplatense base, inglés traducción. Se elige por idioma en el initial load.
+const DEFAULT_AGENTS_MD_ES = `# AGENTS.md
 
 ## Reglas obligatorias
 - NO se pueden hacer cambios sin medir antes el impacto del cambio en el código usando \`assess_impact\`.
@@ -42,20 +46,34 @@ const DEFAULT_AGENTS_MD = `# AGENTS.md
 - \`high\`: rompe firmas públicas, cambia el modelo de datos, hace un refactor estructural o agrega varias clases relacionadas.
 `
 
+const DEFAULT_AGENTS_MD_EN = `# AGENTS.md
+
+## Mandatory rules
+- NO changes can be made without first measuring the change's impact on the code using \`assess_impact\`.
+- Every class, function/method or property/field that gets created MUST have the \`bco_\` prefix in its name.
+  Examples: \`bco_CuentaBancaria\`, \`bco_Retirar\`, \`bco_Saldo\`.
+
+## Impact levels
+- \`low\`: small, low-risk change, without touching public signatures or creating new types.
+- \`medium\`: several related edits or a small new class, without breaking existing APIs.
+- \`high\`: breaks public signatures, changes the data model, does a structural refactor or adds several related classes.
+`
+
 const LEGACY_AGENTS_MD_MARKERS = [
   '# Convenciones del proyecto Banco',
   'SaldoInsuficienteException',
   'arch_check',
   'Skills disponibles',
 ]
+// Marcadores independientes del idioma: ambos viven en el AGENTS.md ES y EN.
 const REQUIRED_AGENTS_MD_MARKERS = [
   'assess_impact',
-  'prefijo `bco_`',
+  'bco_',
 ]
 
 const SKILLS_KEY = 'agentmd_skills_v1'
 
-const DEFAULT_SKILLS = [
+const DEFAULT_SKILLS_ES = [
   {
     id: 'arch-check',
     name: 'Test de arquitectura',
@@ -147,42 +165,138 @@ no qué — el diff ya muestra el qué>
   },
 ]
 
-function loadInitialSkills() {
-  if (typeof window === 'undefined') return DEFAULT_SKILLS
+const DEFAULT_SKILLS_EN = [
+  {
+    id: 'arch-check',
+    name: 'Architecture test',
+    enabled: true,
+    description: 'Architecture rules for Java classes: no hardcoded strings, short methods, no phantom references.',
+    body: `# Skill: arch-check (architecture test)
+
+Apply these three rules to the current code. After each \`edit_code\`, re-read the code with \`read_code\` and verify that each rule still holds. If you find a violation, fix it with another \`edit_code\`.
+
+## Rules
+
+1. **No hardcoded strings.** Every literal \`"..."\` with more than 1 character must live in a \`private static final String\` constant declared at the top of the class. Example: instead of \`throw new IllegalArgumentException("Monto inválido")\`, declare \`private static final String ERR_MONTO_INVALIDO = "Monto inválido"\` and use the constant.
+
+2. **Short methods.** No method may exceed 15 lines (not counting the signature or the closing brace). If a method gets long, extract private sub-methods with descriptive names.
+
+3. **No phantom references.** Don't use \`this.X\` or \`X(...)\` (X being a simple name) if \`X\` is not declared as a field or method in the current class. If you need a new field, declare it first. If you got the name wrong, fix it.
+
+## How to apply it
+
+- Before doing \`edit_code\`, check whether your change could introduce a violation of the 3 rules. If so, prevent it from the first edit (e.g. declare the constant before the throw that uses it).
+- After each \`edit_code\`, do \`read_code\` and review the 3 rules mentally over the complete code.
+- Before finishing the run, do one last \`read_code\` and confirm the 3 rules hold. If not, fix.`,
+  },
+  {
+    id: 'no-magic-numbers',
+    name: 'No magic numbers',
+    enabled: true,
+    description: 'Every numeric literal (≠ 0, 1, -1) must live in a named static final constant.',
+    body: `# Skill: no-magic-numbers
+
+No loose numeric literal in the body of the code. Every number other than \`0\`, \`1\` and \`-1\` must be declared as a \`private static final\` constant with a name that explains what it represents.
+
+## Rule
+
+- ❌ Bad: \`if (intentos > 3) { ... }\`
+- ✅ Good: declare \`private static final int MAX_INTENTOS = 3;\` and use \`if (intentos > MAX_INTENTOS) { ... }\`.
+
+- ❌ Bad: \`double comision = monto * 0.05;\`
+- ✅ Good: \`private static final double TASA_COMISION = 0.05;\` and \`double comision = monto * TASA_COMISION;\`.
+
+## Allowed exceptions
+
+- \`0\`, \`1\` and \`-1\` are OK because they usually represent identity/empty/sentinel and don't add clarity as constants.
+- The \`static final\` line itself is not considered a violation (it's the constant declaration).
+
+## How to apply it
+
+- Before each \`edit_code\`, check whether you're about to introduce a number other than 0/1/-1. If so, first add the constant (or reuse an existing one) and then use it.
+- After each \`edit_code\`, run \`run_skill_test("no-magic-numbers")\` and if it returns FAIL, fix with another \`edit_code\` and re-run the test until it passes.`,
+  },
+  {
+    id: 'commit-style',
+    name: 'Commit message (Conventional Commits)',
+    enabled: true,
+    description: 'The final response must look like a commit message: type(scope): short subject + body with the why.',
+    body: `# Skill: commit-style (commit message)
+
+Your final response (the text that closes the loop, not the tool calls) must take the shape of a **Conventional Commit**, not a prose paragraph.
+
+## Mandatory format
+
+\`\`\`
+<type>(<optional scope>): <subject in imperative, ≤ 72 chars>
+
+<body: 1-3 sentences explaining WHY the change was made,
+not what — the diff already shows the what>
+\`\`\`
+
+## Allowed types
+
+- \`feat\`: you add new functionality (method, class, behavior).
+- \`fix\`: you fix a bug or incorrect behavior.
+- \`refactor\`: you change structure without altering external behavior.
+- \`docs\`: comments / documentation only.
+- \`test\`: tests only.
+- \`chore\`: tasks that don't fit the above (renames, formatting).
+
+## Examples
+
+- ✅ \`feat(cuenta): add retirar method with balance validation\\n\\nThe method rejects negative amounts and amounts greater than the current balance to keep the non-negative balance invariant.\`
+- ✅ \`refactor(cuenta): extract amount validation into a private method\\n\\nThe logic was repeated in depositar and retirar; centralizing it reduces the risk of divergence.\`
+- ❌ \`I added a method to withdraw money from the account. It does what you asked and validates that the amount is positive and that there's enough balance.\` (it's a paragraph, not a commit message)
+
+## How to apply it
+
+- This skill has NO deterministic test — don't call \`run_skill_test\` on it.
+- Load it with \`load_skill("commit-style")\` before drafting your final response.
+- In the last message of the loop (no tool calls), follow the format to the letter.`,
+  },
+]
+
+function loadInitialSkills(lang) {
+  const DEFAULT = lang === 'en' ? DEFAULT_SKILLS_EN : DEFAULT_SKILLS_ES
+  if (typeof window === 'undefined') return DEFAULT
   try {
     const raw = localStorage.getItem(SKILLS_KEY)
-    if (!raw) return DEFAULT_SKILLS
+    if (!raw) return DEFAULT
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_SKILLS
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT
     // Validación básica de shape — si no, reset al default.
     const ok = parsed.every((s) => s && typeof s.id === 'string' && typeof s.body === 'string')
-    if (!ok) return DEFAULT_SKILLS
+    if (!ok) return DEFAULT
     // Migración soft: si el storage tiene EXACTAMENTE el default viejo
     // (un único `arch-check` que la persona nunca tocó), lo reemplazamos
     // por el nuevo default. Si tiene skills custom o editados, respetamos.
     const isOldDefault = parsed.length === 1 && parsed[0].id === 'arch-check' && !parsed[0].draft
-    if (isOldDefault) return DEFAULT_SKILLS
+    if (isOldDefault) return DEFAULT
     // Migración: skills viejos sin `enabled` se asumen habilitados (retro-compat).
     return parsed.map((s) => ({ ...s, enabled: s.enabled !== false }))
   } catch {
-    return DEFAULT_SKILLS
+    return DEFAULT
   }
 }
 
-function loadInitialAgentsMd() {
-  if (typeof window === 'undefined') return DEFAULT_AGENTS_MD
+function loadInitialAgentsMd(lang) {
+  const DEFAULT = lang === 'en' ? DEFAULT_AGENTS_MD_EN : DEFAULT_AGENTS_MD_ES
+  if (typeof window === 'undefined') return DEFAULT
   const stored = localStorage.getItem(AGENTS_KEY)
-  if (!stored) return DEFAULT_AGENTS_MD
+  if (!stored) return DEFAULT
   const isLegacy = LEGACY_AGENTS_MD_MARKERS.some((marker) => stored.includes(marker))
   const isMissingRequiredRule = REQUIRED_AGENTS_MD_MARKERS.some((marker) => !stored.includes(marker))
   if (isLegacy || isMissingRequiredRule) {
-    localStorage.setItem(AGENTS_KEY, DEFAULT_AGENTS_MD)
-    return DEFAULT_AGENTS_MD
+    localStorage.setItem(AGENTS_KEY, DEFAULT)
+    return DEFAULT
   }
   return stored
 }
 
-const SUGGESTED_PROMPTS = [
+// Prompts sugeridos: copy visible y la instrucción real que viaja. Referencian
+// identificadores reales del Java (retirar, depositar, Cliente…), que quedan tal cual.
+const SUGGESTED_PROMPTS_ES = [
   'Agregá un método retirar(monto).',
   'Agregá un método transferir(destino, monto) que retire de esta cuenta y deposite en otra.',
   'Agregá validación al método depositar para que rechace montos inválidos.',
@@ -190,25 +304,39 @@ const SUGGESTED_PROMPTS = [
   'Agregá una clase Movimiento con campos privados tipo, monto y fecha. Después agregá una lista de movimientos a CuentaBancaria y registrá un movimiento cada vez que se deposita.',
 ]
 
+const SUGGESTED_PROMPTS_EN = [
+  'Add a retirar(monto) method.',
+  'Add a transferir(destino, monto) method that withdraws from this account and deposits into another.',
+  'Add validation to the depositar method so it rejects invalid amounts.',
+  'Add a Cliente class with private fields nombre, dni and email, its constructor and getters. Then add a cliente field to CuentaBancaria with its getter.',
+  'Add a Movimiento class with private fields tipo, monto and fecha. Then add a list of movimientos to CuentaBancaria and record a movimiento every time a deposit happens.',
+]
+
 const DEFAULT_COLS = [0.32, 0.42, 0.26]
 const MIN_COL = 0.12
 
 export default function EditorAgentsMd({ withSkills = true }) {
+  const { t, lang } = useT()
+  const L = (es, en) => (lang === 'en' ? en : es)
+  const DEFAULT_AGENTS_MD = lang === 'en' ? DEFAULT_AGENTS_MD_EN : DEFAULT_AGENTS_MD_ES
+  const DEFAULT_SKILLS = lang === 'en' ? DEFAULT_SKILLS_EN : DEFAULT_SKILLS_ES
+  const SUGGESTED_PROMPTS = lang === 'en' ? SUGGESTED_PROMPTS_EN : SUGGESTED_PROMPTS_ES
+
   const [code, setCode] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_CODE
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
   })
   const [agentsMd, setAgentsMd] = useState(() => {
-    return loadInitialAgentsMd()
+    return loadInitialAgentsMd(lang)
   })
-  const [skills, setSkills] = useState(() => loadInitialSkills())
+  const [skills, setSkills] = useState(() => loadInitialSkills(lang))
   const [expandedSkillId, setExpandedSkillId] = useState(null)
   const [skillsMenuOpen, setSkillsMenuOpen] = useState(false)
   const [provider, setProvider] = useState(() => {
     if (typeof window === 'undefined') return 'anthropic'
     return localStorage.getItem(PROVIDER_KEY) || 'anthropic'
   })
-  const [instruction, setInstruction] = useState(SUGGESTED_PROMPTS[0])
+  const [instruction, setInstruction] = useState(() => SUGGESTED_PROMPTS[0])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [finalText, setFinalText] = useState('')
@@ -295,10 +423,10 @@ export default function EditorAgentsMd({ withSkills = true }) {
   const requestApproval = useCallback(
     (payload) =>
       new Promise((resolve) => {
-        appendLog('info', `🛑 Pausa para aprobación humana — impacto=${payload.level}`)
+        appendLog('info', L(`🛑 Pausa para aprobación humana — impacto=${payload.level}`, `🛑 Pause for human approval — impact=${payload.level}`))
         setPendingApproval({ ...payload, resolve })
       }),
-    [appendLog],
+    [appendLog, lang],
   )
 
   // Devuelve los hooks UI estándar para una corrida de agente.
@@ -332,7 +460,9 @@ export default function EditorAgentsMd({ withSkills = true }) {
   const handleApprovalDecision = (approved) => {
     setPendingApproval((prev) => {
       if (!prev) return null
-      appendLog(approved ? 'success' : 'info', approved ? '✓ Plan aprobado por el humano — el agente continúa.' : '✗ Plan cancelado por el humano — el agente debe terminar sin editar.')
+      appendLog(approved ? 'success' : 'info', approved
+        ? L('✓ Plan aprobado por el humano — el agente continúa.', '✓ Plan approved by the human — the agent continues.')
+        : L('✗ Plan cancelado por el humano — el agente debe terminar sin editar.', '✗ Plan canceled by the human — the agent must finish without editing.'))
       try { prev.resolve(approved) } catch { /* noop */ }
       return null
     })
@@ -366,29 +496,42 @@ export default function EditorAgentsMd({ withSkills = true }) {
     const codeForRun = hadPreviousRun ? DEFAULT_CODE : code
     if (hadPreviousRun) {
       setCode(DEFAULT_CODE)
-      appendLog('info', `Reset: ya hubo una corrida previa, vuelvo el código al ejemplo base (${DEFAULT_CODE.length} chars) para arrancar limpio.`)
+      appendLog('info', L(
+        `Reset: ya hubo una corrida previa, vuelvo el código al ejemplo base (${DEFAULT_CODE.length} chars) para arrancar limpio.`,
+        `Reset: there was a previous run, reverting the code to the base sample (${DEFAULT_CODE.length} chars) to start clean.`,
+      ))
     }
     setLastMode(withAgents ? 'with' : 'without')
     setLastWithSkill(withSkill)
 
-    appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
-    appendLog('info', `Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`)
-    appendLog('info', `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`)
+    const instrPreview = `${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}`
+    appendLog('user', L(`Instrucción: "${instrPreview}"`, `Instruction: "${instrPreview}"`))
+    appendLog('info', L(`Lenguaje: java · Tamaño código inicial: ${codeForRun.length} chars`, `Language: java · Initial code size: ${codeForRun.length} chars`))
+    appendLog('info', L(
+      `AGENTS.md: ${withAgents ? 'INCLUIDO en system prompt' : 'IGNORADO (envío sin AGENTS.md)'}`,
+      `AGENTS.md: ${withAgents ? 'INCLUDED in system prompt' : 'IGNORED (sent without AGENTS.md)'}`,
+    ))
     const confirmedSkills = skills.filter((s) => !s.draft)
     const enabledSkills = confirmedSkills.filter((s) => s.enabled !== false)
     const draftCount = skills.length - confirmedSkills.length
     if (withAgents && withSkills) {
       if (!withSkill) {
-        appendLog('info', 'Skills: DESHABILITADOS (toggle off)')
+        appendLog('info', L('Skills: DESHABILITADOS (toggle off)', 'Skills: DISABLED (toggle off)'))
       } else if (enabledSkills.length === 0) {
         const detail = draftCount > 0
-          ? `(${confirmedSkills.length} confirmado(s) tildado(s)=0, ${draftCount} en borrador sin agregar)`
-          : `(${skills.length} definido(s), 0 tildado(s))`
-        appendLog('info', `Skills: toggle ON pero NINGÚN skill listo para viajar ${detail} — la IA no recibe load_skill / run_skill_test`)
+          ? L(`(${confirmedSkills.length} confirmado(s) tildado(s)=0, ${draftCount} en borrador sin agregar)`, `(${confirmedSkills.length} confirmed checked=0, ${draftCount} in draft not added)`)
+          : L(`(${skills.length} definido(s), 0 tildado(s))`, `(${skills.length} defined, 0 checked)`)
+        appendLog('info', L(
+          `Skills: toggle ON pero NINGÚN skill listo para viajar ${detail} — la IA no recibe load_skill / run_skill_test`,
+          `Skills: toggle ON but NO skill ready to travel ${detail} — the AI doesn't receive load_skill / run_skill_test`,
+        ))
       } else {
         const ids = enabledSkills.map((s) => s.id).join(', ')
-        const draftNote = draftCount > 0 ? ` (${draftCount} borrador(es) ignorado(s))` : ''
-        appendLog('info', `Skills: ${enabledSkills.length}/${confirmedSkills.length} tildado(s) viajan vía load_skill / run_skill_test → [${ids}]${draftNote}`)
+        const draftNote = draftCount > 0 ? L(` (${draftCount} borrador(es) ignorado(s))`, ` (${draftCount} draft(s) ignored)`) : ''
+        appendLog('info', L(
+          `Skills: ${enabledSkills.length}/${confirmedSkills.length} tildado(s) viajan vía load_skill / run_skill_test → [${ids}]${draftNote}`,
+          `Skills: ${enabledSkills.length}/${confirmedSkills.length} checked travel via load_skill / run_skill_test → [${ids}]${draftNote}`,
+        ))
       }
     }
     const providerLabel =
@@ -397,7 +540,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
         : provider === 'lmstudio'
           ? 'LM Studio (local)'
           : 'OpenAI'
-    appendLog('info', `Proveedor: ${providerLabel}`)
+    appendLog('info', L(`Proveedor: ${providerLabel}`, `Provider: ${providerLabel}`))
 
     try {
       const runFn =
@@ -421,10 +564,13 @@ export default function EditorAgentsMd({ withSkills = true }) {
       )
       setFinalText(ft)
       setIterCount(iterations)
-      appendLog('success', `Agente terminó. ${finalCode.length} chars finales, ${iterations} iter. Código del editor actualizado.`)
+      appendLog('success', L(
+        `Agente terminó. ${finalCode.length} chars finales, ${iterations} iter. Código del editor actualizado.`,
+        `Agent finished. ${finalCode.length} final chars, ${iterations} iter. Editor code updated.`,
+      ))
     } catch (err) {
-      setError(err.message || 'Error al ejecutar el agente')
-      appendLog('error', err.message || 'Error desconocido')
+      setError(err.message || L('Error al ejecutar el agente', 'Error running the agent'))
+      appendLog('error', err.message || L('Error desconocido', 'Unknown error'))
     } finally {
       setLoading(false)
     }
@@ -439,7 +585,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
     setFinalText('')
     setRawHistory([])
     setLastMode(null)
-    appendLog('info', 'Todo reseteado al ejemplo')
+    appendLog('info', L('Todo reseteado al ejemplo', 'Everything reset to the sample'))
   }
 
   const handleUpdateSkill = (id, patch) => {
@@ -451,7 +597,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
   const handleDeleteSkill = (id) => {
     setSkills((prev) => prev.filter((s) => s.id !== id))
     setExpandedSkillId((curr) => (curr === id ? null : curr))
-    appendLog('info', `Skill "${id}" eliminado`)
+    appendLog('info', L(`Skill "${id}" eliminado`, `Skill "${id}" deleted`))
   }
   const handleAddSkill = () => {
     let newId = 'nuevo-skill'
@@ -462,27 +608,33 @@ export default function EditorAgentsMd({ withSkills = true }) {
     }
     const blank = {
       id: newId,
-      name: 'Skill nuevo',
-      description: 'Descripción corta — esto es lo único que ve la IA en el AGENTS.md.',
-      body: '# Skill nuevo\n\nReglas detalladas que la IA recibe cuando llama a load_skill.',
+      name: L('Skill nuevo', 'New skill'),
+      description: L('Descripción corta — esto es lo único que ve la IA en el AGENTS.md.', 'Short description — this is the only thing the AI sees in AGENTS.md.'),
+      body: L('# Skill nuevo\n\nReglas detalladas que la IA recibe cuando llama a load_skill.', '# New skill\n\nDetailed rules the AI receives when it calls load_skill.'),
       enabled: true,
       draft: true,
     }
     setSkills((prev) => [...prev, blank])
     setExpandedSkillId(newId)
     setSkillsMenuOpen(true)
-    appendLog('info', `Skill "${newId}" en borrador — editalo y tocá "Agregar a la lista" para que viaje a la API`)
+    appendLog('info', L(
+      `Skill "${newId}" en borrador — editalo y tocá "Agregar a la lista" para que viaje a la API`,
+      `Skill "${newId}" in draft — edit it and hit "Add to the list" so it travels to the API`,
+    ))
   }
 
   const handleConfirmDraftSkill = (id) => {
     setSkills((prev) => prev.map((s) => (s.id === id ? { ...s, draft: false } : s)))
-    appendLog('success', `Skill "${id}" agregado — va a viajar al prompt en la próxima corrida CON AGENTS.md (si está tildado)`)
+    appendLog('success', L(
+      `Skill "${id}" agregado — va a viajar al prompt en la próxima corrida CON AGENTS.md (si está tildado)`,
+      `Skill "${id}" added — it will travel to the prompt on the next run WITH AGENTS.md (if checked)`,
+    ))
   }
 
   const handleDiscardDraftSkill = (id) => {
     setSkills((prev) => prev.filter((s) => s.id !== id))
     setExpandedSkillId((curr) => (curr === id ? null : curr))
-    appendLog('info', `Borrador de skill "${id}" descartado`)
+    appendLog('info', L(`Borrador de skill "${id}" descartado`, `Draft skill "${id}" discarded`))
   }
 
   const handleClearLogs = () => {
@@ -537,13 +689,13 @@ export default function EditorAgentsMd({ withSkills = true }) {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
+          <a href="/" className="brand-home" aria-label={L('Ir al inicio', 'Go to home')}>
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
-          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">{withSkills ? 'Agente + skills' : 'Agente + reglas'}</span></span>
+          <span className="brand-subtitle">{t('app.subtitlePre')}<span className="brand-mode">{withSkills ? L('Agente + skills', 'Agent + skills') : L('Agente + reglas', 'Agent + rules')}</span>{t('app.subtitlePost')}</span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active={withSkills ? 'agents-md-skills' : 'agents-md'} />
@@ -552,7 +704,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
 
       <ConfigBar>
         <label className="hdr-select">
-          <span className="hdr-select-label">Proveedor</span>
+          <span className="hdr-select-label">{t('app.provider')}</span>
           <select
             value={provider}
             onChange={(e) => {
@@ -565,7 +717,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                   : next === 'lmstudio'
                     ? 'LM Studio (local)'
                     : 'OpenAI'
-              appendLog('info', `Proveedor cambiado a ${label}`)
+              appendLog('info', L(`Proveedor cambiado a ${label}`, `Provider changed to ${label}`))
             }}
             className={`hdr-select-input provider-select-${provider}`}
             disabled={loading}
@@ -579,7 +731,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
         {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <button onClick={handleResetAll} className="clear-btn" type="button" disabled={loading}>
-          Reset todo
+          {L('Reset todo', 'Reset all')}
         </button>
 
         <div className="config-bar-actions">
@@ -590,11 +742,11 @@ export default function EditorAgentsMd({ withSkills = true }) {
             className="read-doc-link view-demo-link"
             title={
               withSkills
-                ? 'Abre la demo automatica de AGENTS.md + skills en otra pestaña'
-                : 'Abre la demo automatica de AGENTS.md en otra pestaña'
+                ? L('Abre la demo automatica de AGENTS.md + skills en otra pestaña', 'Opens the automatic AGENTS.md + skills demo in a new tab')
+                : L('Abre la demo automatica de AGENTS.md en otra pestaña', 'Opens the automatic AGENTS.md demo in a new tab')
             }
           >
-            Ver Demo
+            {L('Ver Demo', 'View Demo')}
           </a>
           <ReadDocLink section={withSkills ? 'modo-skills' : 'modo-agentsmd'} />
         </div>
@@ -614,11 +766,11 @@ export default function EditorAgentsMd({ withSkills = true }) {
             <button
               type="button"
               className="docs-link"
-              onClick={() => { setAgentsMd(DEFAULT_AGENTS_MD); appendLog('info', 'AGENTS.md reseteado al ejemplo de fábrica') }}
+              onClick={() => { setAgentsMd(DEFAULT_AGENTS_MD); appendLog('info', L('AGENTS.md reseteado al ejemplo de fábrica', 'AGENTS.md reset to the factory sample')) }}
               disabled={loading}
-              title="Vuelve al AGENTS.md de ejemplo precargado"
+              title={L('Vuelve al AGENTS.md de ejemplo precargado', 'Goes back to the preloaded sample AGENTS.md')}
             >
-              ejemplo
+              {L('ejemplo', 'sample')}
             </button>
           </div>
           <div className="monaco-wrap">
@@ -639,10 +791,9 @@ export default function EditorAgentsMd({ withSkills = true }) {
             />
           </div>
           <div className="ctx-tip" style={{ borderRadius: 0 }}>
-            💡 Este archivo se inyecta en el <code>system</code> prompt del agente
-            <b> en cada request</b>. La IA "no aprende" tu proyecto — vos le mandás
-            estas reglas todas las veces. Es la única forma porque la IA es
-            <b> recién nacida en cada llamada</b>.
+            💡 {L('Este archivo se inyecta en el', 'This file is injected into the agent\'s')} <code>system</code> {L('prompt del agente', 'prompt')}
+            <b> {L('en cada request', 'on every request')}</b>. {L('La IA "no aprende" tu proyecto — vos le mandás estas reglas todas las veces. Es la única forma porque la IA es', 'The AI does not "learn" your project — you send it these rules every single time. It\'s the only way because the AI is')}
+            <b> {L('recién nacida en cada llamada', 'newborn on every call')}</b>.
           </div>
 
           {withSkills && (
@@ -653,20 +804,25 @@ export default function EditorAgentsMd({ withSkills = true }) {
           >
             <summary>
               <span className="docs-collapsible-chev">▸</span>
-              <span>📚 Skills disponibles ({skills.filter((s) => !s.draft && s.enabled !== false).length}/{skills.filter((s) => !s.draft).length} tildado{skills.filter((s) => !s.draft).length === 1 ? '' : 's'}{skills.some((s) => s.draft) ? ` · ${skills.filter((s) => s.draft).length} borrador` : ''})</span>
+              <span>{(() => {
+                const confirmed = skills.filter((s) => !s.draft)
+                const checked = confirmed.filter((s) => s.enabled !== false).length
+                const drafts = skills.filter((s) => s.draft).length
+                const checkedWord = L(confirmed.length === 1 ? 'tildado' : 'tildados', 'checked')
+                const draftPart = drafts > 0 ? ` · ${drafts} ${L('borrador', drafts === 1 ? 'draft' : 'drafts')}` : ''
+                return `📚 ${L('Skills disponibles', 'Available skills')} (${checked}/${confirmed.length} ${checkedWord}${draftPart})`
+              })()}</span>
             </summary>
             <div className="docs-collapsible-body">
               <div className="ctx-tip" style={{ marginTop: 0 }}>
-                💡 Los skills <b>NO viajan en el system prompt</b>. Solo se inyecta una lista corta
-                <i> (id + descripción)</i> debajo del AGENTS.md — y <b>solo de los skills tildados y agregados</b>.
-                Los <b>borradores</b> no viajan hasta que toques <b>Agregar a la lista</b>. La IA decide cuándo
-                aplica un skill y lo carga llamando a <code>load_skill(id)</code> — recién ahí su contenido
-                entra al contexto.
+                💡 {L('Los skills', 'Skills')} <b>{L('NO viajan en el system prompt', 'do NOT travel in the system prompt')}</b>. {L('Solo se inyecta una lista corta', 'Only a short list is injected')}
+                <i> ({L('id + descripción', 'id + description')})</i> {L('debajo del AGENTS.md — y', 'below the AGENTS.md — and')} <b>{L('solo de los skills tildados y agregados', 'only the checked and added skills')}</b>.
+                {L('Los', 'The')} <b>{L('borradores', 'drafts')}</b> {L('no viajan hasta que toques', "don't travel until you hit")} <b>{L('Agregar a la lista', 'Add to the list')}</b>. {L('La IA decide cuándo aplica un skill y lo carga llamando a', 'The AI decides when a skill applies and loads it by calling')} <code>load_skill(id)</code> — {L('recién ahí su contenido entra al contexto.', 'only then does its content enter the context.')}
               </div>
               <div className="skills-list">
                 {skills.length === 0 && (
                   <div className="empty" style={{ padding: 8 }}>
-                    Sin skills definidos. Tocá <b>+ Agregar skill</b> para crear uno.
+                    {L('Sin skills definidos. Tocá', 'No skills defined. Hit')} <b>{L('+ Agregar skill', '+ Add skill')}</b> {L('para crear uno.', 'to create one.')}
                   </div>
                 )}
                 {skills.map((skill) => {
@@ -679,10 +835,10 @@ export default function EditorAgentsMd({ withSkills = true }) {
                         <label
                           className="skill-card-checkbox"
                           title={isDraft
-                            ? 'Skill en borrador: no viaja al prompt hasta que toques "Agregar a la lista".'
+                            ? L('Skill en borrador: no viaja al prompt hasta que toques "Agregar a la lista".', 'Draft skill: it doesn\'t travel to the prompt until you hit "Add to the list".')
                             : isEnabled
-                              ? 'Tildado: este skill se inyecta en el AGENTS.md y la IA puede hacer load_skill.'
-                              : 'Destildado: la IA no ve este skill — no aparece en la lista que va al system prompt.'}
+                              ? L('Tildado: este skill se inyecta en el AGENTS.md y la IA puede hacer load_skill.', 'Checked: this skill is injected into AGENTS.md and the AI can call load_skill.')
+                              : L('Destildado: la IA no ve este skill — no aparece en la lista que va al system prompt.', 'Unchecked: the AI doesn\'t see this skill — it\'s not in the list that goes to the system prompt.')}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <input
@@ -690,7 +846,10 @@ export default function EditorAgentsMd({ withSkills = true }) {
                             checked={isEnabled}
                             onChange={(e) => {
                               handleUpdateSkill(skill.id, { enabled: e.target.checked })
-                              appendLog('info', `Skill "${skill.id}" ${e.target.checked ? 'TILDADO' : 'destildado'} — se aplica en la próxima corrida`)
+                              appendLog('info', L(
+                                `Skill "${skill.id}" ${e.target.checked ? 'TILDADO' : 'destildado'} — se aplica en la próxima corrida`,
+                                `Skill "${skill.id}" ${e.target.checked ? 'CHECKED' : 'unchecked'} — applies on the next run`,
+                              ))
                             }}
                             disabled={loading || isDraft}
                           />
@@ -704,8 +863,8 @@ export default function EditorAgentsMd({ withSkills = true }) {
                           <span className="skill-card-chev">{isExpanded ? '▾' : '▸'}</span>
                           <span className="skill-card-id"><code>{skill.id}</code></span>
                           <span className="skill-card-name">{skill.name}</span>
-                          {isDraft && <span className="skill-card-draft-badge">borrador</span>}
-                          {!isDraft && !isEnabled && <span className="skill-card-off-badge">apagado</span>}
+                          {isDraft && <span className="skill-card-draft-badge">{L('borrador', 'draft')}</span>}
+                          {!isDraft && !isEnabled && <span className="skill-card-off-badge">{L('apagado', 'off')}</span>}
                         </button>
                       </div>
                       {isExpanded && (
@@ -721,7 +880,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                             />
                           </label>
                           <label className="skill-field">
-                            <span className="skill-field-label">nombre</span>
+                            <span className="skill-field-label">{L('nombre', 'name')}</span>
                             <input
                               type="text"
                               className="skill-field-input"
@@ -731,7 +890,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                             />
                           </label>
                           <label className="skill-field">
-                            <span className="skill-field-label">descripción (esto va al AGENTS.md)</span>
+                            <span className="skill-field-label">{L('descripción (esto va al AGENTS.md)', 'description (this goes into AGENTS.md)')}</span>
                             <textarea
                               className="skill-field-input skill-field-textarea-sm"
                               value={skill.description}
@@ -741,7 +900,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                             />
                           </label>
                           <label className="skill-field">
-                            <span className="skill-field-label">body (lo que recibe la IA cuando hace load_skill)</span>
+                            <span className="skill-field-label">{L('body (lo que recibe la IA cuando hace load_skill)', 'body (what the AI receives when it calls load_skill)')}</span>
                             <textarea
                               className="skill-field-input skill-field-textarea-lg"
                               value={skill.body}
@@ -753,8 +912,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                           {isDraft ? (
                             <>
                               <div className="ctx-tip skill-draft-tip">
-                                💡 Este skill está en <b>borrador</b>: <b>no viaja al prompt</b> todavía.
-                                Terminá de editar id/nombre/descripción/body y tocá <b>Agregar a la lista</b>.
+                                💡 {L('Este skill está en', 'This skill is in')} <b>{L('borrador', 'draft')}</b>: <b>{L('no viaja al prompt', "it doesn't travel to the prompt")}</b> {L('todavía. Terminá de editar id/nombre/descripción/body y tocá', 'yet. Finish editing id/name/description/body and hit')} <b>{L('Agregar a la lista', 'Add to the list')}</b>.
                               </div>
                               <div className="skill-card-actions">
                                 <button
@@ -763,16 +921,16 @@ export default function EditorAgentsMd({ withSkills = true }) {
                                   onClick={() => handleDiscardDraftSkill(skill.id)}
                                   disabled={loading}
                                 >
-                                  descartar
+                                  {L('descartar', 'discard')}
                                 </button>
                                 <button
                                   type="button"
                                   className="skill-confirm-btn"
                                   onClick={() => handleConfirmDraftSkill(skill.id)}
                                   disabled={loading}
-                                  title="Confirma el skill y lo agrega a la lista. A partir de acá, si está tildado, viaja al system prompt en la próxima corrida CON AGENTS.md."
+                                  title={L('Confirma el skill y lo agrega a la lista. A partir de acá, si está tildado, viaja al system prompt en la próxima corrida CON AGENTS.md.', 'Confirms the skill and adds it to the list. From here on, if checked, it travels to the system prompt on the next run WITH AGENTS.md.')}
                                 >
-                                  ✓ Agregar a la lista
+                                  ✓ {L('Agregar a la lista', 'Add to the list')}
                                 </button>
                               </div>
                             </>
@@ -784,7 +942,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                                 onClick={() => handleDeleteSkill(skill.id)}
                                 disabled={loading}
                               >
-                                eliminar
+                                {L('eliminar', 'delete')}
                               </button>
                             </div>
                           )}
@@ -800,17 +958,17 @@ export default function EditorAgentsMd({ withSkills = true }) {
                   className="skill-add-btn"
                   onClick={handleAddSkill}
                   disabled={loading}
-                  title="Crea un skill en BORRADOR. Editá id/nombre/descripción/body y tocá 'Agregar a la lista' para confirmarlo. Hasta entonces no viaja al prompt."
+                  title={L('Crea un skill en BORRADOR. Editá id/nombre/descripción/body y tocá \'Agregar a la lista\' para confirmarlo. Hasta entonces no viaja al prompt.', 'Creates a DRAFT skill. Edit id/name/description/body and hit \'Add to the list\' to confirm it. Until then it doesn\'t travel to the prompt.')}
                 >
-                  + Nuevo skill (borrador)
+                  {L('+ Nuevo skill (borrador)', '+ New skill (draft)')}
                 </button>
                 <button
                   type="button"
                   className="docs-link"
-                  onClick={() => { setSkills(DEFAULT_SKILLS); setExpandedSkillId(null); appendLog('info', 'Skills reseteados al ejemplo de fábrica') }}
+                  onClick={() => { setSkills(DEFAULT_SKILLS); setExpandedSkillId(null); appendLog('info', L('Skills reseteados al ejemplo de fábrica', 'Skills reset to the factory sample')) }}
                   disabled={loading}
                 >
-                  reset al ejemplo
+                  {L('reset al ejemplo', 'reset to sample')}
                 </button>
               </div>
             </div>
@@ -820,15 +978,13 @@ export default function EditorAgentsMd({ withSkills = true }) {
           <details className="docs-collapsible base-prompt-collapsible">
             <summary>
               <span className="docs-collapsible-chev">▸</span>
-              <span>🔧 System prompt BASE del agente (antes del AGENTS.md)</span>
+              <span>🔧 {L('System prompt BASE del agente (antes del AGENTS.md)', "Agent's BASE system prompt (before the AGENTS.md)")}</span>
             </summary>
             <div className="docs-collapsible-body">
               <div className="ctx-tip" style={{ marginTop: 0 }}>
-                💡 Esto es lo que el agente recibe SIEMPRE, además de tu AGENTS.md.
-                Define cómo usa las herramientas base (<code>read_code</code> y{' '}
-                <code>edit_code</code>). Cuando enviás CON AGENTS.md, se agrega{' '}
-                <code>assess_impact</code> y la aprobación humana antes de editar.
-                Read-only, no se puede modificar desde la UI.
+                💡 {L('Esto es lo que el agente recibe SIEMPRE, además de tu AGENTS.md. Define cómo usa las herramientas base', 'This is what the agent receives ALWAYS, on top of your AGENTS.md. It defines how it uses the base tools')} (<code>read_code</code> {L('y', 'and')}{' '}
+                <code>edit_code</code>). {L('Cuando enviás CON AGENTS.md, se agrega', 'When you send WITH AGENTS.md, it adds')}{' '}
+                <code>assess_impact</code> {L('y la aprobación humana antes de editar. Read-only, no se puede modificar desde la UI.', 'and human approval before editing. Read-only, it can\'t be modified from the UI.')}
               </div>
               <pre className="base-prompt-body">{AGENT_SYSTEM_PROMPT}</pre>
             </div>
@@ -839,13 +995,13 @@ export default function EditorAgentsMd({ withSkills = true }) {
           className="col-resizer"
           onMouseDown={startResize(0)}
           onDoubleClick={handleResetCols}
-          title="Arrastrá para redimensionar · doble clic = reset"
+          title={L('Arrastrá para redimensionar · doble clic = reset', 'Drag to resize · double-click = reset')}
         />
 
         {/* Panel 2 — Código + Prompt + Timeline */}
         <section className="panel instr-panel">
           <div className="panel-title">
-            <span>Código + instrucción</span>
+            <span>{L('Código + instrucción', 'Code + instruction')}</span>
             <span className={`provider-badge provider-badge-${provider}`}>
               {provider === 'anthropic'
                 ? '🟠 Claude'
@@ -873,7 +1029,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
           </div>
           <div className="instr-body" style={{ flex: 1 }}>
             <div className="suggested-steps">
-              <div className="suggested-steps-title">Sugerencias rápidas — clic para cargar (si tenés algo escrito, te pide confirmación):</div>
+              <div className="suggested-steps-title">{L('Sugerencias rápidas — clic para cargar (si tenés algo escrito, te pide confirmación):', 'Quick suggestions — click to load (if you have something written, it asks for confirmation):')}</div>
               <ol className="suggested-steps-list">
                 {SUGGESTED_PROMPTS.map((p, i) => (
                   <li key={i}>
@@ -884,7 +1040,10 @@ export default function EditorAgentsMd({ withSkills = true }) {
                         const current = instruction.trim()
                         const isSuggestion = SUGGESTED_PROMPTS.some((s) => s.trim() === current)
                         if (current && !isSuggestion) {
-                          const ok = window.confirm(`Ya escribiste algo en el chat:\n\n"${current.slice(0, 100)}${current.length > 100 ? '…' : ''}"\n\n¿Pisarlo con la sugerencia?`)
+                          const ok = window.confirm(L(
+                            `Ya escribiste algo en el chat:\n\n"${current.slice(0, 100)}${current.length > 100 ? '…' : ''}"\n\n¿Pisarlo con la sugerencia?`,
+                            `You already wrote something in the chat:\n\n"${current.slice(0, 100)}${current.length > 100 ? '…' : ''}"\n\nOverwrite it with the suggestion?`,
+                          ))
                           if (!ok) return
                         }
                         setInstruction(p)
@@ -899,13 +1058,13 @@ export default function EditorAgentsMd({ withSkills = true }) {
             </div>
             <label className="instr-input-label">
               <span className="instr-input-label-text">
-                ✍️ Chat — escribí tu propia instrucción (este texto es el que se va a enviar)
+                ✍️ {L('Chat — escribí tu propia instrucción (este texto es el que se va a enviar)', 'Chat — write your own instruction (this text is what gets sent)')}
               </span>
               <textarea
                 className="instr-input"
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
-                placeholder="¿Qué querés que haga el agente? Podés escribir libremente acá."
+                placeholder={L('¿Qué querés que haga el agente? Podés escribir libremente acá.', 'What do you want the agent to do? You can write freely here.')}
                 disabled={loading}
                 style={{ minHeight: 96 }}
               />
@@ -916,7 +1075,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
               que en el resto de la conceptualización: skill es subtema de AGENTS.md).
             */}
             {withSkills && (
-              <label className="skill-toggle" title="Si está activo, la IA recibe las tools load_skill y run_skill_test cuando enviás CON AGENTS.md.">
+              <label className="skill-toggle" title={L('Si está activo, la IA recibe las tools load_skill y run_skill_test cuando enviás CON AGENTS.md.', 'When active, the AI receives the load_skill and run_skill_test tools when you send WITH AGENTS.md.')}>
                 <input
                   type="checkbox"
                   checked={skillEnabled}
@@ -927,13 +1086,19 @@ export default function EditorAgentsMd({ withSkills = true }) {
                   <b>🧪 Skills</b>
                   <span className="skill-toggle-meta">
                     {(() => {
-                      if (!skillEnabled) return 'apagados — la IA va a usar AGENTS.md pero sin tools de skill'
+                      if (!skillEnabled) return L('apagados — la IA va a usar AGENTS.md pero sin tools de skill', 'off — the AI will use AGENTS.md but without skill tools')
                       const confirmados = skills.filter((s) => !s.draft)
                       const tildados = confirmados.filter((s) => s.enabled !== false).length
                       const borradores = skills.length - confirmados.length
-                      const borradorNote = borradores > 0 ? ` · ${borradores} borrador no agregado` : ''
-                      if (tildados === 0) return `0 tildados de ${confirmados.length}${borradorNote} — tildá un skill en el panel AGENTS.md para que viaje al prompt`
-                      return `${tildados} tildado(s) de ${confirmados.length}${borradorNote} — solo los tildados viajan al prompt cuando enviás CON AGENTS.md`
+                      const borradorNote = borradores > 0 ? L(` · ${borradores} borrador no agregado`, ` · ${borradores} draft not added`) : ''
+                      if (tildados === 0) return L(
+                        `0 tildados de ${confirmados.length}${borradorNote} — tildá un skill en el panel AGENTS.md para que viaje al prompt`,
+                        `0 checked of ${confirmados.length}${borradorNote} — check a skill in the AGENTS.md panel so it travels to the prompt`,
+                      )
+                      return L(
+                        `${tildados} tildado(s) de ${confirmados.length}${borradorNote} — solo los tildados viajan al prompt cuando enviás CON AGENTS.md`,
+                        `${tildados} checked of ${confirmados.length}${borradorNote} — only the checked ones travel to the prompt when you send WITH AGENTS.md`,
+                      )
                     })()}
                   </span>
                 </span>
@@ -949,23 +1114,23 @@ export default function EditorAgentsMd({ withSkills = true }) {
                 title={
                   withSkills
                     ? (skillEnabled
-                      ? 'AGENTS.md inyectado + tools de skill (load_skill, run_skill_test) habilitadas. La IA debería autoverificar después de editar.'
-                      : 'AGENTS.md inyectado, pero el toggle de skills está apagado: la IA no recibe tools de skill.')
-                    : 'AGENTS.md inyectado en el system prompt. Sin skills (estás en el modo solo AGENTS.md).'
+                      ? L('AGENTS.md inyectado + tools de skill (load_skill, run_skill_test) habilitadas. La IA debería autoverificar después de editar.', 'AGENTS.md injected + skill tools (load_skill, run_skill_test) enabled. The AI should self-verify after editing.')
+                      : L('AGENTS.md inyectado, pero el toggle de skills está apagado: la IA no recibe tools de skill.', 'AGENTS.md injected, but the skills toggle is off: the AI doesn\'t receive skill tools.'))
+                    : L('AGENTS.md inyectado en el system prompt. Sin skills (estás en el modo solo AGENTS.md).', 'AGENTS.md injected into the system prompt. No skills (you\'re in AGENTS.md-only mode).')
                 }
               >
                 {loading && lastMode === 'with'
-                  ? 'Trabajando…'
-                  : `✅ Enviar CON AGENTS.md${withSkills && skillEnabled ? ' + 🧪 skill' : ''}`}
+                  ? L('Trabajando…', 'Working…')
+                  : `✅ ${L('Enviar CON AGENTS.md', 'Send WITH AGENTS.md')}${withSkills && skillEnabled ? ' + 🧪 skill' : ''}`}
               </button>
               <button
                 type="button"
                 onClick={() => handleSend(false)}
                 disabled={loading || !instruction.trim()}
                 className="instr-apply-btn"
-                title="Manda la instrucción sin incluir el AGENTS.md — solo el system base del agente. Los skills tampoco aplican (son sub-tema de AGENTS.md)."
+                title={L('Manda la instrucción sin incluir el AGENTS.md — solo el system base del agente. Los skills tampoco aplican (son sub-tema de AGENTS.md).', 'Sends the instruction without including AGENTS.md — only the agent\'s base system. Skills don\'t apply either (they\'re a sub-topic of AGENTS.md).')}
               >
-                {loading && lastMode === 'without' ? 'Trabajando…' : '❌ Enviar SIN AGENTS.md'}
+                {loading && lastMode === 'without' ? L('Trabajando…', 'Working…') : `❌ ${L('Enviar SIN AGENTS.md', 'Send WITHOUT AGENTS.md')}`}
               </button>
             </div>
 
@@ -973,18 +1138,18 @@ export default function EditorAgentsMd({ withSkills = true }) {
               <div ref={approvalRef} className={`approval-banner approval-${pendingApproval.level}`}>
                 <div className="approval-header">
                   <span className="approval-badge">
-                    {pendingApproval.level === 'low' && '🟢 Impacto BAJO'}
-                    {pendingApproval.level === 'medium' && '🟡 Impacto MEDIO'}
-                    {pendingApproval.level === 'high' && '🔴 Impacto ALTO'}
+                    {pendingApproval.level === 'low' && L('🟢 Impacto BAJO', '🟢 LOW impact')}
+                    {pendingApproval.level === 'medium' && L('🟡 Impacto MEDIO', '🟡 MEDIUM impact')}
+                    {pendingApproval.level === 'high' && L('🔴 Impacto ALTO', '🔴 HIGH impact')}
                   </span>
-                  <span className="approval-title">El agente pide permiso para editar</span>
+                  <span className="approval-title">{L('El agente pide permiso para editar', 'The agent asks for permission to edit')}</span>
                 </div>
                 <div className="approval-section">
-                  <div className="approval-label">Resumen</div>
+                  <div className="approval-label">{L('Resumen', 'Summary')}</div>
                   <div className="approval-body">{pendingApproval.summary}</div>
                 </div>
                 <div className="approval-section">
-                  <div className="approval-label">Plan</div>
+                  <div className="approval-label">{L('Plan', 'Plan')}</div>
                   <pre className="approval-plan">{pendingApproval.plan}</pre>
                 </div>
                 <div className="approval-actions">
@@ -993,14 +1158,14 @@ export default function EditorAgentsMd({ withSkills = true }) {
                     className="instr-send-btn"
                     onClick={() => handleApprovalDecision(true)}
                   >
-                    ✓ Proseguir
+                    ✓ {L('Proseguir', 'Proceed')}
                   </button>
                   <button
                     type="button"
                     className="instr-apply-btn"
                     onClick={() => handleApprovalDecision(false)}
                   >
-                    ✗ Cancelar
+                    ✗ {L('Cancelar', 'Cancel')}
                   </button>
                 </div>
               </div>
@@ -1008,15 +1173,14 @@ export default function EditorAgentsMd({ withSkills = true }) {
 
             {lastMode && !loading && (
               <div className="ctx-tip" style={{ marginTop: 8 }}>
-                💡 Última corrida: <b>
+                💡 {L('Última corrida:', 'Last run:')} <b>
                   {lastMode === 'with'
-                    ? lastWithSkill ? 'CON AGENTS.md + 🧪 skill' : 'CON AGENTS.md (sin skill)'
-                    : 'SIN AGENTS.md'}
+                    ? lastWithSkill ? L('CON AGENTS.md + 🧪 skill', 'WITH AGENTS.md + 🧪 skill') : L('CON AGENTS.md (sin skill)', 'WITH AGENTS.md (no skill)')
+                    : L('SIN AGENTS.md', 'WITHOUT AGENTS.md')}
                 </b>.
-                El código del editor ya fue actualizado. Probá la otra opción con la misma instrucción
+                {' '}{L('El código del editor ya fue actualizado. Probá la otra opción con la misma instrucción', 'The editor code was already updated. Try the other option with the same instruction')}
                 {lastMode === 'with' && withSkills && (
-                  <> — y, dentro de CON AGENTS.md, prendé/apagá el toggle <b>🧪 Skills</b> para ver
-                  cómo la IA llama (o no) a <code>run_skill_test</code> después de editar</>
+                  <> — {L('y, dentro de CON AGENTS.md, prendé/apagá el toggle', 'and, within WITH AGENTS.md, turn the')} <b>🧪 Skills</b> {L('para ver cómo la IA llama (o no) a', 'toggle on/off to see how the AI calls (or not)')} <code>run_skill_test</code> {L('después de editar', 'after editing')}</>
                 )}
                 .
               </div>
@@ -1026,18 +1190,18 @@ export default function EditorAgentsMd({ withSkills = true }) {
 
             <div className="reply-section" style={{ minHeight: 100 }}>
               <div className="reply-header">
-                <span>Timeline del agente</span>
+                <span>{L('Timeline del agente', 'Agent timeline')}</span>
                 <span className="context-meta">
-                  {iterCount > 0 ? `${iterCount} iteración(es)` : 'sin actividad'}
+                  {iterCount > 0 ? L(`${iterCount} iteración(es)`, `${iterCount} iteration(s)`) : L('sin actividad', 'no activity')}
                 </span>
               </div>
               <div className="reply-content" ref={stepsRef}>
                 {Object.keys(stepsByIter).length === 0 && !finalText && (
-                  <span className="empty">Mandá una instrucción con uno de los dos botones para ver el efecto del AGENTS.md.</span>
+                  <span className="empty">{L('Mandá una instrucción con uno de los dos botones para ver el efecto del AGENTS.md.', 'Send an instruction with one of the two buttons to see the effect of AGENTS.md.')}</span>
                 )}
                 {Object.entries(stepsByIter).map(([iter, group]) => (
                   <div key={iter} className="agent-iter">
-                    <div className="agent-iter-title">— Iteración #{iter} —</div>
+                    <div className="agent-iter-title">— {L('Iteración', 'Iteration')} #{iter} —</div>
                     {group.map((s, idx) => (
                       <AgentStep key={idx} step={s} />
                     ))}
@@ -1045,7 +1209,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                 ))}
                 {finalText && (
                   <div className="agent-final">
-                    <div className="agent-final-title">✓ Respuesta final</div>
+                    <div className="agent-final-title">✓ {L('Respuesta final', 'Final response')}</div>
                     <div className="agent-final-text">{finalText}</div>
                   </div>
                 )}
@@ -1058,25 +1222,24 @@ export default function EditorAgentsMd({ withSkills = true }) {
           className="col-resizer"
           onMouseDown={startResize(1)}
           onDoubleClick={handleResetCols}
-          title="Arrastrá para redimensionar · doble clic = reset"
+          title={L('Arrastrá para redimensionar · doble clic = reset', 'Drag to resize · double-click = reset')}
         />
 
         {/* Panel 3 — Historial Raw + Log */}
         <section className="panel raw-panel">
           <div className="panel-title">
-            <span>Historial Request/Response</span>
+            <span>{L('Historial Request/Response', 'Request/Response history')}</span>
             <span className="context-meta">
-              {rawHistory.length === 0 ? 'sin actividad' : `${rawHistory.length} req`}
+              {rawHistory.length === 0 ? L('sin actividad', 'no activity') : `${rawHistory.length} req`}
             </span>
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
-            💡 Mirá el campo <code>system</code> de cada request — ahí vas a ver
-            tu AGENTS.md inyectado en cada llamada cuando usás CON AGENTS.md.
+            💡 {L('Mirá el campo', 'Look at the')} <code>system</code> {L('de cada request — ahí vas a ver tu AGENTS.md inyectado en cada llamada cuando usás CON AGENTS.md.', 'field of each request — there you\'ll see your AGENTS.md injected on every call when you use WITH AGENTS.md.')}
           </div>
 
           <div className="raw-history" ref={rawHistoryRef}>
             {rawHistory.length === 0 && (
-              <div className="empty" style={{ padding: 12 }}>Sin requests todavía.</div>
+              <div className="empty" style={{ padding: 12 }}>{L('Sin requests todavía.', 'No requests yet.')}</div>
             )}
             {rawHistory.map((entry) => {
               const isCollapsed = collapsed.has(entry.iter)
@@ -1096,10 +1259,10 @@ export default function EditorAgentsMd({ withSkills = true }) {
                     }
                   >
                     <span className="raw-iter-chev">{isCollapsed ? '▸' : '▾'}</span>
-                    <span className="raw-iter-label">Iter #{entry.iter}</span>
+                    <span className="raw-iter-label">{L('Iter', 'Iter')} #{entry.iter}</span>
                     {entry.label && (
                       <span className={`raw-iter-badge raw-iter-badge-${entry.label === 'CON' ? 'with' : 'without'}`}>
-                        {entry.label === 'CON' ? '✅ CON' : '❌ SIN'}
+                        {entry.label === 'CON' ? L('✅ CON', '✅ WITH') : L('❌ SIN', '❌ WITHOUT')}
                       </span>
                     )}
                     <span className="raw-iter-meta">
@@ -1112,7 +1275,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
                       <pre className="raw raw-compact raw-nested">{JSON.stringify(entry.request, null, 2)}</pre>
                       <div className="raw-iter-subtitle">← Response</div>
                       <pre className="raw raw-compact raw-nested">
-                        {entry.response ? JSON.stringify(entry.response, null, 2) : '// esperando…'}
+                        {entry.response ? JSON.stringify(entry.response, null, 2) : L('// esperando…', '// waiting…')}
                       </pre>
                     </>
                   )}
@@ -1124,14 +1287,14 @@ export default function EditorAgentsMd({ withSkills = true }) {
           <div className="panel-title panel-title-sub">
             <span>Log</span>
             <span className="panel-links">
-              <span className="context-meta">{logs.length} línea(s)</span>
+              <span className="context-meta">{L(`${logs.length} línea(s)`, `${logs.length} line(s)`)}</span>
               {logs.length > 0 && (
-                <button type="button" onClick={handleClearLogs} className="docs-link">vaciar</button>
+                <button type="button" onClick={handleClearLogs} className="docs-link">{L('vaciar', 'clear')}</button>
               )}
             </span>
           </div>
           <div className="log log-compact" ref={logRef}>
-            {logs.length === 0 && <div className="empty">Sin actividad todavía.</div>}
+            {logs.length === 0 && <div className="empty">{L('Sin actividad todavía.', 'No activity yet.')}</div>}
             {logs.map((entry, i) => (
               <div key={i} className={`log-line log-${entry.level}`}>
                 <span className="log-time">{entry.timestamp}</span>

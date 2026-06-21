@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Brand from './Brand.jsx'
 import {
   sendChatMessage,
   sendResponseMessage,
@@ -555,7 +556,7 @@ export default function App() {
             <img src="/logo.png" alt="" className="brand-logo" />
           </a>
           <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
+          <Brand />
           <span className="brand-braces">{'}'}</span>
           <span className="brand-subtitle">{t('app.subtitlePre')}<span className="brand-mode">{t('app.modeChat')}</span>{t('app.subtitlePost')}</span>
         </h1>
