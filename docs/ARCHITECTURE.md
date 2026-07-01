@@ -55,6 +55,7 @@ window.location.pathname → state `page` → if-chain → componente de página
 | `/mcp` | [Mcp.jsx](../src/Mcp.jsx) | Inspector MCP: JSON-RPC paso a paso contra un server local de juguete |
 | `/ruido` | [Ruido.jsx](../src/Ruido.jsx) | Context rot: misma tarea agéntica con y sin `tool_result` inflados |
 | `/especificidad` | [Especificidad.jsx](../src/Especificidad.jsx) | Misma tarea agéntica con pedido vago vs pedido con criterios explícitos, verificada con checklist determinística |
+| `/rag` | [Rag.jsx](../src/Rag.jsx) | Mini-RAG: embeddings + similitud coseno en el browser + top-K inyectado al prompt |
 | `/contexto` | [Contexto.jsx](../src/Contexto.jsx) | Vista en vivo del array `messages[]` del Chat |
 | `/proveedores` | [Proveedores.jsx](../src/Proveedores.jsx) | Comparación OpenAI vs Claude |
 | `/docs` | [Docs.jsx](../src/Docs.jsx) | Material de clase |
@@ -403,6 +404,18 @@ Lab espejo de `/ruido`, pero sobre el **mensaje del humano**: corre la misma tar
 - **Veredicto** cuando hay dos corridas: criterios cumplidos (X/5 → Y/5), iteraciones y tokens enviados. El copy invita a correr la vaga varias veces para ver que su resultado es lotería, mientras la específica es estable.
 - Pedagógicamente cierra el triángulo con `/ruido` (ruido en tool_results) y el toggle de instrucción inflada (ruido del usuario): acá el problema no es exceso de contexto sino **falta de contexto** — criterios implícitos.
 
+## 7.11. Mini-RAG (`/rag`)
+
+Experimento aislado para mostrar **cómo se decide qué entra al contexto cuando los datos no caben**: una biblioteca de documentos se convierte en vectores (`/v1/embeddings`), la pregunta también, la búsqueda por similitud coseno corre **en el browser**, y solo los top-K documentos viajan pegados al user message de un chat común.
+
+- **Wrapper**: [openai-embeddings.js](../src/openai-embeddings.js) (`embedTexts`, `cosineSimilarity`, `EMBEDDING_MODEL`, `EMBEDDING_DIMENSIONS`). Mismo contrato de hooks de debug que el resto. Modelo fijo `text-embedding-3-small`.
+- **Solo OpenAI**: Anthropic no expone endpoint de embeddings (recomienda proveedores externos como Voyage) — la página lo dice explícitamente, mismo contraste pedagógico que `/logprobs`.
+- **`dimensions` seleccionable (64/256/1536)**: los text-embedding-3 aceptan truncar el vector del lado del servidor. Default 64 para que el response crudo se pueda **leer** en el panel; 1536 es el tamaño real de producción.
+- **La biblioteca default es de una empresa ficticia** (datos que el modelo no puede tener de entrenamiento): si la respuesta final es correcta, la única explicación es la recuperación. Incluye un preset "trampa" cuya respuesta no está en la biblioteca, para ver al system prompt admitiendo el faltante. Contenido por idioma como módulos (`CONTENT.es` / `CONTENT.en` en [Rag.jsx](../src/Rag.jsx)), no claves `t()`.
+- **El paso de chat reusa `sendChatMessage`** ([openai.js](../src/openai.js)) con `temperature: 0.2` fija: el modelo no sabe que hubo búsqueda — solo ve texto inyectado. Los paneles crudos **alternan entre `/v1/embeddings` y `/v1/chat/completions`** (misma lección de alternancia que `/mcp`: mirar el campo `url`).
+- **Índice con detección de staleness**: el índice guarda la foto de la biblioteca (`docTexts` + `dims`); si el alumno edita un doc o cambia `dimensions`, la UI exige reindexar antes de preguntar.
+- Puntos pedagógicos: el ranking se calcula client-side (la API embebe, no busca), el system default ordena responder SOLO desde los docs inyectados, y la tabla de usage muestra que indexar se paga una vez mientras que preguntar embebe solo la pregunta.
+
 ---
 
 ## 8. Diagrama de flujo (Chat — modo Conversación)
@@ -516,6 +529,10 @@ Cada modo persiste su propio estado para no pisarse con los otros.
 ### Especificidad (`/especificidad`)
 
 `espec_provider`, `espec_prompt_vago`, `espec_prompt_especifico`.
+
+### Mini-RAG (`/rag`)
+
+`rag_docs`, `rag_dims`, `rag_topk`, `rag_model`, `rag_system`, `rag_logs`.
 
 ### LM Studio
 

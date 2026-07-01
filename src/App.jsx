@@ -22,6 +22,7 @@ import Logprobs from './Logprobs.jsx'
 import Tokens from './Tokens.jsx'
 import Mcp from './Mcp.jsx'
 import Ruido from './Ruido.jsx'
+import Rag from './Rag.jsx'
 import Especificidad from './Especificidad.jsx'
 import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
@@ -143,6 +144,7 @@ export default function App() {
     if (window.location.pathname === '/tokens') return 'tokens'
     if (window.location.pathname === '/mcp') return 'mcp'
     if (window.location.pathname === '/ruido') return 'ruido'
+    if (window.location.pathname === '/rag') return 'rag'
     if (window.location.pathname === '/especificidad') return 'especificidad'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
@@ -523,6 +525,9 @@ export default function App() {
   }
   if (page === 'ruido') {
     return <><WelcomeModal /><Ruido /></>
+  }
+  if (page === 'rag') {
+    return <><WelcomeModal /><Rag /></>
   }
   if (page === 'especificidad') {
     return <><WelcomeModal /><Especificidad /></>

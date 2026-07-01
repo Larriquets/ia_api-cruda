@@ -6,7 +6,7 @@ import LanguageToggle from './LanguageToggle.jsx'
  * Switch de modos del header.
  * "Modos", "Labs" y "Docs" son dropdowns.
  *
- * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "especificidad" | "docs"
+ * @param {string} active - "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "rag" | "especificidad" | "docs"
  */
 export default function ModeSwitch({ active }) {
   const { t } = useT()
@@ -109,7 +109,7 @@ export default function ModeSwitch({ active }) {
   const modesActive = modes.some((mode) => mode.key === active)
   const modesClsBase = `app-mode-btn${modesActive ? ' active' : ''}`
   const modesButtonLabel = modesActive ? activeMode.label : t('modeswitch.modesBtn')
-  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs' || active === 'tokens' || active === 'mcp' || active === 'ruido' || active === 'especificidad'
+  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs' || active === 'tokens' || active === 'mcp' || active === 'ruido' || active === 'rag' || active === 'especificidad'
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
@@ -203,6 +203,15 @@ export default function ModeSwitch({ active }) {
             >
               <b>{t('modeswitch.ctxwinLabel')}</b>
               <span className="app-mode-menu-sub">{t('modeswitch.ctxwinDesc')}</span>
+            </a>
+            <a
+              href="/rag"
+              className="app-mode-menu-item"
+              role="menuitem"
+              {...aria('rag')}
+            >
+              <b>{t('modeswitch.ragLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.ragDesc')}</span>
             </a>
             <a
               href="/ruido"
