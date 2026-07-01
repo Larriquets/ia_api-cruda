@@ -353,6 +353,18 @@ export default function Rag() {
         <button onClick={handleClear} className="clear-btn" type="button" disabled={loading}>
           {t('rag.clear')}
         </button>
+
+        <div className="config-bar-actions">
+          <a
+            href="/demo/rag"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title={t('rag.viewDemoTitle')}
+          >
+            {t('rag.viewDemo')}
+          </a>
+        </div>
       </ConfigBar>
 
       <div className="layout">

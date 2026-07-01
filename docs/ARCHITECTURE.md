@@ -64,6 +64,7 @@ window.location.pathname → state `page` → if-chain → componente de página
 | `/demo/chat` | [ModosChat.jsx](../src/ModosChat.jsx) | Comparador animado de los 3 modos del Chat (sin API) |
 | `/demo/editor` | [ModosEditor.jsx](../src/ModosEditor.jsx) | Comparador animado de los 2 modos del Editor (sin API) |
 | `/demo/loop` | [ComoEdita.jsx](../src/ComoEdita.jsx) | Demo de cómo la IA "edita código" vía `tool_use` (sin API) |
+| `/demo/rag` | [ModosRag.jsx](../src/ModosRag.jsx) | Demo animada de RAG en 4 pasos: indexar → vectorizar pregunta → ranking → POST (sin API) |
 | `/demo/agents-md` | [ModosAgentsMd.jsx](../src/ModosAgentsMd.jsx) | Comparador AGENTS.md (sin API) |
 | `/demo/agents-md-skills` | [ModosAgentsMdSkills.jsx](../src/ModosAgentsMdSkills.jsx) | Comparador AGENTS.md "fat" vs skill con test (sin API) |
 
