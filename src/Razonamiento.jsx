@@ -16,6 +16,7 @@ import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import { useT } from './i18n/useT.js'
 
 const PROVIDER_KEY = 'razon_provider'
 const MODEL_OPENAI_KEY = 'razon_model_openai'
@@ -85,6 +86,7 @@ const safeReadJSON = (key) => {
 }
 
 export default function Razonamiento() {
+  const { t } = useT()
   const [provider, setProvider] = useState(() => {
     const saved = localStorage.getItem(PROVIDER_KEY)
     if (saved === 'anthropic') return 'anthropic'
@@ -545,7 +547,18 @@ export default function Razonamiento() {
           Limpiar
         </button>
 
-        <ReadDocLink section="modo-razonamiento" />
+        <div className="config-bar-actions">
+          <a
+            href="/demo/razonamiento"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title={t('razon.viewDemoTitle')}
+          >
+            {t('razon.viewDemo')}
+          </a>
+          <ReadDocLink section="modo-razonamiento" />
+        </div>
       </ConfigBar>
 
       <div className="layout">

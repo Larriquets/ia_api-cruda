@@ -13,6 +13,7 @@ const DEMO_LINKS = [
   { key: 'demo-editor', href: '/demo/editor', emoji: 'E', name: '/demo/editor', descKey: 'docsnav.demoEditorDesc' },
   { key: 'demo-loop', href: '/demo/loop', emoji: 'L', name: '/demo/loop', descKey: 'docsnav.demoLoopDesc' },
   { key: 'demo-rag', href: '/demo/rag', emoji: 'R', name: '/demo/rag', descKey: 'docsnav.demoRagDesc' },
+  { key: 'demo-razonamiento', href: '/demo/razonamiento', emoji: 'Z', name: '/demo/razonamiento', descKey: 'docsnav.demoRazonDesc' },
   { key: 'demo-agents-md', href: '/demo/agents-md', emoji: 'A', name: '/demo/agents-md', descKey: 'docsnav.demoAgentsDesc' },
   { key: 'demo-agents-md-skills', href: '/demo/agents-md-skills', emoji: 'S', name: '/demo/agents-md-skills', descKey: 'docsnav.demoSkillsDesc' },
 ]

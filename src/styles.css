@@ -8502,3 +8502,168 @@ body {
 @media (max-width: 860px) {
   .mrg-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   /demo/razonamiento — demo animada del razonador (sin API).
+   Reusa mch-* (controles, columnas, takeaways), razon-usage y
+   razon-thinking-dots. Acá solo lo específico: JSON del request,
+   bloques thinking/summary y barra de tokens invisibles.
+   ============================================================ */
+
+.mrz-grid {
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .mrz-grid { grid-template-columns: 1fr; }
+}
+
+.mch-col-header-openai {
+  border-top: 3px solid #22c55e;
+}
+.mch-col-header-anthropic {
+  border-top: 3px solid #f97316;
+}
+
+.mrz-json {
+  margin: 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 5px;
+  padding: 9px 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mrz-hl {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.mrz-json-note {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 6px 0 10px;
+}
+
+.mrz-json-note code {
+  background: #1e293b;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 10.5px;
+}
+
+.mrz-wait {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 4px;
+  font-size: 12px;
+  color: #a855f7;
+  line-height: 1.5;
+}
+
+.mrz-think {
+  margin: 10px 0;
+  border-radius: 6px;
+  padding: 9px 11px;
+}
+
+.mrz-think-openai {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px dashed #166534;
+}
+
+.mrz-think-anthropic {
+  background: rgba(249, 115, 22, 0.06);
+  border: 1px solid #7c2d12;
+}
+
+.mrz-think-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.mrz-think-tag {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #1e293b;
+  color: #e2e8f0;
+  white-space: nowrap;
+}
+
+.mrz-think-tag-lock {
+  color: #fca5a5;
+}
+
+.mrz-think-note {
+  font-size: 10.5px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.mrz-think-text {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #e9d5ff;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mrz-bar {
+  display: flex;
+  height: 13px;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.mrz-bar-think {
+  background: #7c3aed;
+}
+
+.mrz-bar-visible {
+  background: #22c55e;
+}
+
+.mrz-bar-mixed {
+  width: 100%;
+  background: repeating-linear-gradient(45deg, #7c3aed, #7c3aed 8px, #a855f7 8px, #a855f7 16px);
+}
+
+.mrz-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.mrz-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.mrz-dot-think { background: #7c3aed; }
+.mrz-dot-visible { background: #22c55e; }
+.mrz-dot-mixed {
+  background: repeating-linear-gradient(45deg, #7c3aed, #7c3aed 3px, #a855f7 3px, #a855f7 6px);
+}

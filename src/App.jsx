@@ -33,6 +33,7 @@ import ComoEdita from './ComoEdita.jsx'
 import ModosAgentsMd from './ModosAgentsMd.jsx'
 import ModosAgentsMdSkills from './ModosAgentsMdSkills.jsx'
 import ModosRag from './ModosRag.jsx'
+import ModosRazonamiento from './ModosRazonamiento.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -154,6 +155,7 @@ export default function App() {
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
     if (window.location.pathname === '/demo/rag') return 'demo-rag'
+    if (window.location.pathname === '/demo/razonamiento') return 'demo-razonamiento'
     if (window.location.pathname === '/demo/agents-md') return 'demo-agents-md'
     if (window.location.pathname === '/demo/agents-md-skills') return 'demo-agents-md-skills'
     return 'chat'
@@ -554,6 +556,9 @@ export default function App() {
   }
   if (page === 'demo-rag') {
     return <><WelcomeModal /><ModosRag /></>
+  }
+  if (page === 'demo-razonamiento') {
+    return <><WelcomeModal /><ModosRazonamiento /></>
   }
   if (page === 'demo-agents-md') {
     return <><WelcomeModal /><ModosAgentsMd /></>

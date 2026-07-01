@@ -348,6 +348,11 @@ export const es = {
     unsupported: 'Tu navegador no soporta lectura en voz alta. Probá con Chrome o Edge.',
   },
 
+  razon: {
+    viewDemo: '🎬 Ver Demo',
+    viewDemoTitle: 'Abre la demo animada de Razonamiento en otra pestaña (sin API)',
+  },
+
   docsnav: {
     moreDocs: 'Mas docs:',
     moreDemos: 'Mas demos',
@@ -362,6 +367,7 @@ export const es = {
     demoEditorDesc: 'demo automatica del Editor: sin contexto vs con contexto',
     demoLoopDesc: 'demo automatica del Loop: edicion agentica con tools',
     demoRagDesc: 'demo animada de RAG: buscar antes de preguntar',
+    demoRazonDesc: 'demo animada de Razonamiento: pensar antes de responder',
     demoAgentsDesc: 'demo automatica de AGENTS.md: mismas tools, distinto system',
     demoSkillsDesc: 'demo automatica de skills: lazy load + test deterministico vs reglas inline',
   },

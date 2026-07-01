@@ -347,6 +347,11 @@ export const en = {
     unsupported: "Your browser doesn't support text-to-speech. Try Chrome or Edge.",
   },
 
+  razon: {
+    viewDemo: '🎬 View Demo',
+    viewDemoTitle: 'Opens the animated Reasoning demo in a new tab (no API)',
+  },
+
   docsnav: {
     moreDocs: 'More docs:',
     moreDemos: 'More demos',
@@ -361,6 +366,7 @@ export const en = {
     demoEditorDesc: 'automatic Editor demo: no context vs with context',
     demoLoopDesc: 'automatic Loop demo: agentic editing with tools',
     demoRagDesc: 'animated RAG demo: retrieve before you ask',
+    demoRazonDesc: 'animated Reasoning demo: think before you answer',
     demoAgentsDesc: 'automatic AGENTS.md demo: same tools, different system',
     demoSkillsDesc: 'automatic skills demo: lazy load + deterministic test vs inline rules',
   },
