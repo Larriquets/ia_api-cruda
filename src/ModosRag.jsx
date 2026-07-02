@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import DocsNav from './DocsNav.jsx'
+import SpeechReader from './SpeechReader.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
 import { useT } from './i18n/useT.js'
 
@@ -129,6 +130,7 @@ export default function ModosRag() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label={t('docpage.navAria')}>
+          <SpeechReader containerSelector=".docs-main" lang={lang} />
           <DocsNav current="demo-rag" />
           <div className="mch-aside-tip">
             <div className="mch-aside-tip-title">{L('¿Para qué sirve esta página?', "What's this page for?")}</div>

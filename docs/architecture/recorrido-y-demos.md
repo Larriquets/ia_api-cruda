@@ -12,7 +12,7 @@ Mismo patrón que `/como-funciona`: el andamiaje (header + TOC con scroll-spy v�
 
 Las 6 paradas: predictor de tokens → tokens → memoria (carta nueva) → ventana de contexto → especificidad → ruido, cada una con su CTA a `/logprobs`, `/tokens`, `/chat` (modo Crudo), `/ventana-contexto`, `/especificidad`, `/ruido`.
 
-Navegación: link en el dropdown **Docs** de [ModeSwitch.jsx](../../src/ModeSwitch.jsx) (primer anexo) y en [DocsNav.jsx](../../src/DocsNav.jsx). El sidebar del recorrido muestra [TutosNav.jsx](../../src/TutosNav.jsx) (los tutos de `PREGUNTAS`, la misma nav lateral que los tutos), no el `DocsNav` de los anexos técnicos.
+Navegación: se llega desde la puerta "Entender" de la landing (`/`). No aparece en el header de la puerta 2 (`ModeSwitch`) ni en [DocsNav.jsx](../../src/DocsNav.jsx): la puerta 1 tiene su propia nav. El sidebar del recorrido muestra [TutosNav.jsx](../../src/TutosNav.jsx) (los tutos de `PREGUNTAS`, la misma nav lateral que los tutos), no el `DocsNav` de los anexos técnicos.
 
 ### Mini-demos inline
 
@@ -51,7 +51,7 @@ Al pie de cada tuto hay un **pager anterior/siguiente** (`.tuto-pager` en [Tutos
 
 [Entrada.jsx](../../src/Entrada.jsx) es la puerta de entrada por audiencia (detalle del concepto en [stack-y-routing.md](stack-y-routing.md#dos-puertas-un-edificio)):
 
-- **Puerta "Entender"**: CTA a `/recorrido` + la lista de tutos **nombrados por la pregunta humana** de [preguntas.js](../../src/preguntas.js) (`PREGUNTAS`: cada una → su `/tutos/*`). La misma lista alimenta el dropdown "Entender" del header ([ModeSwitch.jsx](../../src/ModeSwitch.jsx)) y la nav lateral de los tutos — un solo lugar para que no se desincronicen.
+- **Puerta "Entender"**: CTA a `/recorrido` + la lista de tutos **nombrados por la pregunta humana** de [preguntas.js](../../src/preguntas.js) (`PREGUNTAS`: cada una → su `/tutos/*`). La misma lista alimenta la nav lateral de los tutos ([TutosNav.jsx](../../src/TutosNav.jsx)) — un solo lugar para que no se desincronicen. El header de la puerta 2 (`ModeSwitch`) no lista la puerta 1: se entra por la landing.
 - **Puerta "Taller"**: CTA a `/chat` + la lista completa de [taller.js](../../src/taller.js) (`MODOS` + `LABS` + `DEMOS`, con títulos de sección) + link a `/docs`. La misma fuente alimenta los dropdowns "Modos" y "Labs" del header — espejo del patrón de `preguntas.js`. Las demos animadas cuelgan de esta puerta: son la versión guiada del taller, no la capa para no programadores (esa son los tutos).
 
 La landing no monta el `WelcomeModal` (la landing *es* la bienvenida). Copy vía namespace `entrada.*` del i18n.
@@ -85,7 +85,7 @@ Las demos no persisten nada en `localStorage`.
 
 ## Lector text-to-speech
 
-[SpeechReader.jsx](../../src/SpeechReader.jsx) permite **escuchar** el recorrido. Usa la **Web Speech API nativa** del browser (`window.speechSynthesis`) — sin librería ni API externa, coherente con "la simplicidad es el material". Montado en el `aside` sticky del sidebar (queda visible al scrollear).
+[SpeechReader.jsx](../../src/SpeechReader.jsx) permite **escuchar** la página en vez de leerla. Usa la **Web Speech API nativa** del browser (`window.speechSynthesis`) — sin librería ni API externa, coherente con "la simplicidad es el material". Montado en el `aside` sticky del sidebar (queda visible al scrollear) de las páginas de docs (`/recorrido`, `/docs`, `/como-funciona`, `/proveedores`, `/contexto`, `/tutos/*`) **y de todas las demos animadas `/demo/*`**. En las demos lee lo que está en el DOM en ese momento: los pasos que todavía no se revelaron no se leen.
 
 Cómo funciona:
 

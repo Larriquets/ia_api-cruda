@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useT } from './i18n/useT.js'
 
 // Lector text-to-speech de las páginas de docs (/recorrido, /docs,
-// /como-funciona), pensado para que un no-programador pueda ESCUCHAR la
+// /como-funciona, /tutos/*) y de las demos animadas /demo/*, pensado para
+// que un no-programador pueda ESCUCHAR la
 // página en vez de leerla. Usa la Web Speech API nativa del browser
 // (window.speechSynthesis) — sin librería ni API externa, fiel a
 // "la simplicidad es el material".

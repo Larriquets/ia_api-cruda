@@ -11,6 +11,17 @@ body {
   color: #e2e8f0;
 }
 
+/* Links de prosa: celeste de la marca también en :visited (chau violeta
+   default del browser). :where() deja la especificidad en cero, así cualquier
+   clase (.clear-btn, .try-mode-cta, navs) sigue pisando este color. */
+a:where(:link, :visited) {
+  color: #93c5fd;
+}
+
+a:where(:link, :visited):hover {
+  color: #bfdbfe;
+}
+
 .app {
   height: 100vh;
   display: flex;
