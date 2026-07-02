@@ -1,0 +1,117 @@
+import LanguageToggle from './LanguageToggle.jsx'
+import { PREGUNTAS } from './preguntas.js'
+import { useT } from './i18n/useT.js'
+import { TutoMemoriaEs, TutoMemoriaEn } from './content/tutos/TutoMemoria.jsx'
+import { TutoTokensEs, TutoTokensEn } from './content/tutos/TutoTokens.jsx'
+import { TutoFuentesEs, TutoFuentesEn } from './content/tutos/TutoFuentes.jsx'
+import { TutoPiensaEs, TutoPiensaEn } from './content/tutos/TutoPiensa.jsx'
+import { TutoAgentesEs, TutoAgentesEn } from './content/tutos/TutoAgentes.jsx'
+import { TutoReglasEs, TutoReglasEn } from './content/tutos/TutoReglas.jsx'
+
+// Tutos (`/tutos/*`): la capa más accesible de la puerta 1, una página por
+// pregunta humana de PREGUNTAS. Cada tuto = prosa con metáfora + mini-demo
+// interactiva sin API + escalera hacia abajo (demo animada y lab real).
+// El cuerpo por idioma vive en content/tutos/; acá solo el andamiaje.
+
+const TUTOS = {
+  memoria: {
+    qKey: 'entrada.qMemoriaLabel',
+    Es: TutoMemoriaEs,
+    En: TutoMemoriaEn,
+    demoHref: '/demo/chat',
+    labHref: '/chat',
+  },
+  tokens: {
+    qKey: 'entrada.qTokensLabel',
+    Es: TutoTokensEs,
+    En: TutoTokensEn,
+    demoHref: null,
+    labHref: '/tokens',
+  },
+  fuentes: {
+    qKey: 'entrada.qRagLabel',
+    Es: TutoFuentesEs,
+    En: TutoFuentesEn,
+    demoHref: '/demo/rag',
+    labHref: '/rag',
+  },
+  piensa: {
+    qKey: 'entrada.qPiensaLabel',
+    Es: TutoPiensaEs,
+    En: TutoPiensaEn,
+    demoHref: '/demo/razonamiento',
+    labHref: '/razonamiento',
+  },
+  agentes: {
+    qKey: 'entrada.qHaceLabel',
+    Es: TutoAgentesEs,
+    En: TutoAgentesEn,
+    demoHref: '/demo/loop',
+    labHref: '/loop-agentico',
+  },
+  reglas: {
+    qKey: 'entrada.qReglasLabel',
+    Es: TutoReglasEs,
+    En: TutoReglasEn,
+    demoHref: '/demo/agents-md',
+    labHref: '/agents-md',
+  },
+}
+
+export default function Tutos({ tema }) {
+  const { t, lang } = useT()
+  const tuto = TUTOS[tema]
+  const Body = lang === 'en' ? tuto.En : tuto.Es
+  const current = `/tutos/${tema}`
+
+  return (
+    <div className="criollo">
+      <header className="header">
+        <h1>
+          {current}
+          <span className="docs-header-subtitle">{t(tuto.qKey)}</span>
+        </h1>
+        <div className="header-actions">
+          <LanguageToggle />
+          <a href="/" className="clear-btn">{t('docpage.backToModes')}</a>
+        </div>
+      </header>
+
+      <div className="criollo-content docs-layout">
+        <aside className="docs-sidebar" aria-label={t('tutos.navAria')}>
+          <nav className="docs-nav" aria-label={t('tutos.navAria')}>
+            <div className="docs-nav-title">{t('tutos.navTitle')}</div>
+            {PREGUNTAS.filter((q) => q.href !== current).map((q) => (
+              <a key={q.href} href={q.href} className="docs-nav-link">
+                <span className="docs-nav-emoji">{q.emoji}</span>
+                <span className="docs-nav-desc">{t(q.labelKey)}</span>
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="docs-main">
+          <Body />
+
+          <section className="criollo-section tuto-next">
+            <h2>{t('tutos.nextTitle')}</h2>
+            <div className="tuto-next-links">
+              {tuto.demoHref && (
+                <a href={tuto.demoHref} className="try-mode-cta-btn">
+                  <span className="try-mode-cta-emoji">🎬</span>
+                  <span>{t('tutos.nextDemo')}</span>
+                  <span className="try-mode-cta-arrow">→</span>
+                </a>
+              )}
+              <a href={tuto.labHref} className="try-mode-cta-btn">
+                <span className="try-mode-cta-emoji">🔬</span>
+                <span>{t('tutos.nextLab')}</span>
+                <span className="try-mode-cta-arrow">→</span>
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  )
+}

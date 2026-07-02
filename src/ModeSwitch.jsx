@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useT } from './i18n/useT.js'
 import LanguageToggle from './LanguageToggle.jsx'
 import { PREGUNTAS } from './preguntas.js'
+import { MODOS, LABS } from './taller.js'
 
 /**
  * Switch de modos del header.
- * "Entender" (puerta 1: recorrido + demos sin API, nombradas por pregunta),
+ * "Entender" (puerta 1: recorrido + tutos sin API, nombrados por pregunta),
  * "Modos", "Labs" (puerta 2) y "Docs" son dropdowns.
  *
  * @param {string} active - "entrada" | "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "rag" | "especificidad" | "docs"
@@ -88,48 +89,11 @@ export default function ModeSwitch({ active }) {
 
   const cls = (mode) => `app-mode-btn${active === mode ? ' active' : ''}`
   const aria = (mode) => (active === mode ? { 'aria-current': 'page' } : {})
-  const modes = [
-    {
-      key: 'chat',
-      href: '/chat',
-      label: t('modeswitch.chatLabel'),
-      desc: t('modeswitch.chatDesc'),
-      title: t('modeswitch.chatTitle'),
-    },
-    {
-      key: 'editor',
-      href: '/editor',
-      label: t('modeswitch.editorLabel'),
-      desc: t('modeswitch.editorDesc'),
-      title: t('modeswitch.editorTitle'),
-    },
-    {
-      key: 'loop-agentico',
-      href: '/loop-agentico',
-      label: t('modeswitch.loopLabel'),
-      desc: t('modeswitch.loopDesc'),
-      title: t('modeswitch.loopTitle'),
-    },
-    {
-      key: 'agents-md',
-      href: '/agents-md',
-      label: t('modeswitch.agentsLabel'),
-      desc: t('modeswitch.agentsDesc'),
-      title: t('modeswitch.agentsTitle'),
-    },
-    {
-      key: 'agents-md-skills',
-      href: '/agents-md-skills',
-      label: t('modeswitch.skillsLabel'),
-      desc: t('modeswitch.skillsDesc'),
-      title: t('modeswitch.skillsTitle'),
-    },
-  ]
-  const activeMode = modes.find((mode) => mode.key === active) || modes[0]
-  const modesActive = modes.some((mode) => mode.key === active)
+  const activeMode = MODOS.find((mode) => mode.key === active)
+  const modesActive = Boolean(activeMode)
   const modesClsBase = `app-mode-btn${modesActive ? ' active' : ''}`
-  const modesButtonLabel = modesActive ? activeMode.label : t('modeswitch.modesBtn')
-  const labActive = active === 'ventana-contexto' || active === 'prompt-injection' || active === 'razonamiento' || active === 'logprobs' || active === 'tokens' || active === 'mcp' || active === 'ruido' || active === 'rag' || active === 'especificidad'
+  const modesButtonLabel = modesActive ? `${activeMode.emoji} ${t(activeMode.labelKey)}` : t('modeswitch.modesBtn')
+  const labActive = LABS.some((lab) => lab.key === active)
   const labClsBase = `app-mode-btn${labActive ? ' active' : ''}`
 
   return (
@@ -177,17 +141,17 @@ export default function ModeSwitch({ active }) {
         </button>
         {modesOpen && (
           <div className="app-mode-menu" role="menu">
-            {modes.map((mode) => (
+            {MODOS.map((mode) => (
               <a
                 key={mode.key}
                 href={mode.href}
                 className="app-mode-menu-item"
                 role="menuitem"
-                title={mode.title}
+                title={t(mode.titleKey)}
                 {...aria(mode.key)}
               >
-                <b>{mode.label}</b>
-                <span className="app-mode-menu-sub">{mode.desc}</span>
+                <b>{mode.emoji} {t(mode.labelKey)}</b>
+                <span className="app-mode-menu-sub">{t(mode.subKey)}</span>
               </a>
             ))}
           </div>
@@ -207,87 +171,18 @@ export default function ModeSwitch({ active }) {
         </button>
         {labOpen && (
           <div className="app-mode-menu" role="menu">
-            <a
-              href="/razonamiento"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('razonamiento')}
-            >
-              <b>{t('modeswitch.razonLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.razonDesc')}</span>
-            </a>
-            <a
-              href="/tokens"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('tokens')}
-            >
-              <b>{t('modeswitch.tokensLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.tokensDesc')}</span>
-            </a>
-            <a
-              href="/logprobs"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('logprobs')}
-            >
-              <b>{t('modeswitch.logprobsLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.logprobsDesc')}</span>
-            </a>
-            <a
-              href="/mcp"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('mcp')}
-            >
-              <b>{t('modeswitch.mcpLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.mcpDesc')}</span>
-            </a>
-            <a
-              href="/ventana-contexto"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('ventana-contexto')}
-            >
-              <b>{t('modeswitch.ctxwinLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.ctxwinDesc')}</span>
-            </a>
-            <a
-              href="/rag"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('rag')}
-            >
-              <b>{t('modeswitch.ragLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.ragDesc')}</span>
-            </a>
-            <a
-              href="/ruido"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('ruido')}
-            >
-              <b>{t('modeswitch.ruidoLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.ruidoDesc')}</span>
-            </a>
-            <a
-              href="/especificidad"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('especificidad')}
-            >
-              <b>{t('modeswitch.especLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.especDesc')}</span>
-            </a>
-            <a
-              href="/prompt-injection"
-              className="app-mode-menu-item"
-              role="menuitem"
-              {...aria('prompt-injection')}
-            >
-              <b>{t('modeswitch.piLabel')}</b>
-              <span className="app-mode-menu-sub">{t('modeswitch.piDesc')}</span>
-            </a>
+            {LABS.map((lab) => (
+              <a
+                key={lab.key}
+                href={lab.href}
+                className="app-mode-menu-item"
+                role="menuitem"
+                {...aria(lab.key)}
+              >
+                <b>{lab.emoji} {t(lab.labelKey)}</b>
+                <span className="app-mode-menu-sub">{t(lab.subKey)}</span>
+              </a>
+            ))}
           </div>
         )}
       </div>

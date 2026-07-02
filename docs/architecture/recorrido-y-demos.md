@@ -1,6 +1,6 @@
 # Recorrido para no programadores y demos sin API
 
-> Parte de [docs/ARCHITECTURE.md](../ARCHITECTURE.md). Acá vive el detalle de la capa "Entender": el recorrido guiado, las mini-demos inline, las demos animadas `/demo/*` y el lector TTS.
+> Parte de [docs/ARCHITECTURE.md](../ARCHITECTURE.md). Acá vive el detalle de la capa "Entender": el recorrido guiado, los tutos `/tutos/*`, las mini-demos inline, las demos animadas `/demo/*` (hoy colgadas de la puerta 2) y el lector TTS.
 
 ## Recorrido (`/recorrido`)
 
@@ -29,12 +29,27 @@ Cada parada del recorrido embebe una **mini-demo interactiva sin API** que vive 
 
 Son componentes autocontenidos (estado local, sin `localStorage`, sin fetch), montados por `RecorridoBody` en ambos idiomas.
 
+## Tutos (`/tutos/*`)
+
+La capa más accesible de la puerta 1: **una página por pregunta humana** de `PREGUNTAS`. Cada tuto = prosa corta con la metáfora de la carta + una **mini-demo interactiva sin API** + escalera hacia abajo (CTA a la demo animada y al lab real). El andamiaje (header, nav lateral, CTAs) vive en [Tutos.jsx](../../src/Tutos.jsx) (registro `TUTOS` por slug); el cuerpo por idioma en [src/content/tutos/](../../src/content/tutos/) (`TutoXxxEs` / `TutoXxxEn`, mismo patrón que `RecorridoBody`).
+
+| Ruta | Pregunta | Mini-demo | Escalera (demo → lab) |
+|---|---|---|---|
+| `/tutos/memoria` | ¿Se acuerda de lo que le digo? | `DemoMemoria` (reusada del recorrido) | `/demo/chat` → `/chat` |
+| `/tutos/tokens` | ¿Qué es un token? | `DemoTokens` (reusada del recorrido) | — → `/tokens` |
+| `/tutos/fuentes` | ¿De dónde saca lo que responde? | `DemoFuentes` (nueva) | `/demo/rag` → `/rag` |
+| `/tutos/piensa` | ¿"Piensa" antes de responder? | `DemoPiensa` (nueva) | `/demo/razonamiento` → `/razonamiento` |
+| `/tutos/agentes` | ¿Cómo hace cosas? | `DemoAgente` (nueva) | `/demo/loop` → `/loop-agentico` |
+| `/tutos/reglas` | ¿Cómo se le dan reglas? | `DemoReglas` (nueva) | `/demo/agents-md` → `/agents-md` |
+
+Las mini-demos nuevas viven en [src/content/tutos/](../../src/content/tutos/) y reusan las clases CSS `recorrido-*` (mismo lenguaje visual que las del recorrido). No persisten nada en `localStorage`.
+
 ## Landing de dos puertas (`/`)
 
 [Entrada.jsx](../../src/Entrada.jsx) es la puerta de entrada por audiencia (detalle del concepto en [stack-y-routing.md](stack-y-routing.md#dos-puertas-un-edificio)):
 
-- **Puerta "Entender"**: CTA a `/recorrido` + la lista de demos **nombradas por la pregunta humana** de [preguntas.js](../../src/preguntas.js) (`PREGUNTAS`: memoria → `/demo/chat`, tokens → `/tokens`, RAG → `/demo/rag`, razonamiento → `/demo/razonamiento`, agentes → `/demo/loop`, reglas → `/demo/agents-md`). La misma lista alimenta el dropdown "Entender" del header ([ModeSwitch.jsx](../../src/ModeSwitch.jsx)) — un solo lugar para que no se desincronicen.
-- **Puerta "Taller"**: CTA a `/chat` + lista `TALLER` (inline en Entrada.jsx) con los labs técnicos.
+- **Puerta "Entender"**: CTA a `/recorrido` + la lista de tutos **nombrados por la pregunta humana** de [preguntas.js](../../src/preguntas.js) (`PREGUNTAS`: cada una → su `/tutos/*`). La misma lista alimenta el dropdown "Entender" del header ([ModeSwitch.jsx](../../src/ModeSwitch.jsx)) y la nav lateral de los tutos — un solo lugar para que no se desincronicen.
+- **Puerta "Taller"**: CTA a `/chat` + la lista completa de [taller.js](../../src/taller.js) (`MODOS` + `LABS` + `DEMOS`, con títulos de sección) + link a `/docs`. La misma fuente alimenta los dropdowns "Modos" y "Labs" del header — espejo del patrón de `preguntas.js`. Las demos animadas cuelgan de esta puerta: son la versión guiada del taller, no la capa para no programadores (esa son los tutos).
 
 La landing no monta el `WelcomeModal` (la landing *es* la bienvenida). Copy vía namespace `entrada.*` del i18n.
 

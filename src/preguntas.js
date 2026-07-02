@@ -1,13 +1,14 @@
 // Preguntas humanas de la puerta "Entender" (puerta 1): cada una mapea a
-// una demo sin API (o al tokenizer, que corre 100% local). Nombradas por la
+// su tuto (/tutos/*, página guiada con mini-demo sin API). Nombradas por la
 // pregunta que trae la gente real, no por la tecnología que la responde.
-// Las usan la landing (Entrada.jsx) y el dropdown "Entender" del header
-// (ModeSwitch.jsx) — un solo lugar para que no se desincronicen.
+// Las usan la landing (Entrada.jsx), el dropdown "Entender" del header
+// (ModeSwitch.jsx) y la nav de los tutos (Tutos.jsx) — un solo lugar para
+// que no se desincronicen. Las demos animadas /demo/* cuelgan de la puerta 2.
 export const PREGUNTAS = [
-  { emoji: '✉️', href: '/demo/chat', labelKey: 'entrada.qMemoriaLabel', subKey: 'entrada.qMemoriaSub' },
-  { emoji: '🧩', href: '/tokens', labelKey: 'entrada.qTokensLabel', subKey: 'entrada.qTokensSub' },
-  { emoji: '📚', href: '/demo/rag', labelKey: 'entrada.qRagLabel', subKey: 'entrada.qRagSub' },
-  { emoji: '🧠', href: '/demo/razonamiento', labelKey: 'entrada.qPiensaLabel', subKey: 'entrada.qPiensaSub' },
-  { emoji: '🤖', href: '/demo/loop', labelKey: 'entrada.qHaceLabel', subKey: 'entrada.qHaceSub' },
-  { emoji: '📋', href: '/demo/agents-md', labelKey: 'entrada.qReglasLabel', subKey: 'entrada.qReglasSub' },
+  { emoji: '✉️', href: '/tutos/memoria', labelKey: 'entrada.qMemoriaLabel', subKey: 'entrada.qMemoriaSub' },
+  { emoji: '🧩', href: '/tutos/tokens', labelKey: 'entrada.qTokensLabel', subKey: 'entrada.qTokensSub' },
+  { emoji: '📚', href: '/tutos/fuentes', labelKey: 'entrada.qRagLabel', subKey: 'entrada.qRagSub' },
+  { emoji: '🧠', href: '/tutos/piensa', labelKey: 'entrada.qPiensaLabel', subKey: 'entrada.qPiensaSub' },
+  { emoji: '🤖', href: '/tutos/agentes', labelKey: 'entrada.qHaceLabel', subKey: 'entrada.qHaceSub' },
+  { emoji: '📋', href: '/tutos/reglas', labelKey: 'entrada.qReglasLabel', subKey: 'entrada.qReglasSub' },
 ]

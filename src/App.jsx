@@ -35,6 +35,7 @@ import ModosAgentsMdSkills from './ModosAgentsMdSkills.jsx'
 import ModosRag from './ModosRag.jsx'
 import ModosRazonamiento from './ModosRazonamiento.jsx'
 import Entrada from './Entrada.jsx'
+import Tutos from './Tutos.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
@@ -155,6 +156,12 @@ export default function App() {
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
     if (window.location.pathname === '/recorrido') return 'recorrido'
+    if (window.location.pathname === '/tutos/memoria') return 'tuto-memoria'
+    if (window.location.pathname === '/tutos/tokens') return 'tuto-tokens'
+    if (window.location.pathname === '/tutos/fuentes') return 'tuto-fuentes'
+    if (window.location.pathname === '/tutos/piensa') return 'tuto-piensa'
+    if (window.location.pathname === '/tutos/agentes') return 'tuto-agentes'
+    if (window.location.pathname === '/tutos/reglas') return 'tuto-reglas'
     if (window.location.pathname === '/demo/chat') return 'demo-chat'
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
@@ -552,6 +559,24 @@ export default function App() {
   }
   if (page === 'recorrido') {
     return <><WelcomeModal /><Recorrido /></>
+  }
+  if (page === 'tuto-memoria') {
+    return <><WelcomeModal /><Tutos tema="memoria" /></>
+  }
+  if (page === 'tuto-tokens') {
+    return <><WelcomeModal /><Tutos tema="tokens" /></>
+  }
+  if (page === 'tuto-fuentes') {
+    return <><WelcomeModal /><Tutos tema="fuentes" /></>
+  }
+  if (page === 'tuto-piensa') {
+    return <><WelcomeModal /><Tutos tema="piensa" /></>
+  }
+  if (page === 'tuto-agentes') {
+    return <><WelcomeModal /><Tutos tema="agentes" /></>
+  }
+  if (page === 'tuto-reglas') {
+    return <><WelcomeModal /><Tutos tema="reglas" /></>
   }
   if (page === 'demo-chat') {
     return <><WelcomeModal /><ModosChat /></>

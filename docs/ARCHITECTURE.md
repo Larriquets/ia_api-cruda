@@ -17,7 +17,7 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
 | [ventana-contexto.md](architecture/ventana-contexto.md) | Estrategias de poda: FIFO, sliding window, compaction; invariante del system |
 | [labs.md](architecture/labs.md) | Los experimentos aislados: `/razonamiento`, `/logprobs`, `/mcp`, `/tokens`, `/ruido`, `/especificidad`, `/rag` |
 | [i18n.md](architecture/i18n.md) | Sistema ES/EN sin librería: claves `t()` vs módulos de contenido por idioma, bits funcionales lang-aware, cobertura |
-| [recorrido-y-demos.md](architecture/recorrido-y-demos.md) | La capa "Entender": `/recorrido` con mini-demos inline, demos animadas `/demo/*`, puente lab ↔ demo, lector TTS |
+| [recorrido-y-demos.md](architecture/recorrido-y-demos.md) | La capa "Entender": `/recorrido` con mini-demos inline, tutos `/tutos/*` por pregunta, demos animadas `/demo/*`, puente lab ↔ demo, lector TTS |
 | [localstorage.md](architecture/localstorage.md) | Todas las claves de `localStorage` por modo |
 
 ---
@@ -30,7 +30,8 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
                          └──────┬────────────────┬──────┘
                     "Entender"  │                │  "Taller"
                                 ▼                ▼
-              /recorrido + /demo/* (sin API)   /chat + labs (API real)
+             /recorrido + /tutos/* (sin API)   /chat + labs (API real)
+                                               + /demo/* (sin API)
                                 │                │
                      TryModeCTA ├───────────────►│
                                 │◄───────────────┤ DemoBacklink
@@ -51,7 +52,8 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
 
 | Ruta | Componente | Modo |
 |---|---|---|
-| `/` | [Entrada.jsx](../src/Entrada.jsx) | Landing de dos puertas: "Entender" (recorrido + demos sin API, por pregunta) vs "Taller" (modos y labs reales) |
+| `/` | [Entrada.jsx](../src/Entrada.jsx) | Landing de dos puertas: "Entender" (recorrido + tutos por pregunta, sin API) vs "Taller" (modos, labs y demos) |
+| `/tutos/{memoria,tokens,fuentes,piensa,agentes,reglas}` | [Tutos.jsx](../src/Tutos.jsx) | Tutos para no programadores: una página por pregunta humana, prosa + mini-demo sin API + escalera a demo y lab |
 | `/chat` | [App.jsx](../src/App.jsx) | Chat (3 modos de contexto + system editable + temperatura) |
 | `/editor` | [Editor.jsx](../src/Editor.jsx) | Código + instrucción → respuesta |
 | `/loop-agentico` | [LoopAgentico.jsx](../src/LoopAgentico.jsx) | Loop agéntico con tool-use |

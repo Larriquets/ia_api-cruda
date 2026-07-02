@@ -1,22 +1,30 @@
 import Brand from './Brand.jsx'
-import ModeSwitch from './ModeSwitch.jsx'
+import LanguageToggle from './LanguageToggle.jsx'
 import { PREGUNTAS } from './preguntas.js'
+import { MODOS, LABS, DEMOS } from './taller.js'
 import { useT } from './i18n/useT.js'
 
 // Landing de dos puertas (`/`): la misma app, dos profundidades.
-// Puerta 1 → recorrido guiado + demos sin API, nombradas por la pregunta
-// humana (no por la tecnología). Puerta 2 → los modos y labs reales, con
-// keys y JSON crudo. Cada puerta linkea a la otra: la separación es una
-// escalera a la vista, no un muro.
+// Puerta 1 → recorrido guiado + tutos sin API, nombrados por la pregunta
+// humana (no por la tecnología). Puerta 2 → los modos, labs y demos animadas,
+// con keys y JSON crudo. Cada puerta linkea a la otra: la separación es una
+// escalera a la vista, no un muro. Las listas de cada puerta salen de
+// preguntas.js y taller.js — las mismas fuentes que los dropdowns del
+// header, para que no se desincronicen.
 
-const TALLER = [
-  { emoji: '💻', href: '/editor', labelKey: 'entrada.tEditorLabel', subKey: 'entrada.tEditorSub' },
-  { emoji: '🤖', href: '/loop-agentico', labelKey: 'entrada.tLoopLabel', subKey: 'entrada.tLoopSub' },
-  { emoji: '🪟', href: '/ventana-contexto', labelKey: 'entrada.tCtxwinLabel', subKey: 'entrada.tCtxwinSub' },
-  { emoji: '🎲', href: '/logprobs', labelKey: 'entrada.tLogprobsLabel', subKey: 'entrada.tLogprobsSub' },
-  { emoji: '🔌', href: '/mcp', labelKey: 'entrada.tMcpLabel', subKey: 'entrada.tMcpSub' },
-  { emoji: '📚', href: '/docs', labelKey: 'entrada.tDocsLabel', subKey: 'entrada.tDocsSub' },
-]
+function EntradaLink({ emoji, href, labelKey, label, subKey, t }) {
+  return (
+    <li>
+      <a href={href} className="entrada-link">
+        <span className="entrada-link-emoji">{emoji}</span>
+        <span className="entrada-link-body">
+          <b>{labelKey ? t(labelKey) : label}</b>
+          <span className="entrada-link-sub">{t(subKey)}</span>
+        </span>
+      </a>
+    </li>
+  )
+}
 
 export default function Entrada() {
   const { t } = useT()
@@ -33,7 +41,7 @@ export default function Entrada() {
           <span className="brand-subtitle">{t('entrada.subtitle')}</span>
         </h1>
         <div className="header-actions">
-          <ModeSwitch active="entrada" />
+          <LanguageToggle />
         </div>
       </header>
 
@@ -56,15 +64,7 @@ export default function Entrada() {
             <div className="entrada-door-alt">{t('entrada.door1Alt')}</div>
             <ul className="entrada-links">
               {PREGUNTAS.map((q) => (
-                <li key={q.href}>
-                  <a href={q.href} className="entrada-link">
-                    <span className="entrada-link-emoji">{q.emoji}</span>
-                    <span className="entrada-link-body">
-                      <b>{t(q.labelKey)}</b>
-                      <span className="entrada-link-sub">{t(q.subKey)}</span>
-                    </span>
-                  </a>
-                </li>
+                <EntradaLink key={q.href} {...q} t={t} />
               ))}
             </ul>
           </section>
@@ -79,18 +79,24 @@ export default function Entrada() {
               <span className="try-mode-cta-arrow">→</span>
             </a>
             <div className="entrada-door-alt">{t('entrada.door2Alt')}</div>
+            <div className="entrada-links-title">{t('modeswitch.modesBtn')}</div>
             <ul className="entrada-links">
-              {TALLER.map((m) => (
-                <li key={m.href}>
-                  <a href={m.href} className="entrada-link">
-                    <span className="entrada-link-emoji">{m.emoji}</span>
-                    <span className="entrada-link-body">
-                      <b>{t(m.labelKey)}</b>
-                      <span className="entrada-link-sub">{t(m.subKey)}</span>
-                    </span>
-                  </a>
-                </li>
+              {MODOS.map((m) => (
+                <EntradaLink key={m.href} {...m} t={t} />
               ))}
+            </ul>
+            <div className="entrada-links-title">{t('modeswitch.labsBtn')}</div>
+            <ul className="entrada-links">
+              {LABS.map((m) => (
+                <EntradaLink key={m.href} {...m} t={t} />
+              ))}
+            </ul>
+            <div className="entrada-links-title">{t('entrada.tDemosTitle')}</div>
+            <ul className="entrada-links">
+              {DEMOS.map((m) => (
+                <EntradaLink key={m.href} {...m} t={t} />
+              ))}
+              <EntradaLink emoji="📚" href="/docs" labelKey="entrada.tDocsLabel" subKey="entrada.tDocsSub" t={t} />
             </ul>
           </section>
         </div>
