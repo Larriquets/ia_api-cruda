@@ -5,6 +5,7 @@ import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
@@ -349,6 +350,8 @@ export default function Editor({ onBack }) {
           <ModeSwitch active="editor" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/editor" />
 
       <ConfigBar>
         <label className="hdr-select">

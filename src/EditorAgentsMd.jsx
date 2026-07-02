@@ -6,6 +6,7 @@ import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
@@ -701,6 +702,8 @@ export default function EditorAgentsMd({ withSkills = true }) {
           <ModeSwitch active={withSkills ? 'agents-md-skills' : 'agents-md'} />
         </div>
       </header>
+
+      <DemoBacklink href={withSkills ? '/demo/agents-md-skills' : '/demo/agents-md'} />
 
       <ConfigBar>
         <label className="hdr-select">

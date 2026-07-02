@@ -34,6 +34,8 @@ import ModosAgentsMd from './ModosAgentsMd.jsx'
 import ModosAgentsMdSkills from './ModosAgentsMdSkills.jsx'
 import ModosRag from './ModosRag.jsx'
 import ModosRazonamiento from './ModosRazonamiento.jsx'
+import Entrada from './Entrada.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -133,6 +135,8 @@ export default function App() {
   const [serverHistory, setServerHistory] = useState([])
   const [page, setPage] = useState(() => {
     if (typeof window === 'undefined') return 'chat'
+    if (window.location.pathname === '/') return 'entrada'
+    if (window.location.pathname === '/chat') return 'chat'
     if (window.location.pathname === '/contexto') return 'contexto'
     if (window.location.pathname === '/proveedores') return 'proveedores'
     if (window.location.pathname === '/editor') return 'editor'
@@ -491,6 +495,10 @@ export default function App() {
   const contextTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0)
 
   const goHome = () => { window.location.href = '/' }
+  if (page === 'entrada') {
+    // La landing es la bienvenida: no monta el WelcomeModal.
+    return <Entrada />
+  }
   if (page === 'contexto') {
     return <><WelcomeModal /><Contexto onBack={goHome} /></>
   }
@@ -584,6 +592,8 @@ export default function App() {
           <ModeSwitch active="chat" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/chat" />
 
       <ConfigBar>
         <label className="hdr-select">

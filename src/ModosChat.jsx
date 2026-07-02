@@ -241,7 +241,7 @@ export default function ModosChat() {
             </p>
             <div className="prov-callout">
               <p>
-                {L('Las respuestas de la IA acá están', "The AI's responses here are")} <b>{L('mockeadas', 'mocked')}</b> {L('(no consumen API). El foco pedagógico es lo que viaja en el', '(they don\'t consume API). The teaching focus is what travels in the')} <code>POST</code>, {L('no la respuesta. Para ver el request real, andá al', 'not the response. To see the real request, go to the')} <a href="/">Chat</a>.
+                {L('Las respuestas de la IA acá están', "The AI's responses here are")} <b>{L('mockeadas', 'mocked')}</b> {L('(no consumen API). El foco pedagógico es lo que viaja en el', '(they don\'t consume API). The teaching focus is what travels in the')} <code>POST</code>, {L('no la respuesta. Para ver el request real, andá al', 'not the response. To see the real request, go to the')} <a href="/chat">Chat</a>.
               </p>
             </div>
           </section>
@@ -496,7 +496,7 @@ export default function ModosChat() {
               </li>
             </ul>
             <p style={{ marginTop: 12 }}>
-              {L('Para ver esto con un request', 'To see this with a')} <i>{L('real', 'real')}</i> {L('request, andá al', 'request, go to the')} <a href="/">Chat</a> {L('y mirá el panel "Request → API (crudo)" mientras cambiás de modo con el segmented control de arriba. Para entender la anatomía completa del POST,', 'and watch the "Request → API (raw)" panel while you switch modes with the segmented control at the top. To understand the full anatomy of the POST,')}{' '}
+              {L('Para ver esto con un request', 'To see this with a')} <i>{L('real', 'real')}</i> {L('request, andá al', 'request, go to the')} <a href="/chat">Chat</a> {L('y mirá el panel "Request → API (crudo)" mientras cambiás de modo con el segmented control de arriba. Para entender la anatomía completa del POST,', 'and watch the "Request → API (raw)" panel while you switch modes with the segmented control at the top. To understand the full anatomy of the POST,')}{' '}
               <a href="/como-funciona">/como-funciona</a>.
             </p>
           </section>

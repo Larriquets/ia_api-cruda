@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import DocsNav from './DocsNav.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
+import SpeechReader from './SpeechReader.jsx'
 import { useT } from './i18n/useT.js'
 import { ContextoBodyEs, ContextoBodyEn } from './content/ContextoBody.jsx'
 
@@ -74,6 +75,7 @@ export default function Contexto() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label={t('docpage.navAria')}>
+          <SpeechReader containerSelector=".docs-main" lang={lang} />
           <DocsNav current="contexto" />
           <nav className="docs-toc" aria-label={t('docpage.pageIndexAria')}>
             <div className="docs-toc-title">{t('docpage.onThisPage')}</div>

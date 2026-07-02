@@ -5,7 +5,7 @@ import { useT } from './i18n/useT.js'
 const DISMISS_KEY = 'welcome_dismissed_v1'
 
 const STEPS = [
-  { emoji: '💬', titleKey: 'welcome.chatTitle', descKey: 'welcome.chatDesc', href: '/' },
+  { emoji: '💬', titleKey: 'welcome.chatTitle', descKey: 'welcome.chatDesc', href: '/chat' },
   { emoji: '💻', titleKey: 'welcome.editorTitle', descKey: 'welcome.editorDesc', href: '/editor' },
   { emoji: '🤖', titleKey: 'welcome.loopTitle', descKey: 'welcome.loopDesc', href: '/loop-agentico' },
   {

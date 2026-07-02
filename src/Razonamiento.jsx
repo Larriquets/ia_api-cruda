@@ -12,6 +12,7 @@ import {
 } from './anthropic-reasoning.js'
 import { sendLmStudioReasoningMessage } from './lmstudio-reasoning.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
@@ -433,6 +434,8 @@ export default function Razonamiento() {
           <ModeSwitch active="razonamiento" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/razonamiento" />
 
       <ConfigBar>
         <label className="hdr-select">

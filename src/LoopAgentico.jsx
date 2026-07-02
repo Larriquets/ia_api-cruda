@@ -6,6 +6,7 @@ import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
@@ -482,6 +483,8 @@ export default function LoopAgentico() {
           <ModeSwitch active="loop-agentico" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/loop" />
 
       <ConfigBar>
         <label className="hdr-select">

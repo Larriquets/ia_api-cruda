@@ -244,7 +244,7 @@ export function DocsBodyEs() {
             </summary>
             <div className="docs-collapsible-body">
           <p>
-            <a href="/" target="_blank" rel="noreferrer"><code>http://localhost:5173/</code></a>
+            <a href="/chat" target="_blank" rel="noreferrer"><code>http://localhost:5173/chat</code></a>
           </p>
           <h3>Qué hace</h3>
           <p>
@@ -301,7 +301,7 @@ export function DocsBodyEs() {
           </ul>
 
           <TryModeCTA
-            href="/"
+            href="/chat"
             label="Chat"
             emoji="💬"
             hint="Probá los tres modos de contexto (Crudo / Conversación / Persistente) y mirá cómo cambia el JSON que sale."
@@ -1731,7 +1731,7 @@ export function DocsBodyEn() {
           </summary>
           <div className="docs-collapsible-body">
         <p>
-          <a href="/" target="_blank" rel="noreferrer"><code>http://localhost:5173/</code></a>
+          <a href="/chat" target="_blank" rel="noreferrer"><code>http://localhost:5173/chat</code></a>
         </p>
         <h3>What it does</h3>
         <p>
@@ -1788,7 +1788,7 @@ export function DocsBodyEn() {
         </ul>
 
         <TryModeCTA
-          href="/"
+          href="/chat"
           label="Chat"
           emoji="💬"
           hint="Try the three context modes (Raw / Conversation / Persistent) and watch how the JSON going out changes."

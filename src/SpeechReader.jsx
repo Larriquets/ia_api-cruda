@@ -1,20 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
 import { useT } from './i18n/useT.js'
 
-// Lector text-to-speech del /recorrido, pensado para que un no-programador
-// pueda ESCUCHAR el recorrido en vez de leerlo. Usa la Web Speech API nativa
-// del browser (window.speechSynthesis) — sin librería ni API externa, fiel a
+// Lector text-to-speech de las páginas de docs (/recorrido, /docs,
+// /como-funciona), pensado para que un no-programador pueda ESCUCHAR la
+// página en vez de leerla. Usa la Web Speech API nativa del browser
+// (window.speechSynthesis) — sin librería ni API externa, fiel a
 // "la simplicidad es el material".
 //
-// Lee, en orden de DOM, los <h2>/<p>/<li> que cuelgan de `containerSelector`
-// (el .docs-main del body), un fragmento por utterance. Trocear así evita el
-// bug de Chrome que corta los utterances largos (~15s) y permite resaltar y
-// auto-scrollear el párrafo que se está leyendo.
+// Lee, en orden de DOM, los <h2>/<summary>/<p>/<li> que cuelgan de
+// `containerSelector` (el .docs-main del body), un fragmento por utterance.
+// Trocear así evita el bug de Chrome que corta los utterances largos (~15s)
+// y permite resaltar y auto-scrollear el párrafo que se está leyendo.
 
 const HL_CLASS = 'speech-reading'
 // Quita emojis del texto que se manda al TTS: leídos en voz alta ("cohete",
 // "marca de verificación") son ruido. El resaltado visual los conserva.
-const stripEmoji = (s) => s.replace(/\p{Extended_Pictographic}/gu, '').replace(/\s+/g, ' ').trim()
+// También los chevrones ▸/▾ de los <summary> plegables de /docs.
+const stripEmoji = (s) =>
+  s.replace(/\p{Extended_Pictographic}/gu, '').replace(/[▸▾]/g, '').replace(/\s+/g, ' ').trim()
+
+// En /docs las secciones son <details> colapsables: si el fragmento que toca
+// leer está adentro de uno cerrado, lo abrimos para que el resaltado y el
+// auto-scroll se vean. En páginas sin <details> no hace nada.
+const openAncestorDetails = (el) => {
+  let d = el.closest('details')
+  while (d) {
+    d.open = true
+    d = d.parentElement?.closest('details')
+  }
+}
 
 function pickVoice(voices, lang) {
   if (lang === 'en') {
@@ -81,7 +95,7 @@ export default function SpeechReader({ containerSelector, lang }) {
   const collectChunks = () => {
     const root = document.querySelector(containerSelector)
     if (!root) return []
-    const nodes = root.querySelectorAll('h2, p, li')
+    const nodes = root.querySelectorAll('h2, summary, p, li')
     const out = []
     nodes.forEach((el) => {
       const text = stripEmoji(el.textContent || '')
@@ -110,6 +124,7 @@ export default function SpeechReader({ containerSelector, lang }) {
     u.onstart = () => {
       if (session !== sessionRef.current) return
       clearHighlight()
+      openAncestorDetails(el)
       el.classList.add(HL_CLASS)
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }

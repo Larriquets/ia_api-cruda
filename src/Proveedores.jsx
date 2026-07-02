@@ -1,5 +1,6 @@
 import DocsNav from './DocsNav.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
+import SpeechReader from './SpeechReader.jsx'
 import { useT } from './i18n/useT.js'
 import { ProveedoresBodyEs, ProveedoresBodyEn } from './content/ProveedoresBody.jsx'
 
@@ -34,6 +35,7 @@ export default function Proveedores() {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label={t('docpage.navAria')}>
+          <SpeechReader containerSelector=".docs-main" lang={lang} />
           <DocsNav current="proveedores" />
           <nav className="docs-toc" aria-label={t('docpage.pageIndexAria')}>
             <div className="docs-toc-title">{t('docpage.onThisPage')}</div>

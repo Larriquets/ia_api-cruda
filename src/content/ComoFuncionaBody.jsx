@@ -114,7 +114,7 @@ export function ComoFuncionaBodyEs() {
         <h3>Cómo se arma en esta app</h3>
         <ul>
           <li>
-            En el <b>Chat</b> (<code>/</code>) viene de <a href="/" target="_blank" rel="noreferrer">el editor "System prompt"</a>{' '}
+            En el <b>Chat</b> (<code>/chat</code>) viene de <a href="/chat" target="_blank" rel="noreferrer">el editor "System prompt"</a>{' '}
             (plegable, arriba del chat). Hay presets — pirata, JSON estricto, profesor sarcástico —
             que demuestran cómo el <b>mismo "hola"</b> produce respuestas opuestas con system
             distintos. Probalos.
@@ -657,7 +657,7 @@ export function ComoFuncionaBodyEn() {
         <h3>How it's built in this app</h3>
         <ul>
           <li>
-            In <b>Chat</b> (<code>/</code>) it comes from <a href="/" target="_blank" rel="noreferrer">the "System prompt" editor</a>{' '}
+            In <b>Chat</b> (<code>/chat</code>) it comes from <a href="/chat" target="_blank" rel="noreferrer">the "System prompt" editor</a>{' '}
             (collapsible, above the chat). There are presets — pirate, strict JSON, sarcastic professor —
             that show how the <b>same "hi"</b> produces opposite answers with different systems.
             Try them.

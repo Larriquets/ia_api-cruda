@@ -8667,3 +8667,225 @@ body {
 .mrz-dot-mixed {
   background: repeating-linear-gradient(45deg, #7c3aed, #7c3aed 3px, #a855f7 3px, #a855f7 6px);
 }
+
+/* ============================================================
+   / — Entrada: landing de dos puertas. Puerta 1 (entender,
+   sin API) en verde; puerta 2 (taller, JSON crudo) en azul.
+   ============================================================ */
+.entrada {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+}
+
+.entrada-main {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 34px 20px 44px;
+}
+
+.entrada-hero {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.entrada-hero h2 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.25;
+}
+
+.entrada-hero p {
+  margin: 0 auto;
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #94a3b8;
+}
+
+.entrada-doors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.entrada-door {
+  border-radius: 12px;
+  padding: 22px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.entrada-door-entender {
+  border-top: 3px solid #22c55e;
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.07), #1e293b 55%);
+}
+
+.entrada-door-taller {
+  border-top: 3px solid #3b82f6;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.07), #1e293b 55%);
+}
+
+.entrada-door-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+}
+
+.entrada-door-entender .entrada-door-kicker { color: #86efac; }
+.entrada-door-taller .entrada-door-kicker { color: #93c5fd; }
+
+.entrada-door h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.3;
+}
+
+.entrada-door-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.entrada-door-cta {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.entrada-door-entender .entrada-door-cta {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+
+.entrada-door-entender .entrada-door-cta:hover {
+  background: rgba(34, 197, 94, 0.3);
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
+.entrada-door-alt {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.entrada-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entrada-link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.entrada-link:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #334155;
+}
+
+.entrada-door-entender .entrada-link:hover {
+  background: rgba(34, 197, 94, 0.09);
+}
+
+.entrada-link-emoji {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.entrada-link-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.entrada-link-body b {
+  font-size: 13.5px;
+  color: #e2e8f0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.entrada-link-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.entrada-foot {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.entrada-foot p {
+  margin: 0 auto;
+  max-width: 680px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #94a3b8;
+}
+
+.entrada-foot-link {
+  color: #93c5fd;
+}
+
+@media (max-width: 860px) {
+  .entrada-doors { grid-template-columns: 1fr; }
+  .entrada-hero h2 { font-size: 22px; }
+}
+
+/* === Puente lab → demo: tira fina bajo el header de los labs
+   que tienen versión guiada sin API en /demo/*. === */
+.demo-backlink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 20px;
+  background: rgba(124, 58, 237, 0.08);
+  border-bottom: 1px solid #334155;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.demo-backlink-emoji {
+  font-size: 13px;
+}
+
+.demo-backlink-btn {
+  color: #c4b5fd;
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.demo-backlink-btn:hover {
+  color: #ddd6fe;
+  text-decoration: underline;
+}
