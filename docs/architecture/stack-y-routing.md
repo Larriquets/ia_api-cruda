@@ -37,7 +37,7 @@ window.location.pathname → state `page` → if-chain → componente de página
 
 La raíz `/` es una landing ([Entrada.jsx](../../src/Entrada.jsx)) que separa la app por audiencia sin duplicar contenido:
 
-- La puerta **"Entender"** lleva a `/recorrido` y a los tutos `/tutos/*` **nombrados por la pregunta humana** (¿por qué se olvida?, ¿qué son los tokens?, …). La lista vive en [preguntas.js](../../src/preguntas.js), compartida con el dropdown "Entender" de ModeSwitch y la nav de los tutos — un solo lugar para que no se desincronicen.
+- La puerta **"Entender"** lleva a `/recorrido` y a los tutos `/tutos/*` **nombrados por la pregunta humana** (¿por qué se olvida?, ¿qué son los tokens?, …). La lista vive en [preguntas.js](../../src/preguntas.js), compartida con la nav lateral de los tutos ([TutosNav.jsx](../../src/TutosNav.jsx)) — un solo lugar para que no se desincronicen. El header de la puerta 2 (`ModeSwitch`) no la muestra: a la puerta 1 se entra por la landing.
 - La puerta **"Taller"** lleva al Chat (`/chat`) y a la lista completa de modos, labs y demos animadas. La lista vive en [taller.js](../../src/taller.js) (`MODOS` + `LABS` + `DEMOS`), compartida con los dropdowns "Modos" y "Labs" de ModeSwitch — mismo patrón que `preguntas.js`, un solo lugar para que no se desincronicen. Los emojis viven en el dato, no en la clave i18n.
 
 El puente es bidireccional:
@@ -51,7 +51,7 @@ La landing no monta el `WelcomeModal` (la landing *es* la bienvenida) ni el `Mod
 
 1. Crear el componente en `src/`.
 2. En [App.jsx](../../src/App.jsx), sumar el `if` en el inicializador del state `page` (mapea `pathname` → nombre de página) **y** el `if (page === …)` en el bloque de render condicional.
-3. Agregar la entrada en la fuente de datos de la puerta que corresponda: [taller.js](../../src/taller.js) (`MODOS`, `LABS` o `DEMOS`) si es un modo, lab o demo animada — alimenta la landing y los dropdowns "Modos"/"Labs" de [ModeSwitch.jsx](../../src/ModeSwitch.jsx) a la vez —, o [preguntas.js](../../src/preguntas.js) si es un tuto "por pregunta" para no programadores (alimenta landing, dropdown "Entender" y la nav de [Tutos.jsx](../../src/Tutos.jsx)). Links que no son ni modo ni lab ni pregunta (ej. anexos de docs) van directo en ModeSwitch.jsx.
+3. Agregar la entrada en la fuente de datos de la puerta que corresponda: [taller.js](../../src/taller.js) (`MODOS`, `LABS` o `DEMOS`) si es un modo, lab o demo animada — alimenta la landing y los dropdowns "Modos"/"Labs" de [ModeSwitch.jsx](../../src/ModeSwitch.jsx) a la vez —, o [preguntas.js](../../src/preguntas.js) si es un tuto "por pregunta" para no programadores (alimenta landing y la nav de [Tutos.jsx](../../src/Tutos.jsx)). Links que no son ni modo ni lab ni pregunta (ej. anexos de docs) van directo en ModeSwitch.jsx.
 
 No introducir `react-router`. El routing crudo es parte del material didáctico.
 

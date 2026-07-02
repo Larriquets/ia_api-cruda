@@ -150,8 +150,6 @@ export const es = {
 
   modeswitch: {
     label: 'MODO:',
-    entenderBtn: '🧭 Entender',
-    entenderTitle: 'La puerta para no programadores: recorrido guiado y tutos sin API. Entrás por tu pregunta, no por la tecnología.',
     entenderSection: 'Entrá por tu pregunta',
     modesBtn: '🎛️ Modos',
     modesTitle: 'Modos principales de la app: Chat, Editor y Loop Agéntico.',
@@ -195,8 +193,6 @@ export const es = {
     docsMain: '📚 Docs principal',
     docsMainSub: 'resumen de los 3 modos',
     annexes: 'Anexos',
-    recorridoLabel: '🧭 /recorrido',
-    recorridoSub: 'la IA para no programadores, en 6 paradas',
     comoFuncLabel: '⚙️ /como-funciona',
     comoFuncSub: 'system / context / tools en el POST',
     contextoLabel: '🧠 /contexto',
@@ -414,7 +410,6 @@ export const es = {
     ariaDocs: 'Paginas de documentacion',
     ariaDemos: 'Paginas de demos',
     docsDesc: 'que hace cada modo de la app',
-    recorridoDesc: 'la IA para no programadores, en 6 paradas',
     comoFuncDesc: 'system / context / tools en el POST',
     contextoDesc: 'vista en vivo del array messages del chat',
     provDesc: 'OpenAI vs Anthropic: donde vive el contexto',
