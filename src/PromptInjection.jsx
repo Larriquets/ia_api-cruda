@@ -8,6 +8,7 @@ import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 const PROVIDER_KEY = 'promptinj_provider'
 const TEMP_KEY = 'promptinj_temperature'
@@ -243,6 +244,8 @@ export default function PromptInjection() {
           <ModeSwitch active="prompt-injection" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/prompt-injection" />
 
       <ConfigBar>
         <label className="hdr-select">

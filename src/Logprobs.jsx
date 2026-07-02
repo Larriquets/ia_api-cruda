@@ -6,6 +6,7 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 const MODEL_KEY = 'logprobs_model'
 const TEMP_KEY = 'logprobs_temperature'
@@ -213,6 +214,8 @@ export default function Logprobs() {
           <ModeSwitch active="logprobs" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/logprobs" />
 
       <ConfigBar>
         <label className="hdr-select">

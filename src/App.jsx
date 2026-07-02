@@ -33,6 +33,13 @@ import ComoEdita from './ComoEdita.jsx'
 import ModosAgentsMd from './ModosAgentsMd.jsx'
 import ModosAgentsMdSkills from './ModosAgentsMdSkills.jsx'
 import ModosRag from './ModosRag.jsx'
+import ModosTokens from './ModosTokens.jsx'
+import ModosLogprobs from './ModosLogprobs.jsx'
+import ModosMcp from './ModosMcp.jsx'
+import ModosVentana from './ModosVentana.jsx'
+import ModosRuido from './ModosRuido.jsx'
+import ModosEspecificidad from './ModosEspecificidad.jsx'
+import ModosInjection from './ModosInjection.jsx'
 import ModosRazonamiento from './ModosRazonamiento.jsx'
 import Entrada from './Entrada.jsx'
 import Tutos from './Tutos.jsx'
@@ -166,6 +173,13 @@ export default function App() {
     if (window.location.pathname === '/demo/editor') return 'demo-editor'
     if (window.location.pathname === '/demo/loop') return 'demo-loop'
     if (window.location.pathname === '/demo/rag') return 'demo-rag'
+    if (window.location.pathname === '/demo/tokens') return 'demo-tokens'
+    if (window.location.pathname === '/demo/logprobs') return 'demo-logprobs'
+    if (window.location.pathname === '/demo/mcp') return 'demo-mcp'
+    if (window.location.pathname === '/demo/ventana-contexto') return 'demo-ventana-contexto'
+    if (window.location.pathname === '/demo/ruido') return 'demo-ruido'
+    if (window.location.pathname === '/demo/especificidad') return 'demo-especificidad'
+    if (window.location.pathname === '/demo/prompt-injection') return 'demo-prompt-injection'
     if (window.location.pathname === '/demo/razonamiento') return 'demo-razonamiento'
     if (window.location.pathname === '/demo/agents-md') return 'demo-agents-md'
     if (window.location.pathname === '/demo/agents-md-skills') return 'demo-agents-md-skills'
@@ -589,6 +603,27 @@ export default function App() {
   }
   if (page === 'demo-rag') {
     return <><WelcomeModal /><ModosRag /></>
+  }
+  if (page === 'demo-tokens') {
+    return <><WelcomeModal /><ModosTokens /></>
+  }
+  if (page === 'demo-logprobs') {
+    return <><WelcomeModal /><ModosLogprobs /></>
+  }
+  if (page === 'demo-mcp') {
+    return <><WelcomeModal /><ModosMcp /></>
+  }
+  if (page === 'demo-ventana-contexto') {
+    return <><WelcomeModal /><ModosVentana /></>
+  }
+  if (page === 'demo-ruido') {
+    return <><WelcomeModal /><ModosRuido /></>
+  }
+  if (page === 'demo-especificidad') {
+    return <><WelcomeModal /><ModosEspecificidad /></>
+  }
+  if (page === 'demo-prompt-injection') {
+    return <><WelcomeModal /><ModosInjection /></>
   }
   if (page === 'demo-razonamiento') {
     return <><WelcomeModal /><ModosRazonamiento /></>

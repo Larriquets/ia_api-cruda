@@ -10,6 +10,7 @@ import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
 import SystemEditor from './SystemEditor.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 import {
   applyFifo,
@@ -312,6 +313,8 @@ export default function VentanaContexto() {
           <ModeSwitch active="ventana-contexto" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/ventana-contexto" />
 
       <ConfigBar>
         <label className="hdr-select">

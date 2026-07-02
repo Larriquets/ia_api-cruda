@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import DocsNav from './DocsNav.jsx'
+import TutosNav from './TutosNav.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
 import SpeechReader from './SpeechReader.jsx'
 import { useT } from './i18n/useT.js'
@@ -70,7 +70,7 @@ export default function Recorrido() {
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label={t('docpage.navAria')}>
           <SpeechReader containerSelector=".docs-main" lang={lang} />
-          <DocsNav current="recorrido" />
+          <TutosNav titleKey="modeswitch.entenderSection" />
           <nav className="docs-toc" aria-label={t('docpage.pageIndexAria')}>
             <div className="docs-toc-title">{t('docpage.onThisPage')}</div>
             {TOC_ITEMS.map((item) => (

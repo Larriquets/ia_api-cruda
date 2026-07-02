@@ -77,6 +77,13 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
 | `/demo/editor` | [ModosEditor.jsx](../src/ModosEditor.jsx) | Comparador animado de los 2 modos del Editor (sin API) |
 | `/demo/loop` | [ComoEdita.jsx](../src/ComoEdita.jsx) | Demo de cómo la IA "edita código" vía `tool_use` (sin API) |
 | `/demo/rag` | [ModosRag.jsx](../src/ModosRag.jsx) | Demo animada de RAG en 4 pasos: indexar → vectorizar pregunta → ranking → POST (sin API) |
+| `/demo/tokens` | [ModosTokens.jsx](../src/ModosTokens.jsx) | Demo animada de tokens en 4 pasos: frase → piezas → IDs → la cuenta (BPE real local, sin API) |
+| `/demo/logprobs` | [ModosLogprobs.jsx](../src/ModosLogprobs.jsx) | Demo animada de la lotería del próximo token: candidatos, barras y la frase completándose (sin API) |
+| `/demo/mcp` | [ModosMcp.jsx](../src/ModosMcp.jsx) | Demo animada del intercambio JSON-RPC de MCP: initialize → tools/list → tools/call → resultado (sin API) |
+| `/demo/ventana-contexto` | [ModosVentana.jsx](../src/ModosVentana.jsx) | Demo animada del desborde de ventana: FIFO vs compaction, system fijado (sin API) |
+| `/demo/ruido` | [ModosRuido.jsx](../src/ModosRuido.jsx) | Demo animada de context rot: el mismo dato limpio vs enterrado en logs (sin API) |
+| `/demo/especificidad` | [ModosEspecificidad.jsx](../src/ModosEspecificidad.jsx) | Demo animada de pedido vago vs criterios explícitos, con checklist (sin API) |
+| `/demo/prompt-injection` | [ModosInjection.jsx](../src/ModosInjection.jsx) | Demo animada de prompt injection: el mail con orden escondida, sin y con defensa (sin API) |
 | `/demo/razonamiento` | [ModosRazonamiento.jsx](../src/ModosRazonamiento.jsx) | Demo animada: OpenAI vs Claude "pensando" — qué expone cada uno (sin API) |
 | `/demo/agents-md` | [ModosAgentsMd.jsx](../src/ModosAgentsMd.jsx) | Comparador AGENTS.md (sin API) |
 | `/demo/agents-md-skills` | [ModosAgentsMdSkills.jsx](../src/ModosAgentsMdSkills.jsx) | Comparador AGENTS.md "fat" vs skill con test (sin API) |

@@ -8785,6 +8785,65 @@ body {
   color: #64748b;
 }
 
+/* /demo/tokens: frase, piezas con ID y la cuenta. */
+.mtk-block {
+  margin-bottom: 22px;
+}
+
+.mtk-phrase {
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #e2e8f0;
+}
+
+.mtk-pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mtk-piece {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mtk-id {
+  font-family: ui-monospace, monospace;
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.mtk-bill {
+  margin-top: 8px;
+  max-width: 420px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mtk-bill-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #cbd5e1;
+  border-bottom: 1px solid #1e293b;
+}
+
+.mtk-bill-total {
+  border-bottom: none;
+  background: rgba(59, 130, 246, 0.08);
+  color: #e2e8f0;
+}
+
 /* Escalera al final de cada tuto: demo animada + lab real. */
 .tuto-next-links {
   display: flex;
@@ -8884,6 +8943,7 @@ body {
 .demo-backlink {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   padding: 5px 20px;
   background: rgba(124, 58, 237, 0.08);

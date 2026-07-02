@@ -12,7 +12,7 @@ Mismo patrón que `/como-funciona`: el andamiaje (header + TOC con scroll-spy v�
 
 Las 6 paradas: predictor de tokens → tokens → memoria (carta nueva) → ventana de contexto → especificidad → ruido, cada una con su CTA a `/logprobs`, `/tokens`, `/chat` (modo Crudo), `/ventana-contexto`, `/especificidad`, `/ruido`.
 
-Navegación: link en el dropdown **Docs** de [ModeSwitch.jsx](../../src/ModeSwitch.jsx) (primer anexo) y en [DocsNav.jsx](../../src/DocsNav.jsx).
+Navegación: link en el dropdown **Docs** de [ModeSwitch.jsx](../../src/ModeSwitch.jsx) (primer anexo) y en [DocsNav.jsx](../../src/DocsNav.jsx). El sidebar del recorrido muestra [TutosNav.jsx](../../src/TutosNav.jsx) (los tutos de `PREGUNTAS`, la misma nav lateral que los tutos), no el `DocsNav` de los anexos técnicos.
 
 ### Mini-demos inline
 
@@ -36,7 +36,7 @@ La capa más accesible de la puerta 1: **una página por pregunta humana** de `P
 | Ruta | Pregunta | Mini-demo | Escalera (demo → lab) |
 |---|---|---|---|
 | `/tutos/memoria` | ¿Se acuerda de lo que le digo? | `DemoMemoria` (reusada del recorrido) | `/demo/chat` → `/chat` |
-| `/tutos/tokens` | ¿Qué es un token? | `DemoTokens` (reusada del recorrido) | — → `/tokens` |
+| `/tutos/tokens` | ¿Qué es un token? | `DemoTokens` (reusada del recorrido) | `/demo/tokens` → `/tokens` |
 | `/tutos/fuentes` | ¿De dónde saca lo que responde? | `DemoFuentes` (nueva) | `/demo/rag` → `/rag` |
 | `/tutos/piensa` | ¿"Piensa" antes de responder? | `DemoPiensa` (nueva) | `/demo/razonamiento` → `/razonamiento` |
 | `/tutos/agentes` | ¿Cómo hace cosas? | `DemoAgente` (nueva) | `/demo/loop` → `/loop-agentico` |
@@ -63,6 +63,13 @@ Comparadores animados **sin API ni key**: simulan el intercambio para que un no 
 | `/demo/editor` | [ModosEditor.jsx](../../src/ModosEditor.jsx) | Los 2 modos del Editor |
 | `/demo/loop` | [ComoEdita.jsx](../../src/ComoEdita.jsx) | Cómo la IA "edita código" vía `tool_use` |
 | `/demo/rag` | [ModosRag.jsx](../../src/ModosRag.jsx) | RAG en 4 pasos: indexar → vectorizar pregunta → ranking → POST |
+| `/demo/tokens` | [ModosTokens.jsx](../../src/ModosTokens.jsx) | Tokens en 4 pasos: frase → piezas → IDs → la cuenta (tokenización real con el BPE local del lab, sin API) |
+| `/demo/logprobs` | [ModosLogprobs.jsx](../../src/ModosLogprobs.jsx) | La lotería del próximo token: candidatos con barras, elección y la frase completándose |
+| `/demo/mcp` | [ModosMcp.jsx](../../src/ModosMcp.jsx) | El intercambio JSON-RPC completo: initialize → tools/list → tools/call → resultado |
+| `/demo/ventana-contexto` | [ModosVentana.jsx](../../src/ModosVentana.jsx) | El desborde de la ventana y las dos salidas: podar (FIFO) vs resumir (compaction) |
+| `/demo/ruido` | [ModosRuido.jsx](../../src/ModosRuido.jsx) | Context rot: el mismo dato, limpio vs enterrado en logs, y las dos respuestas |
+| `/demo/especificidad` | [ModosEspecificidad.jsx](../../src/ModosEspecificidad.jsx) | Pedido vago vs criterios explícitos, evaluados con checklist |
+| `/demo/prompt-injection` | [ModosInjection.jsx](../../src/ModosInjection.jsx) | El mail con orden escondida: ataque sin defensa y defensa en el system |
 | `/demo/razonamiento` | [ModosRazonamiento.jsx](../../src/ModosRazonamiento.jsx) | OpenAI vs Claude "pensando" (qué expone cada uno) |
 | `/demo/agents-md` | [ModosAgentsMd.jsx](../../src/ModosAgentsMd.jsx) | Con y sin AGENTS.md |
 | `/demo/agents-md-skills` | [ModosAgentsMdSkills.jsx](../../src/ModosAgentsMdSkills.jsx) | AGENTS.md "fat" vs skill con test |

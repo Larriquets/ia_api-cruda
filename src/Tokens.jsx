@@ -11,6 +11,7 @@ import {
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 const TEXT_KEY = 'tokens_text'
 const ENCODING_KEY = 'tokens_encoding'
@@ -160,6 +161,8 @@ export default function Tokens() {
           <ModeSwitch active="tokens" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/tokens" />
 
       <ConfigBar>
         <label className="hdr-select">

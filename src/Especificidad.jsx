@@ -6,6 +6,7 @@ import { runLmStudioAgent } from './lmstudio-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 // Lab de especificidad del pedido: corre la MISMA tarea agéntica dos veces —
 // una con un pedido vago ("agregale que se pueda sacar plata") y otra con un
@@ -235,6 +236,8 @@ export default function Especificidad() {
           <ModeSwitch active="especificidad" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/especificidad" />
 
       <ConfigBar>
         <label className="hdr-select">

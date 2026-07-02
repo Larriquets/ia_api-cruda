@@ -1,5 +1,6 @@
 import LanguageToggle from './LanguageToggle.jsx'
-import { PREGUNTAS } from './preguntas.js'
+import SpeechReader from './SpeechReader.jsx'
+import TutosNav from './TutosNav.jsx'
 import { useT } from './i18n/useT.js'
 import { TutoMemoriaEs, TutoMemoriaEn } from './content/tutos/TutoMemoria.jsx'
 import { TutoTokensEs, TutoTokensEn } from './content/tutos/TutoTokens.jsx'
@@ -25,7 +26,7 @@ const TUTOS = {
     qKey: 'entrada.qTokensLabel',
     Es: TutoTokensEs,
     En: TutoTokensEn,
-    demoHref: null,
+    demoHref: '/demo/tokens',
     labHref: '/tokens',
   },
   fuentes: {
@@ -79,15 +80,8 @@ export default function Tutos({ tema }) {
 
       <div className="criollo-content docs-layout">
         <aside className="docs-sidebar" aria-label={t('tutos.navAria')}>
-          <nav className="docs-nav" aria-label={t('tutos.navAria')}>
-            <div className="docs-nav-title">{t('tutos.navTitle')}</div>
-            {PREGUNTAS.filter((q) => q.href !== current).map((q) => (
-              <a key={q.href} href={q.href} className="docs-nav-link">
-                <span className="docs-nav-emoji">{q.emoji}</span>
-                <span className="docs-nav-desc">{t(q.labelKey)}</span>
-              </a>
-            ))}
-          </nav>
+          <SpeechReader containerSelector=".docs-main" lang={lang} />
+          <TutosNav current={current} />
         </aside>
 
         <div className="docs-main">

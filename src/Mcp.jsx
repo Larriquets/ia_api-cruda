@@ -5,6 +5,7 @@ import { runMcpAgent, MCP_AGENT_DEFAULT_SYSTEM } from './mcp-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 const HOST_KEY = 'mcp_host'
 const LOGS_KEY = 'mcp_logs'
@@ -230,6 +231,8 @@ export default function Mcp() {
           <ModeSwitch active="mcp" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/mcp" />
 
       <ConfigBar>
         <label className="hdr-select mcp-host-field">
