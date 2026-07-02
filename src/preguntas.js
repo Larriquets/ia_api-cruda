@@ -7,6 +7,7 @@
 export const PREGUNTAS = [
   { emoji: '✉️', href: '/tutos/memoria', labelKey: 'entrada.qMemoriaLabel', subKey: 'entrada.qMemoriaSub' },
   { emoji: '🧩', href: '/tutos/tokens', labelKey: 'entrada.qTokensLabel', subKey: 'entrada.qTokensSub' },
+  { emoji: '🔮', href: '/tutos/inventa', labelKey: 'entrada.qInventaLabel', subKey: 'entrada.qInventaSub' },
   { emoji: '📚', href: '/tutos/fuentes', labelKey: 'entrada.qRagLabel', subKey: 'entrada.qRagSub' },
   { emoji: '🧠', href: '/tutos/piensa', labelKey: 'entrada.qPiensaLabel', subKey: 'entrada.qPiensaSub' },
   { emoji: '🤖', href: '/tutos/agentes', labelKey: 'entrada.qHaceLabel', subKey: 'entrada.qHaceSub' },

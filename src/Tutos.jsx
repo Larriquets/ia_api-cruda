@@ -2,8 +2,10 @@ import LanguageToggle from './LanguageToggle.jsx'
 import SpeechReader from './SpeechReader.jsx'
 import TutosNav from './TutosNav.jsx'
 import { useT } from './i18n/useT.js'
+import { PREGUNTAS } from './preguntas.js'
 import { TutoMemoriaEs, TutoMemoriaEn } from './content/tutos/TutoMemoria.jsx'
 import { TutoTokensEs, TutoTokensEn } from './content/tutos/TutoTokens.jsx'
+import { TutoInventaEs, TutoInventaEn } from './content/tutos/TutoInventa.jsx'
 import { TutoFuentesEs, TutoFuentesEn } from './content/tutos/TutoFuentes.jsx'
 import { TutoPiensaEs, TutoPiensaEn } from './content/tutos/TutoPiensa.jsx'
 import { TutoAgentesEs, TutoAgentesEn } from './content/tutos/TutoAgentes.jsx'
@@ -28,6 +30,13 @@ const TUTOS = {
     En: TutoTokensEn,
     demoHref: '/demo/tokens',
     labHref: '/tokens',
+  },
+  inventa: {
+    qKey: 'entrada.qInventaLabel',
+    Es: TutoInventaEs,
+    En: TutoInventaEn,
+    demoHref: '/demo/logprobs',
+    labHref: '/logprobs',
   },
   fuentes: {
     qKey: 'entrada.qRagLabel',
@@ -64,6 +73,11 @@ export default function Tutos({ tema }) {
   const tuto = TUTOS[tema]
   const Body = lang === 'en' ? tuto.En : tuto.Es
   const current = `/tutos/${tema}`
+
+  // Pager horizontal: la puerta 1 como camino, en el orden pedagógico de PREGUNTAS.
+  const idx = PREGUNTAS.findIndex((q) => q.href === current)
+  const prev = idx > 0 ? PREGUNTAS[idx - 1] : null
+  const next = idx >= 0 && idx < PREGUNTAS.length - 1 ? PREGUNTAS[idx + 1] : null
 
   return (
     <div className="criollo">
@@ -104,6 +118,21 @@ export default function Tutos({ tema }) {
               </a>
             </div>
           </section>
+
+          <nav className="tuto-pager" aria-label={t('tutos.pagerAria')}>
+            {prev ? (
+              <a href={prev.href} className="tuto-pager-link tuto-pager-prev">
+                <span className="tuto-pager-kicker">← {t('tutos.pagerPrev')}</span>
+                <span className="tuto-pager-q">{prev.emoji} {t(prev.labelKey)}</span>
+              </a>
+            ) : <span />}
+            {next && (
+              <a href={next.href} className="tuto-pager-link tuto-pager-next">
+                <span className="tuto-pager-kicker">{t('tutos.pagerNext')} →</span>
+                <span className="tuto-pager-q">{next.emoji} {t(next.labelKey)}</span>
+              </a>
+            )}
+          </nav>
         </div>
       </div>
     </div>

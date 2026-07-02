@@ -165,6 +165,7 @@ export default function App() {
     if (window.location.pathname === '/recorrido') return 'recorrido'
     if (window.location.pathname === '/tutos/memoria') return 'tuto-memoria'
     if (window.location.pathname === '/tutos/tokens') return 'tuto-tokens'
+    if (window.location.pathname === '/tutos/inventa') return 'tuto-inventa'
     if (window.location.pathname === '/tutos/fuentes') return 'tuto-fuentes'
     if (window.location.pathname === '/tutos/piensa') return 'tuto-piensa'
     if (window.location.pathname === '/tutos/agentes') return 'tuto-agentes'
@@ -579,6 +580,9 @@ export default function App() {
   }
   if (page === 'tuto-tokens') {
     return <><WelcomeModal /><Tutos tema="tokens" /></>
+  }
+  if (page === 'tuto-inventa') {
+    return <><WelcomeModal /><Tutos tema="inventa" /></>
   }
   if (page === 'tuto-fuentes') {
     return <><WelcomeModal /><Tutos tema="fuentes" /></>

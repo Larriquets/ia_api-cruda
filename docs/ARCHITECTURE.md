@@ -53,7 +53,7 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
 | Ruta | Componente | Modo |
 |---|---|---|
 | `/` | [Entrada.jsx](../src/Entrada.jsx) | Landing de dos puertas: "Entender" (recorrido + tutos por pregunta, sin API) vs "Taller" (modos, labs y demos) |
-| `/tutos/{memoria,tokens,fuentes,piensa,agentes,reglas}` | [Tutos.jsx](../src/Tutos.jsx) | Tutos para no programadores: una página por pregunta humana, prosa + mini-demo sin API + escalera a demo y lab |
+| `/tutos/{memoria,tokens,inventa,fuentes,piensa,agentes,reglas}` | [Tutos.jsx](../src/Tutos.jsx) | Tutos para no programadores: una página por pregunta humana, prosa + mini-demo sin API + escalera a demo y lab |
 | `/chat` | [App.jsx](../src/App.jsx) | Chat (3 modos de contexto + system editable + temperatura) |
 | `/editor` | [Editor.jsx](../src/Editor.jsx) | Código + instrucción → respuesta |
 | `/loop-agentico` | [LoopAgentico.jsx](../src/LoopAgentico.jsx) | Loop agéntico con tool-use |

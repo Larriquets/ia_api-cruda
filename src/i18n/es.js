@@ -219,6 +219,8 @@ export const es = {
     qMemoriaSub: 'no: mirá qué viaja de verdad en cada mensaje',
     qTokensLabel: '¿Qué es un token y por qué te lo cobran?',
     qTokensSub: 'pegá tu texto y velo hecho pedacitos',
+    qInventaLabel: '¿Por qué inventa cosas?',
+    qInventaSub: 'no miente: completa con lo que suena bien',
     qRagLabel: '¿De dónde saca lo que responde?',
     qRagSub: 'buscar antes de preguntar, animado en 4 pasos',
     qPiensaLabel: '¿"Piensa" antes de responder?',
@@ -245,6 +247,9 @@ export const es = {
     nextTitle: '🪜 ¿Te quedó picando? Bajá un nivel',
     nextDemo: 'Ver la demo animada (sin API)',
     nextLab: 'Probarlo de verdad en el taller',
+    pagerAria: 'Pregunta anterior y siguiente',
+    pagerPrev: 'Pregunta anterior',
+    pagerNext: 'Siguiente pregunta',
   },
 
   demobacklink: {

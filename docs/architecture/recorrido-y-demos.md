@@ -37,12 +37,15 @@ La capa más accesible de la puerta 1: **una página por pregunta humana** de `P
 |---|---|---|---|
 | `/tutos/memoria` | ¿Se acuerda de lo que le digo? | `DemoMemoria` (reusada del recorrido) | `/demo/chat` → `/chat` |
 | `/tutos/tokens` | ¿Qué es un token? | `DemoTokens` (reusada del recorrido) | `/demo/tokens` → `/tokens` |
+| `/tutos/inventa` | ¿Por qué inventa cosas? | `DemoPredictor` (reusada del recorrido) | `/demo/logprobs` → `/logprobs` |
 | `/tutos/fuentes` | ¿De dónde saca lo que responde? | `DemoFuentes` (nueva) | `/demo/rag` → `/rag` |
 | `/tutos/piensa` | ¿"Piensa" antes de responder? | `DemoPiensa` (nueva) | `/demo/razonamiento` → `/razonamiento` |
 | `/tutos/agentes` | ¿Cómo hace cosas? | `DemoAgente` (nueva) | `/demo/loop` → `/loop-agentico` |
 | `/tutos/reglas` | ¿Cómo se le dan reglas? | `DemoReglas` (nueva) | `/demo/agents-md` → `/agents-md` |
 
 Las mini-demos nuevas viven en [src/content/tutos/](../../src/content/tutos/) y reusan las clases CSS `recorrido-*` (mismo lenguaje visual que las del recorrido). No persisten nada en `localStorage`.
+
+Al pie de cada tuto hay un **pager anterior/siguiente** (`.tuto-pager` en [Tutos.jsx](../../src/Tutos.jsx)) que sigue el orden de `PREGUNTAS`: la puerta 1 se puede recorrer como camino, no solo como menú. La escalera hacia abajo (demo → lab) sigue estando justo antes.
 
 ## Landing de dos puertas (`/`)
 

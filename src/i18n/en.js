@@ -218,6 +218,8 @@ export const en = {
     qMemoriaSub: 'no: see what actually travels with every message',
     qTokensLabel: "What's a token and why am I charged for it?",
     qTokensSub: 'paste your text and watch it get chopped up',
+    qInventaLabel: 'Why does it make things up?',
+    qInventaSub: "it doesn't lie: it completes with what sounds right",
     qRagLabel: 'Where does it get its answers from?',
     qRagSub: 'search before asking, animated in 4 steps',
     qPiensaLabel: 'Does it "think" before answering?',
@@ -244,6 +246,9 @@ export const en = {
     nextTitle: '🪜 Hooked? Go one level down',
     nextDemo: 'See the animated demo (no API)',
     nextLab: 'Try it for real in the workshop',
+    pagerAria: 'Previous and next question',
+    pagerPrev: 'Previous question',
+    pagerNext: 'Next question',
   },
 
   demobacklink: {
