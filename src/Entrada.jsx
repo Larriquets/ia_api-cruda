@@ -1,4 +1,4 @@
-import Brand from './Brand.jsx'
+import BrandHome from './BrandHome.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
 import { PREGUNTAS } from './preguntas.js'
 import { MODOS, LABS, DEMOS } from './taller.js'
@@ -32,12 +32,7 @@ export default function Entrada() {
     <div className="entrada">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label={t('entrada.brandHome')}>
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <Brand />
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">{t('entrada.subtitle')}</span>
         </h1>
         <div className="header-actions">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Brand from './Brand.jsx'
+import BrandHome from './BrandHome.jsx'
 import {
   sendReasoningMessage,
   REASONING_MODELS,
@@ -422,12 +422,7 @@ export default function Razonamiento() {
       <WelcomeModal />
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <Brand />
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Razonamiento</span></span>
         </h1>
         <div className="header-actions">

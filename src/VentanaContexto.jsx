@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Brand from './Brand.jsx'
+import BrandHome from './BrandHome.jsx'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
@@ -301,12 +301,7 @@ export default function VentanaContexto() {
       <WelcomeModal />
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <Brand />
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">// experimento · <span className="brand-mode">🪟 Ventana de contexto</span></span>
         </h1>
         <div className="header-actions">

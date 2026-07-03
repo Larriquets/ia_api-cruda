@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import Brand from './Brand.jsx'
+import BrandHome from './BrandHome.jsx'
 import MonacoEditor from '@monaco-editor/react'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
@@ -338,12 +338,7 @@ export default function Editor({ onBack }) {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label={L('Ir al inicio', 'Go to home')}>
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <Brand />
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">{t('app.subtitlePre')}<span className="brand-mode">Editor</span>{t('app.subtitlePost')}</span>
         </h1>
         <div className="header-actions">

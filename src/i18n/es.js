@@ -5,6 +5,7 @@
 export const es = {
   app: {
     brand: 'La IA Cruda',
+    brandHome: 'Ir al inicio',
     subtitlePre: '// todo es contexto · modo ',
     subtitlePost: '',
     modeChat: 'Chat',
@@ -149,7 +150,6 @@ export const es = {
   },
 
   modeswitch: {
-    label: 'MODO:',
     entenderSection: 'Entrá por tu pregunta',
     modesBtn: '🎛️ Modos',
     modesTitle: 'Modos principales de la app: Chat, Editor y Loop Agéntico.',
@@ -202,7 +202,6 @@ export const es = {
   },
 
   entrada: {
-    brandHome: 'Ir al inicio',
     subtitle: '// elegí tu puerta',
     heroTitle: '¿Qué pasa de verdad cuando le hablás a una IA?',
     heroSub: 'Acá no hay magia: hay texto viajando en un POST. Esta app te lo muestra para que lo veas con tus propios ojos — elegí por dónde entrar.',
@@ -248,6 +247,12 @@ export const es = {
     pagerNext: 'Siguiente pregunta',
   },
 
+  recorrido: {
+    ctaAria: 'Seguí explorando esta parada',
+    ctaDemo: 'Miralo animado (sin API)',
+    ctaLab: 'Probalo de verdad en el taller',
+  },
+
   demobacklink: {
     text: '¿Mucho JSON? Esta página tiene una versión guiada y animada, sin API:',
     link: 'ver la demo',
@@ -259,7 +264,6 @@ export const es = {
   },
 
   rag: {
-    brandHome: 'Ir al inicio',
     brandTag: 'experimento',
     providerLabel: 'Proveedor',
     providerTitle: 'Solo OpenAI: Anthropic no tiene endpoint de embeddings (su doc recomienda proveedores externos como Voyage). Otra decisión de producto.',
@@ -353,7 +357,7 @@ export const es = {
   welcome: {
     subtitle: '// todo es contexto — request, response y contexto, todo crudo',
     close: 'Cerrar',
-    intro: 'Esta app no esconde nada: ves el JSON que sale, el JSON que vuelve, y cómo se acumula el contexto entre llamadas. Tiene 4 modos — cada uno muestra una capa distinta de cómo se trabaja con la API de un LLM. Recorrelos en orden.',
+    intro: 'Esta app no esconde nada: ves el JSON que sale, el JSON que vuelve, y cómo se acumula el contexto entre llamadas. Tiene 5 modos — cada uno muestra una capa distinta de cómo se trabaja con la API de un LLM. Recorrelos en orden.',
     dontShow: 'No volver a mostrar',
     cta: 'Empezar →',
     chatTitle: 'Chat',
@@ -365,7 +369,7 @@ export const es = {
     agentsTitle: 'Agente + reglas',
     agentsDesc: 'Agente con un archivo AGENTS.md inyectado en el system prompt: instrucciones persistentes que sigue siempre (estilo, restricciones, convenciones del proyecto).',
     skillsTitle: 'Agente + skills',
-    skillsDesc: 'Sub-tema del modo anterior. Una vez que entendés cómo funciona AGENTS.md, probá los Skills: instrucciones cargadas bajo demanda + un test determinístico que la IA corre después de editar.',
+    skillsDesc: 'El mismo agente con AGENTS.md, pero con instrucciones cargadas bajo demanda (load_skill) + un test determinístico (run_skill_test) que la IA corre después de editar.',
   },
 
   lmstudio: {

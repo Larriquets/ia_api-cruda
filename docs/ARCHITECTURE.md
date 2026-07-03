@@ -72,7 +72,7 @@ Este documento es el **índice y mapa general**. El detalle de cada área vive e
 | `/proveedores` | [Proveedores.jsx](../src/Proveedores.jsx) | Comparación OpenAI vs Claude |
 | `/docs` | [Docs.jsx](../src/Docs.jsx) | Material de clase |
 | `/como-funciona` | [ComoFunciona.jsx](../src/ComoFunciona.jsx) | Explicación guiada: las tres piezas de cada POST (system / context / user) |
-| `/recorrido` | [Recorrido.jsx](../src/Recorrido.jsx) | Recorrido guiado para NO programadores: 6 paradas con metáfora + mini-demo inline + CTA "probalo de verdad" a cada lab |
+| `/recorrido` | [Recorrido.jsx](../src/Recorrido.jsx) | Recorrido guiado para NO programadores: 7 paradas con metáfora + mini-demo inline + CTA "probalo de verdad" a cada lab |
 | `/demo/chat` | [ModosChat.jsx](../src/ModosChat.jsx) | Comparador animado de los 3 modos del Chat (sin API) |
 | `/demo/editor` | [ModosEditor.jsx](../src/ModosEditor.jsx) | Comparador animado de los 2 modos del Editor (sin API) |
 | `/demo/loop` | [ComoEdita.jsx](../src/ComoEdita.jsx) | Demo de cómo la IA "edita código" vía `tool_use` (sin API) |

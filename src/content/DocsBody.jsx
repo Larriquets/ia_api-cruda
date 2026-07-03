@@ -31,7 +31,7 @@ export function DocsBodyEs() {
             </p>
           </div>
           <p>
-            <b>La finalidad de esta app, en sus cuatro etapas, es esa.</b> Cada modo le saca
+            <b>La finalidad de esta app, en sus cinco etapas, es esa.</b> Cada modo le saca
             una capa más al producto comercial para que veas el POST que está abajo:
           </p>
           <ol>
@@ -1518,7 +1518,7 @@ export function DocsBodyEn() {
           </p>
         </div>
         <p>
-          <b>That's the purpose of this app, across its four stages.</b> Each mode peels
+          <b>That's the purpose of this app, across its five stages.</b> Each mode peels
           one more layer off the commercial product so you see the POST underneath:
         </p>
         <ol>

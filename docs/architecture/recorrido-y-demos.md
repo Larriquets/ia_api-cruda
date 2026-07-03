@@ -2,15 +2,17 @@
 
 > Parte de [docs/ARCHITECTURE.md](../ARCHITECTURE.md). Acá vive el detalle de la capa "Entender": el recorrido guiado, los tutos `/tutos/*`, las mini-demos inline, las demos animadas `/demo/*` (hoy colgadas de la puerta 2) y el lector TTS.
 
+**Identidad visual**: la puerta 1 se distingue con el verde `#22c55e` (el mismo de la puerta "Entender" en la landing). Se aplica con la clase `.puerta1` en el root de [Recorrido.jsx](../../src/Recorrido.jsx) y [Tutos.jsx](../../src/Tutos.jsx) + un bloque de overrides al final de [styles.css](../../src/styles.css): header, TOC, nav lateral, CTAs de la escalera, pager y mini-demos viran del azul genérico al verde. Los azules semánticos no se tocan (carta `user`, links de prosa celestes). Página nueva de la puerta 1 → sumarle `.puerta1` al root y hereda el acento.
+
 ## Recorrido (`/recorrido`)
 
-Página narrada pensada como **puerta de entrada para profesionales no técnicos** que ya usan IA en el trabajo y quieren intuición sobre por qué falla, alucina o "se olvida". No es una versión simplificada de la app: es la **misma verdad** contada con metáforas, y cada parada termina con un botón "probalo de verdad" ([TryModeCTA.jsx](../../src/TryModeCTA.jsx)) que lleva al lab real.
+Página narrada pensada como **puerta de entrada para profesionales no técnicos** que ya usan IA en el trabajo y quieren intuición sobre por qué falla, alucina o "se olvida". No es una versión simplificada de la app: es la **misma verdad** contada con metáforas, y cada parada termina con la misma escalera de dos escalones que los tutos (`ParadaCTA` en [RecorridoBody.jsx](../../src/content/RecorridoBody.jsx), clases `.tuto-next-links`): 🎬 la demo animada sin API y 🔬 el lab real. Copy de la escalera vía namespace `recorrido.*` del i18n.
 
 ### Estructura
 
 Mismo patrón que `/como-funciona`: el andamiaje (header + TOC con scroll-spy vía `IntersectionObserver`) vive en [Recorrido.jsx](../../src/Recorrido.jsx); la prosa vive en **módulos de contenido por idioma** [content/RecorridoBody.jsx](../../src/content/RecorridoBody.jsx) (`RecorridoBodyEs` / `RecorridoBodyEn`), elegidos por `lang`. Los `id` de sección son anclas internas, **idénticas en ambos idiomas**.
 
-Las 6 paradas: predictor de tokens → tokens → memoria (carta nueva) → ventana de contexto → especificidad → ruido, cada una con su CTA a `/logprobs`, `/tokens`, `/chat` (modo Crudo), `/ventana-contexto`, `/especificidad`, `/ruido`.
+Las 7 paradas: predictor de tokens → temperatura (la perilla del azar) → tokens → memoria (carta nueva) → ventana de contexto → especificidad → ruido, cada una con su escalera demo → lab: `/demo/logprobs` → `/logprobs` (predictor y temperatura comparten escalera: el lab de logprobs tiene el `TemperatureControl`), `/demo/tokens` → `/tokens`, `/demo/chat` → `/chat` (modo Crudo), `/demo/ventana-contexto` → `/ventana-contexto`, `/demo/especificidad` → `/especificidad`, `/demo/ruido` → `/ruido`. Después de las paradas hay una **yapa de seguridad** (`#seguridad`: confidencialidad de lo que se pega + prompt injection, con link a `/demo/prompt-injection`) y el cierre "Qué llevarte" (`#llevar`), que deriva a los tutos que el recorrido no cubre (`/tutos/fuentes`, `/tutos/piensa`, `/tutos/agentes`, `/tutos/reglas`) y, como salida secundaria, a `/como-funciona`.
 
 Navegación: se llega desde la puerta "Entender" de la landing (`/`). No aparece en el header de la puerta 2 (`ModeSwitch`) ni en [DocsNav.jsx](../../src/DocsNav.jsx): la puerta 1 tiene su propia nav. El sidebar del recorrido muestra [TutosNav.jsx](../../src/TutosNav.jsx) (los tutos de `PREGUNTAS`, la misma nav lateral que los tutos), no el `DocsNav` de los anexos técnicos.
 
@@ -21,6 +23,7 @@ Cada parada del recorrido embebe una **mini-demo interactiva sin API** que vive 
 | Componente | Parada | Qué muestra |
 |---|---|---|
 | `DemoPredictor.jsx` | Predictor de tokens | La próxima palabra elegida por probabilidad |
+| `DemoTemperatura.jsx` | Temperatura | La perilla frío/normal/caliente afilando o achatando la lotería, con sorteo real (`Math.random`) |
 | `DemoTokens.jsx` | Tokens | Texto partiéndose en piezas |
 | `DemoMemoria.jsx` | Memoria | Cada request es una carta nueva |
 | `DemoVentana.jsx` | Ventana de contexto | Mensajes que quedan afuera al podar |

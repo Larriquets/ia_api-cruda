@@ -19,16 +19,17 @@ export function ContextoBodyEs({ messages, totalTokens, updatedAt, autoRefresh, 
           existe para el modelo.
         </p>
         <p>
-          Por eso esta app tiene <b>cuatro modos</b> en el menú principal. No son cuatro
-          features distintas: son <b>cuatro ángulos del mismo problema</b>. Cada uno te
+          Por eso esta app tiene <b>cinco modos</b> en el menú principal. No son cinco
+          features distintas: son <b>cinco ángulos del mismo problema</b>. Cada uno te
           muestra cómo el contexto se construye, crece, se inyecta o se ensucia — y cómo
           eso determina la respuesta.
         </p>
         <div className="criollo-quote">
-{`Chat            → el contexto como historial conversacional
-Editor          → el contexto como payload mínimo (código + instrucción)
-Loop Agéntico   → el contexto que crece solo (tool_results acumulados)
-AGENTS.md       → el contexto como instrucción inyectada en system`}
+{`Chat               → el contexto como historial conversacional
+Editor             → el contexto como payload mínimo (código + instrucción)
+Loop Agéntico      → el contexto que crece solo (tool_results acumulados)
+AGENTS.md          → el contexto como instrucción inyectada en system
+AGENTS.md + skills → el contexto inyectado, pero cargado on-demand (no todo de entrada)`}
         </div>
         <p>
           Si entendés cómo cada modo arma su <code>messages[]</code>, entendés la API.
@@ -304,13 +305,14 @@ AGENTS.md       → el contexto como instrucción inyectada en system`}
       <section className="criollo-section" id="conclusion">
         <h2>Conclusión</h2>
         <p>
-          Los cuatro modos de esta app cuentan la misma historia desde cuatro ángulos:
+          Los cinco modos de esta app cuentan la misma historia desde cinco ángulos:
         </p>
         <ul>
           <li><b>Chat</b> — el contexto crece turno a turno y vos lo ves.</li>
           <li><b>Editor</b> — el contexto es lo que pegás en el payload, no hace falta una conversación.</li>
           <li><b>Loop Agéntico</b> — el contexto crece solo cuando hay tools; eventualmente se ensucia y la performance cae.</li>
           <li><b>AGENTS.md</b> — el contexto del <code>system</code> redefine al agente sin tocar el modelo.</li>
+          <li><b>AGENTS.md + skills</b> — el contexto se carga on-demand vía tools (<code>load_skill</code>), no de entrada.</li>
         </ul>
         <p>
           Distintos flujos, mismo principio: <b>el modelo no sabe nada que no esté en el
@@ -343,16 +345,17 @@ export function ContextoBodyEn({ messages, totalTokens, updatedAt, autoRefresh, 
           exist for the model.
         </p>
         <p>
-          That's why this app has <b>four modes</b> in the main menu. They're not four
-          different features: they're <b>four angles on the same problem</b>. Each one
+          That's why this app has <b>five modes</b> in the main menu. They're not five
+          different features: they're <b>five angles on the same problem</b>. Each one
           shows you how context is built, grows, gets injected or gets polluted — and how
           that determines the answer.
         </p>
         <div className="criollo-quote">
-{`Chat            → context as conversational history
-Editor          → context as minimal payload (code + instruction)
-Agentic Loop    → context that grows on its own (accumulated tool_results)
-AGENTS.md       → context as an instruction injected into system`}
+{`Chat               → context as conversational history
+Editor             → context as minimal payload (code + instruction)
+Agentic Loop       → context that grows on its own (accumulated tool_results)
+AGENTS.md          → context as an instruction injected into system
+AGENTS.md + skills → injected context, but loaded on-demand (not all upfront)`}
         </div>
         <p>
           If you understand how each mode builds its <code>messages[]</code>, you understand the API.
@@ -627,13 +630,14 @@ AGENTS.md       → context as an instruction injected into system`}
       <section className="criollo-section" id="conclusion">
         <h2>Conclusion</h2>
         <p>
-          The app's four modes tell the same story from four angles:
+          The app's five modes tell the same story from five angles:
         </p>
         <ul>
           <li><b>Chat</b> — context grows turn by turn and you see it.</li>
           <li><b>Editor</b> — context is what you paste into the payload, no conversation needed.</li>
           <li><b>Agentic Loop</b> — context grows on its own when there are tools; eventually it gets polluted and performance drops.</li>
           <li><b>AGENTS.md</b> — the <code>system</code> context redefines the agent without touching the model.</li>
+          <li><b>AGENTS.md + skills</b> — context loads on-demand via tools (<code>load_skill</code>), not upfront.</li>
         </ul>
         <p>
           Different flows, same principle: <b>the model knows nothing that isn't in the

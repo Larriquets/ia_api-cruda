@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Brand from './Brand.jsx'
+import BrandHome from './BrandHome.jsx'
 import {
   sendChatMessage,
   sendResponseMessage,
@@ -644,12 +644,7 @@ export default function App() {
       <WelcomeModal />
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <Brand />
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">{t('app.subtitlePre')}<span className="brand-mode">{t('app.modeChat')}</span>{t('app.subtitlePost')}</span>
         </h1>
         <div className="header-actions">

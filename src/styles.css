@@ -53,6 +53,7 @@ a:where(:link, :visited):hover {
 .brand-home {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   text-decoration: none;
   color: inherit;
 }
@@ -66,7 +67,7 @@ a:where(:link, :visited):hover {
   transition: filter 220ms ease;
 }
 
-.brand-logo:hover {
+.brand-home:hover .brand-logo {
   filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.55));
 }
 
@@ -336,34 +337,6 @@ a:where(:link, :visited):hover {
   font-size: 12px;
   color: #94a3b8;
   line-height: 1.5;
-}
-
-.welcome-substeps {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  border-left: 2px solid #334155;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.welcome-substep {
-  display: flex;
-  gap: 8px;
-  padding: 4px 0 4px 10px;
-  font-size: 12px;
-  color: #cbd5e1;
-}
-
-.welcome-substep b {
-  color: #e2e8f0;
-}
-
-.welcome-substep-emoji {
-  flex-shrink: 0;
-  font-size: 14px;
-  line-height: 1.4;
 }
 
 .welcome-footer {
@@ -2088,17 +2061,6 @@ a:where(:link, :visited):hover {
   padding: 3px;
   gap: 2px;
   align-items: center;
-}
-
-/* Label "MODO:" antes de los tabs. Pedagógico: deja explícito que los
-   tabs son variantes del mismo concepto (modo de interacción con la API). */
-.app-mode-switch-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
-  padding: 0 8px 0 6px;
-  user-select: none;
 }
 
 /* Separador entre los modos principales y el botón Docs.
@@ -4281,13 +4243,6 @@ a:where(:link, :visited):hover {
     flex-wrap: wrap;
     overflow: visible;
     align-items: stretch;
-  }
-
-  .app-mode-switch-label {
-    flex: 1 0 100%;
-    display: flex;
-    align-items: center;
-    padding: 2px 6px 4px;
   }
 
   .app-mode-btn {
@@ -8168,6 +8123,24 @@ a:where(:link, :visited):hover {
 }
 .recorrido-desk-label { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
 
+.recorrido-temp-draws {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0;
+}
+.recorrido-temp-draws-label { font-size: 12px; color: #94a3b8; }
+.recorrido-temp-draw {
+  padding: 3px 10px;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.recorrido-temp-draw.is-last { border-color: #60a5fa; color: #bfdbfe; background: rgba(59, 130, 246, 0.15); }
+
 @media (max-width: 640px) {
   .recorrido-demo-split,
   .recorrido-versus { grid-template-columns: 1fr; }
@@ -8863,6 +8836,11 @@ a:where(:link, :visited):hover {
   margin-top: 10px;
 }
 
+/* Misma escalera al pie de cada parada del /recorrido, con más aire tras la mini-demo. */
+.recorrido-cta {
+  margin-top: 16px;
+}
+
 /* Pager al pie de cada tuto: pregunta anterior / siguiente, en el orden de PREGUNTAS. */
 .tuto-pager {
   display: flex;
@@ -8993,6 +8971,88 @@ a:where(:link, :visited):hover {
 @media (max-width: 860px) {
   .entrada-doors { grid-template-columns: 1fr; }
   .entrada-hero h2 { font-size: 22px; }
+}
+
+/* ============================================================
+   Puerta 1 (Entender): acento verde sutil. El mismo verde
+   #22c55e de la puerta "Entender" en la landing, aplicado al
+   chrome de /recorrido y /tutos/* (clase .puerta1 en el root).
+   Los azules semánticos no se tocan: la carta user sigue azul
+   y los links de prosa siguen celestes en toda la app.
+   ============================================================ */
+.puerta1 .header {
+  border-top: 3px solid #22c55e;
+}
+
+.puerta1 .docs-header-subtitle { color: #86efac; }
+
+.puerta1 .docs-toc-link:hover {
+  background: rgba(34, 197, 94, 0.10);
+  border-left-color: #22c55e;
+}
+
+.puerta1 .docs-toc-link.is-active,
+.puerta1 .docs-toc-link[aria-current="location"] {
+  background: rgba(34, 197, 94, 0.16);
+  border-left-color: #4ade80;
+}
+
+.puerta1 .docs-nav-link:hover {
+  background: rgba(34, 197, 94, 0.10);
+  border-color: #22c55e;
+}
+
+/* Escalera demo → lab y pager: mismos verdes que el CTA de la landing. */
+.puerta1 .try-mode-cta-btn {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: #16a34a;
+  color: #dcfce7;
+}
+
+.puerta1 .try-mode-cta-btn:hover {
+  background: rgba(34, 197, 94, 0.3);
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
+.puerta1 .try-mode-cta-arrow { color: #86efac; }
+
+.puerta1 .tuto-pager-link:hover {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: #22c55e;
+}
+
+.puerta1 .tuto-pager-q { color: #dcfce7; }
+
+.puerta1 .criollo-section h3 { color: #86efac; }
+
+.puerta1 .criollo-quote {
+  border-left-color: #22c55e;
+  color: #86efac;
+}
+
+/* Mini-demos del recorrido y de los tutos. */
+.puerta1 .recorrido-demo {
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.06), rgba(15, 23, 42, 0.4));
+}
+
+.puerta1 .recorrido-demo-chip:hover { border-color: #4ade80; }
+
+.puerta1 .recorrido-demo-chip.is-active {
+  border-color: #4ade80;
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
+}
+
+.puerta1 .recorrido-demo-input:focus { border-color: #4ade80; }
+
+.puerta1 .recorrido-demo-btn { background: #16a34a; }
+.puerta1 .recorrido-demo-btn:hover { background: #15803d; }
+.puerta1 .recorrido-demo-btn-ghost:hover { border-color: #4ade80; }
+
+.puerta1 .recorrido-envelope,
+.puerta1 .recorrido-answer {
+  background: rgba(34, 197, 94, 0.05);
 }
 
 /* === Puente lab → demo: tira fina bajo el header de los labs

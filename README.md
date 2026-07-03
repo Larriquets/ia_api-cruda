@@ -12,7 +12,7 @@ La tesis didáctica es una sola: **el modelo no se acuerda de nada — la "memor
 
 La landing (`/`) tiene **dos puertas**, una por audiencia:
 
-- **"Entender"** — para profesionales **no técnicos** que ya usan IA en el trabajo y quieren intuición sobre por qué falla, alucina o "se olvida". Entra por `/recorrido` (un recorrido guiado de 6 paradas con metáforas y mini-demos interactivas) y por los tutos `/tutos/*`, una página por pregunta humana ("¿se acuerda de lo que le digo?", "¿qué es un token?"), cada una con su mini-demo — **sin necesitar key ni configuración**.
+- **"Entender"** — para profesionales **no técnicos** que ya usan IA en el trabajo y quieren intuición sobre por qué falla, alucina o "se olvida". Entra por `/recorrido` (un recorrido guiado de 7 paradas con metáforas y mini-demos interactivas) y por los tutos `/tutos/*`, una página por pregunta humana ("¿se acuerda de lo que le digo?", "¿qué es un token?"), cada una con su mini-demo — **sin necesitar key ni configuración**.
 - **"Taller"** — para gente técnica (o alumnos de programación) que quiere ver el mecanismo real: el Chat y los labs pegan contra las APIs de verdad, con paneles de Request / Response / Log crudos en cada envío. **Todo modo y lab tiene su demo gemela animada en `/demo/*`** (sin API), para ver el mecanismo antes de traer keys.
 
 Las capas están puenteadas en ambos sentidos: cada tuto y demo tiene un botón "probalo de verdad" hacia el lab real, y cada lab tiene un backlink hacia su versión animada. Nadie queda encerrado en su nivel.

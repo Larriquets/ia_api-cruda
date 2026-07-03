@@ -79,7 +79,6 @@ export default function ModeSwitch({ active }) {
 
   return (
     <div className="app-mode-switch">
-      <span className="app-mode-switch-label" aria-hidden="true">{t('modeswitch.label')}</span>
       <div className="app-mode-dropdown" ref={modesDropdownRef}>
         <button
           type="button"

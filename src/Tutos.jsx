@@ -80,7 +80,7 @@ export default function Tutos({ tema }) {
   const next = idx >= 0 && idx < PREGUNTAS.length - 1 ? PREGUNTAS[idx + 1] : null
 
   return (
-    <div className="criollo">
+    <div className="criollo puerta1">
       <header className="header">
         <h1>
           {current}

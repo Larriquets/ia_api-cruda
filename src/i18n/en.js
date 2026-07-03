@@ -4,6 +4,7 @@
 export const en = {
   app: {
     brand: 'Raw AI',
+    brandHome: 'Go to home',
     subtitlePre: '// everything is context · ',
     subtitlePost: ' mode',
     modeChat: 'Chat',
@@ -148,7 +149,6 @@ export const en = {
   },
 
   modeswitch: {
-    label: 'MODE:',
     entenderSection: 'Enter through your question',
     modesBtn: '🎛️ Modes',
     modesTitle: 'Main app modes: Chat, Editor and Agentic Loop.',
@@ -201,7 +201,6 @@ export const en = {
   },
 
   entrada: {
-    brandHome: 'Go to home',
     subtitle: '// pick your door',
     heroTitle: 'What really happens when you talk to an AI?',
     heroSub: "There's no magic here: there's text traveling in a POST. This app shows it so you can see it with your own eyes — pick your way in.",
@@ -247,6 +246,12 @@ export const en = {
     pagerNext: 'Next question',
   },
 
+  recorrido: {
+    ctaAria: 'Keep exploring this stop',
+    ctaDemo: 'Watch it animated (no API)',
+    ctaLab: 'Try it for real in the workshop',
+  },
+
   demobacklink: {
     text: 'Too much JSON? This page has a guided, animated version — no API:',
     link: 'see the demo',
@@ -258,7 +263,6 @@ export const en = {
   },
 
   rag: {
-    brandHome: 'Go home',
     brandTag: 'experiment',
     providerLabel: 'Provider',
     providerTitle: 'OpenAI only: Anthropic has no embeddings endpoint (their docs recommend external providers such as Voyage). Another product decision.',
@@ -352,7 +356,7 @@ export const en = {
   welcome: {
     subtitle: '// everything is context — request, response and context, all raw',
     close: 'Close',
-    intro: 'This app hides nothing: you see the JSON going out, the JSON coming back, and how context accumulates between calls. It has 4 modes — each shows a different layer of how you work with an LLM API. Go through them in order.',
+    intro: 'This app hides nothing: you see the JSON going out, the JSON coming back, and how context accumulates between calls. It has 5 modes — each shows a different layer of how you work with an LLM API. Go through them in order.',
     dontShow: "Don't show again",
     cta: 'Start →',
     chatTitle: 'Chat',
@@ -364,7 +368,7 @@ export const en = {
     agentsTitle: 'Agent + rules',
     agentsDesc: 'Agent with an AGENTS.md file injected into the system prompt: persistent instructions it always follows (style, constraints, project conventions).',
     skillsTitle: 'Agent + skills',
-    skillsDesc: 'Sub-topic of the previous mode. Once you understand how AGENTS.md works, try Skills: instructions loaded on demand + a deterministic test the AI runs after editing.',
+    skillsDesc: 'Same agent with AGENTS.md, but with instructions loaded on demand (load_skill) + a deterministic test (run_skill_test) the AI runs after editing.',
   },
 
   lmstudio: {

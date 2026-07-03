@@ -8,15 +8,8 @@ const STEPS = [
   { emoji: '💬', titleKey: 'welcome.chatTitle', descKey: 'welcome.chatDesc', href: '/chat' },
   { emoji: '💻', titleKey: 'welcome.editorTitle', descKey: 'welcome.editorDesc', href: '/editor' },
   { emoji: '🤖', titleKey: 'welcome.loopTitle', descKey: 'welcome.loopDesc', href: '/loop-agentico' },
-  {
-    emoji: '📋',
-    titleKey: 'welcome.agentsTitle',
-    descKey: 'welcome.agentsDesc',
-    href: '/agents-md',
-    subSteps: [
-      { emoji: '🧪', titleKey: 'welcome.skillsTitle', descKey: 'welcome.skillsDesc' },
-    ],
-  },
+  { emoji: '📋', titleKey: 'welcome.agentsTitle', descKey: 'welcome.agentsDesc', href: '/agents-md' },
+  { emoji: '🧪', titleKey: 'welcome.skillsTitle', descKey: 'welcome.skillsDesc', href: '/agents-md-skills' },
 ]
 
 export default function WelcomeModal() {
@@ -86,19 +79,6 @@ export default function WelcomeModal() {
                   <b>{t(step.titleKey)}</b>
                 </div>
                 <div className="welcome-step-desc">{t(step.descKey)}</div>
-                {step.subSteps && (
-                  <ul className="welcome-substeps">
-                    {step.subSteps.map((sub) => (
-                      <li key={sub.titleKey} className="welcome-substep">
-                        <span className="welcome-substep-emoji">{sub.emoji}</span>
-                        <div>
-                          <b>{t(sub.titleKey)}</b>
-                          <div className="welcome-step-desc">{t(sub.descKey)}</div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </li>
           ))}
