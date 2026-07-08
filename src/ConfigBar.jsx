@@ -4,10 +4,13 @@
  * Comunica visualmente que estos controles afectan lo que se manda al API,
  * y separa la navegación (en el header) de la configuración del modo actual.
  */
+import { useT } from './i18n/useT.js'
+
 export default function ConfigBar({ children }) {
+  const { t } = useT()
   return (
-    <div className="config-bar" role="region" aria-label="Configuración del request">
-      <span className="config-bar-label">⚙ Config del request</span>
+    <div className="config-bar" role="region" aria-label={t('configbar.region')}>
+      <span className="config-bar-label">{t('configbar.label')}</span>
       <div className="config-bar-controls">{children}</div>
     </div>
   )

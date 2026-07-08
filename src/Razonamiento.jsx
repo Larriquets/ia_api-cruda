@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import BrandHome from './BrandHome.jsx'
 import {
   sendReasoningMessage,
   REASONING_MODELS,
@@ -9,10 +10,14 @@ import {
   ANTHROPIC_REASONING_MODELS,
   ANTHROPIC_BUDGETS,
 } from './anthropic-reasoning.js'
+import { sendLmStudioReasoningMessage } from './lmstudio-reasoning.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import WelcomeModal from './WelcomeModal.jsx'
+import LmStudioModelPicker from './LmStudioModelPicker.jsx'
+import { useT } from './i18n/useT.js'
 
 const PROVIDER_KEY = 'razon_provider'
 const MODEL_OPENAI_KEY = 'razon_model_openai'
@@ -82,9 +87,12 @@ const safeReadJSON = (key) => {
 }
 
 export default function Razonamiento() {
+  const { t } = useT()
   const [provider, setProvider] = useState(() => {
     const saved = localStorage.getItem(PROVIDER_KEY)
-    return saved === 'anthropic' ? 'anthropic' : 'openai'
+    if (saved === 'anthropic') return 'anthropic'
+    if (saved === 'lmstudio') return 'lmstudio'
+    return 'openai'
   })
   const [modelOpenAI, setModelOpenAI] = useState(
     () => localStorage.getItem(MODEL_OPENAI_KEY) || 'gpt-5-mini',
@@ -330,9 +338,27 @@ export default function Razonamiento() {
         onRawRequest: setRawRequest,
         onRawResponse: setRawResponse,
       }
+
+      // Streaming callbacks para LM Studio: actualizan reply y reasoningBlocks
+      // en tiempo real a medida que llegan los chunks SSE.
+      if (provider === 'lmstudio') {
+        commonArgs.onTextChunk = (chunk) => setReply((prev) => prev + chunk)
+        commonArgs.onThinkingStart = () =>
+          setReasoningBlocks((prev) => [...prev, { id: `lm-think-${prev.length}`, summary: '' }])
+        commonArgs.onThinkingChunk = (chunk) =>
+          setReasoningBlocks((prev) => {
+            if (prev.length === 0) return prev
+            const next = [...prev]
+            next[next.length - 1] = { ...next[next.length - 1], summary: next[next.length - 1].summary + chunk }
+            return next
+          })
+      }
+
       const result = provider === 'anthropic'
         ? await sendClaudeReasoningMessage(payload, { ...commonArgs, model: modelAnthropic })
-        : await sendReasoningMessage(payload, { ...commonArgs, model: modelOpenAI, summary })
+        : provider === 'lmstudio'
+          ? await sendLmStudioReasoningMessage(payload, commonArgs)
+          : await sendReasoningMessage(payload, { ...commonArgs, model: modelOpenAI, summary })
 
       setReply(result.text)
       setReasoningBlocks(result.reasoningBlocks)
@@ -345,7 +371,7 @@ export default function Razonamiento() {
         appendLog('success', 'Respuesta lista (no se guardó en historial)')
       }
     } catch (err) {
-      const providerLabel = provider === 'anthropic' ? 'Anthropic' : 'OpenAI'
+      const providerLabel = provider === 'anthropic' ? 'Anthropic' : provider === 'lmstudio' ? 'LM Studio' : 'OpenAI'
       setError(err.message || `Error al contactar a ${providerLabel}`)
       appendLog('error', err.message || 'Error desconocido')
     } finally {
@@ -396,18 +422,15 @@ export default function Razonamiento() {
       <WelcomeModal />
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Razonamiento</span></span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active="razonamiento" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/razonamiento" />
 
       <ConfigBar>
         <label className="hdr-select">
@@ -417,10 +440,11 @@ export default function Razonamiento() {
             onChange={(e) => setProvider(e.target.value)}
             disabled={loading}
             className={`hdr-select-input provider-select-${provider}`}
-            title="OpenAI esconde el razonamiento (solo resumen opcional). Claude muestra el thinking entero."
+            title="OpenAI esconde el razonamiento (solo resumen opcional). Claude muestra el thinking entero. LM Studio parsea bloques <think>...</think> del output."
           >
             <option value="openai">🟢 OpenAI (esconde el pensamiento)</option>
             <option value="anthropic">🟠 Claude (muestra el pensamiento)</option>
+            <option value="lmstudio">🔵 LM Studio (local · &lt;think&gt; tags)</option>
           </select>
         </label>
 
@@ -459,6 +483,8 @@ export default function Razonamiento() {
               ))}
             </select>
           </label>
+        ) : provider === 'lmstudio' ? (
+          <LmStudioModelPicker onLog={appendLog} />
         ) : (
           <label className="hdr-select">
             <span className="hdr-select-label">Modelo</span>
@@ -485,7 +511,9 @@ export default function Razonamiento() {
             className="hdr-select-input"
             title={provider === 'anthropic'
               ? 'En Claude se traduce a thinking.budget_tokens (minimal=1k, low=2k, medium=5k, high=12k).'
-              : "En OpenAI es reasoning.effort. Más effort = más tokens de razonamiento = más caro y más lento."}
+              : provider === 'lmstudio'
+                ? 'En LM Studio se inyecta como hint en el system prompt — el modelo decide cuánto pensar.'
+                : "En OpenAI es reasoning.effort. Más effort = más tokens de razonamiento = más caro y más lento."}
           >
             {(provider === 'anthropic' ? ANTHROPIC_BUDGETS : REASONING_EFFORTS).map((opt) => (
               <option key={opt.id} value={opt.id}>
@@ -517,7 +545,18 @@ export default function Razonamiento() {
           Limpiar
         </button>
 
-        <ReadDocLink section="modo-razonamiento" />
+        <div className="config-bar-actions">
+          <a
+            href="/demo/razonamiento"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="read-doc-link view-demo-link"
+            title={t('razon.viewDemoTitle')}
+          >
+            {t('razon.viewDemo')}
+          </a>
+          <ReadDocLink section="modo-razonamiento" />
+        </div>
       </ConfigBar>
 
       <div className="layout">
@@ -528,7 +567,9 @@ export default function Razonamiento() {
             <span className="context-meta">
               {provider === 'anthropic'
                 ? '/v1/messages · thinking.budget_tokens'
-                : '/v1/responses · reasoning.effort'}
+                : provider === 'lmstudio'
+                  ? '/v1/chat/completions · <think> tags'
+                  : '/v1/responses · reasoning.effort'}
             </span>
           </div>
 
@@ -597,26 +638,37 @@ export default function Razonamiento() {
           {error && <div className="error">{error}</div>}
 
           <div className="razon-result" ref={replyRef}>
-            {loading && (
+            {/* Indicador de carga: para OpenAI/Anthropic siempre; para LM Studio solo hasta el primer token */}
+            {loading && (provider !== 'lmstudio' || (reasoningBlocks.length === 0 && !reply)) && (
               <div className="razon-thinking razon-thinking-loading">
                 <div className="razon-thinking-header">
-                  <span>🧠 Razonando…</span>
-                  <span className="context-meta">esperando bloques type:'reasoning'</span>
+                  <span>🧠 {provider === 'lmstudio' ? 'Conectando con LM Studio…' : 'Razonando…'}</span>
+                  <span className="context-meta">
+                    {provider === 'lmstudio'
+                      ? 'esperando primeros tokens del stream'
+                      : "esperando bloques type:'reasoning'"}
+                  </span>
                 </div>
                 <div className="razon-thinking-dots"><span></span><span></span><span></span></div>
-                <div className="razon-thinking-empty" style={{ marginTop: 8 }}>
-                  El modelo está pensando. Como no usamos streaming, recién vas a ver el razonamiento cuando llegue toda la respuesta.
-                </div>
+                {provider !== 'lmstudio' && (
+                  <div className="razon-thinking-empty" style={{ marginTop: 8 }}>
+                    El modelo está pensando. Como no usamos streaming, recién vas a ver el razonamiento cuando llegue toda la respuesta.
+                  </div>
+                )}
               </div>
             )}
 
             {!loading && reply === '' && reasoningBlocks.length === 0 && (
               <div className="empty">
-                Hacé una pregunta. Probá la <b>misma pregunta con OpenAI y con Claude</b> para ver el contraste: OpenAI te muestra solo un resumen del razonamiento (y a veces nada), Claude te muestra el <b>thinking entero</b>.
+                {provider === 'lmstudio'
+                  ? <>Hacé una pregunta al modelo local. El thinking se parsea de bloques <code>&lt;think&gt;…&lt;/think&gt;</code> en el output. Necesitás un modelo razonador como <b>DeepSeek-R1</b> o <b>QwQ</b> cargado en LM Studio.</>
+                  : <>Hacé una pregunta. Probá la <b>misma pregunta con OpenAI y con Claude</b> para ver el contraste: OpenAI te muestra solo un resumen del razonamiento (y a veces nada), Claude te muestra el <b>thinking entero</b>.</>
+                }
               </div>
             )}
 
-            {!loading && reasoningBlocks.length > 0 && (
+            {/* Thinking: se muestra durante streaming de LM Studio o cuando loading=false */}
+            {(!loading || provider === 'lmstudio') && reasoningBlocks.length > 0 && (
               <div className={`razon-thinking razon-thinking-${provider}`}>
                 <div className="razon-thinking-header">
                   <span>
@@ -651,6 +703,11 @@ export default function Razonamiento() {
                     Claude devuelve el razonamiento <b>completo</b>, no un resumen. Cada bloque viene firmado (<code>signature</code>) para que puedas reenviarlo en multi-turn.
                   </div>
                 )}
+                {provider === 'lmstudio' && (
+                  <div className="razon-thinking-note razon-thinking-note-lmstudio">
+                    LM Studio devuelve el thinking dentro de bloques <code>&lt;think&gt;…&lt;/think&gt;</code> en el texto. La app los parsea en el browser y los muestra acá separados del output final. Necesitás un modelo razonador (DeepSeek-R1, QwQ, etc.) cargado en LM Studio.
+                  </div>
+                )}
                 {reasoningBlocks.map((block, i) => (
                   <div key={block.id || i} className="razon-thinking-block">
                     <div className="razon-thinking-block-meta">
@@ -678,7 +735,8 @@ export default function Razonamiento() {
               </div>
             )}
 
-            {!loading && reply && (
+            {/* Reply: idem — visible durante streaming de LM Studio */}
+            {(!loading || provider === 'lmstudio') && reply && (
               <div className="razon-answer">
                 <div className="razon-answer-header">
                   <span>💬 Respuesta final</span>
@@ -727,6 +785,11 @@ export default function Razonamiento() {
                     <span><b>{visibleOutputTokens}</b></span>
                   </div>
                 </>
+              ) : provider === 'lmstudio' ? (
+                <div className="razon-usage-row razon-usage-thinking">
+                  <span>↳ thinking parseado</span>
+                  <span><i>LM Studio no separa tokens de thinking — el desglose viene del parseo de &lt;think&gt; en el texto</i></span>
+                </div>
               ) : (
                 <div className="razon-usage-row razon-usage-thinking">
                   <span>↳ de los cuales, thinking</span>
@@ -746,7 +809,9 @@ export default function Razonamiento() {
               <div className="razon-usage-foot">
                 {provider === 'openai'
                   ? 'Los tokens de razonamiento se facturan como output aunque el usuario no los vea. Es la diferencia clave entre un chat normal y un razonador.'
-                  : 'Claude mete el thinking dentro de output_tokens. Sabés cuántos pensó porque vos definiste budget_tokens, pero la API no te lo separa.'}
+                  : provider === 'lmstudio'
+                    ? 'LM Studio corre localmente — no hay facturación. Los tokens son el conteo del modelo. El thinking está dentro de completion_tokens sin desglose separado.'
+                    : 'Claude mete el thinking dentro de output_tokens. Sabés cuántos pensó porque vos definiste budget_tokens, pero la API no te lo separa.'}
               </div>
             </div>
           )}
@@ -756,19 +821,21 @@ export default function Razonamiento() {
         {/* Panel 2 — Request/Response crudo */}
         <section className="panel raw-panel">
           <div className="panel-title">
-            <span>Request → {provider === 'anthropic' ? '/v1/messages' : '/v1/responses'}</span>
+            <span>Request → {provider === 'anthropic' ? '/v1/messages' : provider === 'lmstudio' ? '/v1/chat/completions' : '/v1/responses'}</span>
             <span className="panel-links">
-              <a
-                href={provider === 'anthropic'
-                  ? 'https://docs.anthropic.com/en/api/messages'
-                  : 'https://platform.openai.com/docs/api-reference/responses/create'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="docs-link"
-                title="Documentación oficial: parámetros del request"
-              >
-                docs ↗
-              </a>
+              {provider !== 'lmstudio' && (
+                <a
+                  href={provider === 'anthropic'
+                    ? 'https://docs.anthropic.com/en/api/messages'
+                    : 'https://platform.openai.com/docs/api-reference/responses/create'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="docs-link"
+                  title="Documentación oficial: parámetros del request"
+                >
+                  docs ↗
+                </a>
+              )}
             </span>
           </div>
           <pre className="raw">
@@ -780,17 +847,19 @@ export default function Razonamiento() {
           <div className="panel-title panel-title-sub">
             <span>Response ← API</span>
             <span className="panel-links">
-              <a
-                href={provider === 'anthropic'
-                  ? 'https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking'
-                  : 'https://platform.openai.com/docs/guides/reasoning'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="docs-link"
-                title="Guía oficial sobre razonamiento"
-              >
-                docs ↗
-              </a>
+              {provider !== 'lmstudio' && (
+                <a
+                  href={provider === 'anthropic'
+                    ? 'https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking'
+                    : 'https://platform.openai.com/docs/guides/reasoning'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="docs-link"
+                  title="Guía oficial sobre razonamiento"
+                >
+                  docs ↗
+                </a>
+              )}
             </span>
           </div>
           <pre className="raw">
@@ -809,6 +878,19 @@ export default function Razonamiento() {
                 <li><code>usage.output_tokens_details.reasoning_tokens</code> — los tokens de pensamiento que igual te facturan.</li>
                 <li><code>reasoning.effort</code> en el request — minimal/low/medium/high. Cambia cuántos tokens piensa.</li>
                 <li>NO hay <code>temperature</code>: los razonadores la ignoran/rechazan. Su variabilidad la maneja el effort.</li>
+              </ul>
+            </details>
+          )}
+
+          {rawResponse && provider === 'lmstudio' && (
+            <details className="field-guide">
+              <summary>¿Qué hay de nuevo acá vs un chat normal? (LM Studio)</summary>
+              <ul>
+                <li>El endpoint es el mismo <code>/v1/chat/completions</code> de un chat normal — LM Studio es OpenAI-compatible.</li>
+                <li>El "thinking" <b>no viene en un campo separado</b> sino dentro del texto, en bloques <code>&lt;think&gt;…&lt;/think&gt;</code>.</li>
+                <li>Dependiendo del modelo: puede haber cero bloques (modelo sin thinking explícito) o varios (DeepSeek-R1, QwQ, etc.).</li>
+                <li>El parseo del thinking corre <b>100% en el browser</b> — la app extrae los bloques y los muestra separados.</li>
+                <li>No hay <code>reasoning.effort</code> ni <code>thinking.budget_tokens</code>: el effort se inyecta como texto en el system prompt.</li>
               </ul>
             </details>
           )}

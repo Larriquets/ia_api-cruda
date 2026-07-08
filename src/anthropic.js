@@ -6,6 +6,13 @@ const getModel = () => import.meta.env.VITE_ANTHROPIC_MODEL || 'claude-haiku-4-5
 
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
+// Modelos de chat seleccionables desde la UI. IDs sin sufijo de fecha (alias).
+export const ANTHROPIC_CHAT_MODELS = [
+  { id: 'claude-haiku-4-5', label: 'claude-haiku-4-5', note: 'rápido y barato — recomendado para clase' },
+  { id: 'claude-sonnet-4-6', label: 'claude-sonnet-4-6', note: 'balance velocidad/inteligencia' },
+  { id: 'claude-opus-4-8', label: 'claude-opus-4-8', note: 'el más capaz — más caro' },
+]
+
 const SYSTEM_PROMPT = 'Eres un asistente útil que responde en español de forma clara y concisa.'
 
 // Convierte el formato OpenAI ({role: 'system'|'user'|'assistant', content}) al formato Claude
@@ -21,9 +28,9 @@ export function toAnthropicPayload(messages) {
   return { system, messages: claudeMessages }
 }
 
-export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7 } = {}) {
+export async function sendClaudeMessage(messages, { onLog, onRawRequest, onRawResponse, temperature = 0.7, model: modelOverride } = {}) {
   const apiKey = getApiKey()
-  const model = getModel()
+  const model = modelOverride || getModel()
 
   onLog?.('info', `Modelo Claude: ${model}`)
 

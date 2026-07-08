@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
+import BrandHome from './BrandHome.jsx'
 import { sendChatMessage } from './openai.js'
 import { sendClaudeMessage } from './anthropic.js'
 import { sendLmStudioMessage } from './lmstudio.js'
@@ -7,6 +8,7 @@ import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 
 const PROVIDER_KEY = 'promptinj_provider'
 const TEMP_KEY = 'promptinj_temperature'
@@ -230,18 +232,15 @@ export default function PromptInjection() {
     <div className="app promptinj-page">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
-          <span className="brand-braces">{'}'}</span>
+          <BrandHome />
           <span className="brand-subtitle">// experimento · <span className="brand-mode">Prompt injection</span></span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active="prompt-injection" />
         </div>
       </header>
+
+      <DemoBacklink href="/demo/prompt-injection" />
 
       <ConfigBar>
         <label className="hdr-select">

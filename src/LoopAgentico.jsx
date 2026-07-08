@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import BrandHome from './BrandHome.jsx'
 import MonacoEditor from '@monaco-editor/react'
 import { runClaudeAgent } from './anthropic-agent.js'
 import { runOpenAIAgent } from './openai-agent.js'
 import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import SystemEditor from './SystemEditor.jsx'
+import { useT } from './i18n/useT.js'
 
 // Presets para el agente: variantes que cambian la "personalidad" del loop
-// (ritmo de iteración, verbosidad, criterio para usar las tools).
-const AGENT_PRESETS = [
+// (ritmo de iteración, verbosidad, criterio para usar las tools). Bilingüe:
+// el castellano rioplatense es la base, el inglés la traducción.
+const AGENT_PRESETS_ES = [
   {
     id: 'default',
     label: '🤖 Agente default',
@@ -51,6 +55,45 @@ Reglas:
   },
 ]
 
+const AGENT_PRESETS_EN = [
+  {
+    id: 'default',
+    label: '🤖 Default agent',
+    subtitle: "the app's base system",
+    prompt: AGENT_SYSTEM_PROMPT,
+  },
+  {
+    id: 'rapido',
+    label: '⚡ Fast and to the point',
+    subtitle: 'zero ceremony, minimal iterations',
+    prompt: `You are a coding agent. You use the read_code and edit_code tools to solve what the user asks.
+Rules:
+- Do the fewest iterations possible. If you can solve it with 1 edit, do 1 edit.
+- Don't explain anything before or after unless asked.
+- Don't read the code if you already saw it this turn or in the previous context.`,
+  },
+  {
+    id: 'paranoico',
+    label: '🛡 Paranoid (reads before editing)',
+    subtitle: 'always read_code first',
+    prompt: `You are a conservative coding agent.
+Non-negotiable rules:
+- BEFORE any edit_code, call read_code to confirm the current state of the file, even if you think you already know it.
+- Make small, atomic changes: a single intent per edit.
+- After the last edit, call read_code once more to verify the result and report it.`,
+  },
+  {
+    id: 'narrador',
+    label: '🎙 Narrator in English',
+    subtitle: 'tells what it does before each tool',
+    prompt: `You are a didactic coding agent. You use read_code and edit_code to solve the request.
+Rules:
+- Before EACH tool call, write a short sentence in English explaining what you're going to do and why.
+- After each tool_result, comment in one sentence what you saw.
+- At the end, leave a summary in 2-3 bullets of what you changed.`,
+  },
+]
+
 const CODE_KEY = 'agente_code_snapshot'
 const LANG_KEY = 'agente_language'
 const PROVIDER_KEY = 'chat_provider'
@@ -78,19 +121,37 @@ const LANGUAGES = [
   { id: 'java', label: 'Java' },
 ]
 
-const SUGGESTED_PROMPTS = [
+// Prompts sugeridos: copy visible (y la instrucción real que viaja al agente).
+// Referencian identificadores del código (saldo, depositar, retirar), que se
+// dejan tal cual en ambos idiomas porque son nombres reales en el Java.
+const SUGGESTED_PROMPTS_ES = [
   'Renombrá la variable saldo a balance en toda la clase, incluyendo getters/setters.',
   'Agregá un método retirar(monto) que reste del saldo solo si hay fondos suficientes; si no, no haga nada.',
   'Agregá validación a depositar(): que ignore montos negativos.',
 ]
 
-const NOISY_SUGGESTED_PROMPTS = [
+const SUGGESTED_PROMPTS_EN = [
+  'Rename the variable saldo to balance across the whole class, including getters/setters.',
+  'Add a retirar(monto) method that subtracts from saldo only if there are enough funds; otherwise, do nothing.',
+  'Add validation to depositar(): make it ignore negative amounts.',
+]
+
+const NOISY_SUGGESTED_PROMPTS_ES = [
   'No sé bien qué está mal, pero el saldo a veces queda raro. Cambiá lo mínimo, aunque si hace falta rearmá la clase. Que quede más profesional y no rompas nada.',
   'Agregá retirar, transferir, validar negativos y algún log útil. Pero no quiero logs en producción. Ah, y mantené los nombres actuales salvo los que estén feos.',
   'El usuario no debería poder sacar más plata de la que tiene, excepto cuando sea una cuenta especial. Todavía no existe cuenta especial, pero dejalo preparado sin complicarlo.',
   'Hacé que depositar sea seguro, rápido y fácil de leer. Si ves getters/setters malos cambialos, pero no cambies la API porque hay tests viejos que no te paso.',
   'Me dijeron que balance suena mejor que saldo, pero en español también está bien. Elegí vos. Lo importante es que después se entienda y compile.',
   'Arreglá todo lo que parezca deuda técnica en esta clase. No agregues demasiadas cosas nuevas, salvo validaciones, errores claros, comentarios y compatibilidad futura.',
+]
+
+const NOISY_SUGGESTED_PROMPTS_EN = [
+  "I'm not sure what's wrong, but saldo sometimes ends up weird. Change the minimum, though rebuild the class if needed. Make it more professional and don't break anything.",
+  "Add retirar, transferir, validate negatives and some useful log. But I don't want logs in production. Oh, and keep the current names except the ugly ones.",
+  "The user shouldn't be able to withdraw more money than they have, except when it's a special account. Special account doesn't exist yet, but leave it ready without overcomplicating it.",
+  "Make depositar safe, fast and easy to read. If you see bad getters/setters change them, but don't change the API because there are old tests I'm not giving you.",
+  'They told me balance sounds better than saldo, but in Spanish it works too. You decide. The important thing is that it reads well afterwards and compiles.',
+  'Fix everything that looks like technical debt in this class. Don\'t add too many new things, except validations, clear errors, comments and future compatibility.',
 ]
 
 const CONTEXT_BUDGET_TOKENS = 8000
@@ -100,6 +161,12 @@ const estimateTokens = (value) => Math.ceil(JSON.stringify(value ?? '').length /
 const EMPTY_AGENT_CONTEXT = { provider: null, language: null, messages: [] }
 
 export default function LoopAgentico() {
+  const { t, lang } = useT()
+  const L = (es, en) => (lang === 'en' ? en : es)
+  const AGENT_PRESETS = lang === 'en' ? AGENT_PRESETS_EN : AGENT_PRESETS_ES
+  const SUGGESTED_PROMPTS = lang === 'en' ? SUGGESTED_PROMPTS_EN : SUGGESTED_PROMPTS_ES
+  const NOISY_SUGGESTED_PROMPTS = lang === 'en' ? NOISY_SUGGESTED_PROMPTS_EN : NOISY_SUGGESTED_PROMPTS_ES
+
   const [code, setCode] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_CODE
     return localStorage.getItem(CODE_KEY) ?? DEFAULT_CODE
@@ -113,7 +180,7 @@ export default function LoopAgentico() {
     // Default a Anthropic en agente: Claude rinde mejor con tool-use estructurado.
     return localStorage.getItem(PROVIDER_KEY) || 'anthropic'
   })
-  const [instruction, setInstruction] = useState(SUGGESTED_PROMPTS[0])
+  const [instruction, setInstruction] = useState(() => SUGGESTED_PROMPTS[0])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [finalText, setFinalText] = useState('')
@@ -220,19 +287,29 @@ export default function LoopAgentico() {
     setCollapsed(new Set())
     setIterCount(0)
 
-    appendLog('user', `Instrucción: "${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}"`)
-    appendLog('info', `Lenguaje: ${language} · Tamaño código inicial: ${code.length} chars`)
+    const instrPreview = `${instruction.trim().slice(0, 100)}${instruction.length > 100 ? '…' : ''}`
+    appendLog('user', L(`Instrucción: "${instrPreview}"`, `Instruction: "${instrPreview}"`))
+    appendLog('info', L(
+      `Lenguaje: ${language} · Tamaño código inicial: ${code.length} chars`,
+      `Language: ${language} · Initial code size: ${code.length} chars`,
+    ))
     const providerLabel =
       provider === 'anthropic'
         ? 'Anthropic (Claude)'
         : provider === 'lmstudio'
           ? 'LM Studio (local)'
           : 'OpenAI'
-    appendLog('info', `Proveedor: ${providerLabel}`)
+    appendLog('info', L(`Proveedor: ${providerLabel}`, `Provider: ${providerLabel}`))
     if (previousMessages.length > 0) {
-      appendLog('info', `Contexto previo incluido: ${previousMessages.length} mensaje(s)`)
+      appendLog('info', L(
+        `Contexto previo incluido: ${previousMessages.length} mensaje(s)`,
+        `Previous context included: ${previousMessages.length} message(s)`,
+      ))
     } else if (agentContext.messages.length > 0) {
-      appendLog('info', 'Contexto previo ignorado porque cambió el proveedor o el lenguaje')
+      appendLog('info', L(
+        'Contexto previo ignorado porque cambió el proveedor o el lenguaje',
+        'Previous context ignored because the provider or the language changed',
+      ))
     }
 
     try {
@@ -245,7 +322,10 @@ export default function LoopAgentico() {
       const trimmed = systemPrompt.trim()
       const systemOverride = trimmed && trimmed !== AGENT_SYSTEM_PROMPT.trim() ? systemPrompt : null
       if (systemOverride) {
-        appendLog('info', `System prompt personalizado (${systemPrompt.length} chars)`)
+        appendLog('info', L(
+          `System prompt personalizado (${systemPrompt.length} chars)`,
+          `Custom system prompt (${systemPrompt.length} chars)`,
+        ))
       }
       const { finalText: ft, code: finalCode, iterations, messages: resultMessages = [] } = await runFn(
         {
@@ -286,10 +366,13 @@ export default function LoopAgentico() {
       setFinalText(ft)
       setIterCount(iterations)
       setAgentContext({ provider, language, messages: resultMessages })
-      appendLog('success', `Agente terminó. Código final: ${finalCode.length} chars, ${iterations} iteración(es).`)
+      appendLog('success', L(
+        `Agente terminó. Código final: ${finalCode.length} chars, ${iterations} iteración(es).`,
+        `Agent finished. Final code: ${finalCode.length} chars, ${iterations} iteration(s).`,
+      ))
     } catch (err) {
-      setError(err.message || 'Error al ejecutar el agente')
-      appendLog('error', err.message || 'Error desconocido')
+      setError(err.message || L('Error al ejecutar el agente', 'Error running the agent'))
+      appendLog('error', err.message || L('Error desconocido', 'Unknown error'))
     } finally {
       setLoading(false)
     }
@@ -303,7 +386,7 @@ export default function LoopAgentico() {
     setRawHistory([])
     setCollapsed(new Set())
     setIterCount(0)
-    appendLog('info', 'Editor reseteado al ejemplo y contexto del agente vaciado')
+    appendLog('info', L('Editor reseteado al ejemplo y contexto del agente vaciado', 'Editor reset to the sample and agent context cleared'))
   }
 
   const handleClearLogs = () => {
@@ -316,7 +399,7 @@ export default function LoopAgentico() {
     setRawHistory([])
     setCollapsed(new Set())
     setIterCount(0)
-    appendLog('info', 'Contexto del agente vaciado')
+    appendLog('info', L('Contexto del agente vaciado', 'Agent context cleared'))
   }
 
   // Resizers
@@ -388,22 +471,19 @@ export default function LoopAgentico() {
     <div className="app editor-page">
       <header className="header">
         <h1>
-          <a href="/" className="brand-home" aria-label="Ir al inicio">
-            <img src="/logo.png" alt="" className="brand-logo" />
-          </a>
-          <span className="brand-braces">{'{'}</span>
-          <span className="brand">La IA Cruda</span>
-          <span className="brand-braces">{'}'}</span>
-          <span className="brand-subtitle">// todo es contexto · modo <span className="brand-mode">Loop Agéntico</span></span>
+          <BrandHome />
+          <span className="brand-subtitle">{t('app.subtitlePre')}<span className="brand-mode">{L('Loop Agéntico', 'Agentic Loop')}</span>{t('app.subtitlePost')}</span>
         </h1>
         <div className="header-actions">
           <ModeSwitch active="loop-agentico" />
         </div>
       </header>
 
+      <DemoBacklink href="/demo/loop" />
+
       <ConfigBar>
         <label className="hdr-select">
-          <span className="hdr-select-label">Proveedor</span>
+          <span className="hdr-select-label">{t('app.provider')}</span>
           <select
             value={provider}
             onChange={(e) => {
@@ -416,11 +496,11 @@ export default function LoopAgentico() {
                   : next === 'lmstudio'
                     ? 'LM Studio (local)'
                     : 'OpenAI'
-              appendLog('info', `Proveedor cambiado a ${label}`)
+              appendLog('info', L(`Proveedor cambiado a ${label}`, `Provider changed to ${label}`))
             }}
             className={`hdr-select-input provider-select-${provider}`}
             disabled={loading}
-            title="OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use; LM Studio reusa el shape de OpenAI sobre tu modelo local. Mismo concepto, distinto shape."
+            title={L('OpenAI usa /chat/completions con function calling; Anthropic usa /messages con tool_use; LM Studio reusa el shape de OpenAI sobre tu modelo local. Mismo concepto, distinto shape.', 'OpenAI uses /chat/completions with function calling; Anthropic uses /messages with tool_use; LM Studio reuses OpenAI\'s shape over your local model. Same concept, different shape.')}
           >
             <option value="anthropic">🟠 Claude (Anthropic)</option>
             <option value="openai">🟢 OpenAI</option>
@@ -431,7 +511,7 @@ export default function LoopAgentico() {
         {provider === 'lmstudio' && <LmStudioModelPicker onLog={appendLog} />}
 
         <label className="hdr-select">
-          <span className="hdr-select-label">Lenguaje</span>
+          <span className="hdr-select-label">{L('Lenguaje', 'Language')}</span>
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
@@ -444,7 +524,7 @@ export default function LoopAgentico() {
         </label>
         <label
           className={`noise-toggle${noiseMode ? ' active' : ''}`}
-          title="Si está activo, aparecen instrucciones ambiguas y ruidosas como las que escribiría un usuario apurado."
+          title={L('Si está activo, aparecen instrucciones ambiguas y ruidosas como las que escribiría un usuario apurado.', 'When active, ambiguous and noisy instructions appear, like the ones a rushed user would write.')}
         >
           <input
             type="checkbox"
@@ -452,12 +532,12 @@ export default function LoopAgentico() {
             onChange={(e) => {
               setNoiseMode(e.target.checked)
               appendLog('info', e.target.checked
-                ? 'Modo RUIDO activado — se muestran instrucciones ambiguas de mal usuario'
-                : 'Modo RUIDO desactivado')
+                ? L('Modo RUIDO activado — se muestran instrucciones ambiguas de mal usuario', 'NOISE mode enabled — ambiguous bad-user instructions are shown')
+                : L('Modo RUIDO desactivado', 'NOISE mode disabled'))
             }}
             disabled={loading}
           />
-          <span>🔊 Ruido en instrucciones</span>
+          <span>🔊 {L('Ruido en instrucciones', 'Noise in instructions')}</span>
         </label>
 
         <button
@@ -465,13 +545,13 @@ export default function LoopAgentico() {
           className="clear-btn"
           type="button"
           disabled={loading || (agentContext.messages.length === 0 && rawHistory.length === 0)}
-          title="Borra el thread guardado del agente y el historial raw visible"
+          title={L('Borra el thread guardado del agente y el historial raw visible', 'Deletes the agent saved thread and the visible raw history')}
         >
-          Vaciar contexto
+          {L('Vaciar contexto', 'Clear context')}
         </button>
 
         <button onClick={handleResetCode} className="clear-btn" type="button">
-          Reset código
+          {L('Reset código', 'Reset code')}
         </button>
 
         <div className="config-bar-actions">
@@ -480,9 +560,9 @@ export default function LoopAgentico() {
             target="_blank"
             rel="noopener noreferrer"
             className="read-doc-link view-demo-link"
-            title="Abre la demo automática del Loop Agéntico en otra pestaña"
+            title={L('Abre la demo automática del Loop Agéntico en otra pestaña', 'Opens the automatic Agentic Loop demo in a new tab')}
           >
-            ✂️ Ver Demo
+            ✂️ {L('Ver Demo', 'View Demo')}
           </a>
           <ReadDocLink section="modo-loop" />
         </div>
@@ -498,7 +578,7 @@ export default function LoopAgentico() {
         {/* Panel 1 — Editor */}
         <section className="panel editor-panel">
           <div className="panel-title">
-            <span>Editor (estado vivo)</span>
+            <span>{L('Editor (estado vivo)', 'Editor (live state)')}</span>
             <span className="context-meta">
               {code.length} chars · ≈ {Math.ceil(code.length / 4)} tokens
             </span>
@@ -522,9 +602,7 @@ export default function LoopAgentico() {
             />
           </div>
           <div className="ctx-tip" style={{ borderRadius: 0 }}>
-            💡 Mientras el agente corre, vas a ver cómo el código se modifica acá en tiempo real
-            cada vez que la IA llama a <code>edit_code</code>. <b>Un solo prompt</b> puede generar
-            varias ediciones.
+            💡 {L('Mientras el agente corre, vas a ver cómo el código se modifica acá en tiempo real cada vez que la IA llama a', 'While the agent runs, you\'ll see the code change here in real time every time the AI calls')} <code>edit_code</code>. <b>{L('Un solo prompt', 'A single prompt')}</b> {L('puede generar varias ediciones.', 'can generate several edits.')}
           </div>
         </section>
 
@@ -534,13 +612,13 @@ export default function LoopAgentico() {
           aria-orientation="vertical"
           onMouseDown={startResize(0)}
           onDoubleClick={handleResetCols}
-          title="Arrastrá para redimensionar · doble clic = reset"
+          title={L('Arrastrá para redimensionar · doble clic = reset', 'Drag to resize · double-click = reset')}
         />
 
         {/* Panel 2 — Prompt + timeline */}
         <section className="panel instr-panel">
           <div className="panel-title">
-            <span>Prompt → Loop agéntico</span>
+            <span>{L('Prompt → Loop agéntico', 'Prompt → Agentic loop')}</span>
             <span className={`provider-badge provider-badge-${provider}`}>
               {provider === 'anthropic'
                 ? '🟠 Claude'
@@ -559,10 +637,10 @@ export default function LoopAgentico() {
               disabled={loading}
               presets={AGENT_PRESETS}
               onLog={appendLog}
-              hint="Reemplaza el system base que viaja en cada iteración del loop. Vacío = se usa el default."
+              hint={L('Reemplaza el system base que viaja en cada iteración del loop. Vacío = se usa el default.', 'Replaces the base system that travels in every loop iteration. Empty = the default is used.')}
             />
             <div className="suggested-steps">
-              <div className="suggested-steps-title">Probá una de estas instrucciones:</div>
+              <div className="suggested-steps-title">{L('Probá una de estas instrucciones:', 'Try one of these instructions:')}</div>
               <ol className="suggested-steps-list">
                 {suggestedPrompts.map(({ prompt, noisy }, i) => (
                   <li key={i}>
@@ -571,7 +649,7 @@ export default function LoopAgentico() {
                       className={`suggested-step-btn${noisy ? ' suggested-step-btn-noisy' : ''}`}
                       onClick={() => setInstruction(prompt)}
                       disabled={loading}
-                      title={noisy ? 'Instrucción ambigua o ruidosa, parecida a la de un usuario apurado' : undefined}
+                      title={noisy ? L('Instrucción ambigua o ruidosa, parecida a la de un usuario apurado', 'Ambiguous or noisy instruction, like a rushed user\'s') : undefined}
                     >
                       {prompt}
                     </button>
@@ -579,16 +657,14 @@ export default function LoopAgentico() {
                 ))}
               </ol>
               <div className="suggested-steps-foot">
-                A diferencia del editor común, acá <b>la IA no devuelve un bloque de código</b>:
-                llama a herramientas (<code>read_code</code>, <code>edit_code</code>) y el código
-                se modifica solo. Mirá la timeline de la derecha para ver las idas y vueltas.
+                {L('A diferencia del editor común, acá', 'Unlike the regular editor, here')} <b>{L('la IA no devuelve un bloque de código', 'the AI does not return a code block')}</b>: {L('llama a herramientas', 'it calls tools')} (<code>read_code</code>, <code>edit_code</code>) {L('y el código se modifica solo. Mirá la timeline de la derecha para ver las idas y vueltas.', 'and the code changes on its own. Watch the timeline on the right to see the back-and-forth.')}
               </div>
             </div>
             <textarea
               className="instr-input"
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
-              placeholder="¿Qué querés que haga el agente con tu código?"
+              placeholder={L('¿Qué querés que haga el agente con tu código?', 'What do you want the agent to do with your code?')}
               disabled={loading}
             />
             <div className="instr-actions">
@@ -598,7 +674,7 @@ export default function LoopAgentico() {
                 disabled={loading || !instruction.trim()}
                 className="instr-send-btn"
               >
-                {loading ? 'Agente trabajando…' : '🤖 Mandar al agente →'}
+                {loading ? L('Agente trabajando…', 'Agent working…') : L('🤖 Mandar al agente →', '🤖 Send to the agent →')}
               </button>
             </div>
 
@@ -606,18 +682,18 @@ export default function LoopAgentico() {
 
             <div className="reply-section">
               <div className="reply-header">
-                <span>Timeline del agente</span>
+                <span>{L('Timeline del agente', 'Agent timeline')}</span>
                 <span className="context-meta">
-                  {iterCount > 0 ? `${iterCount} iteración(es)` : 'sin actividad'}
+                  {iterCount > 0 ? L(`${iterCount} iteración(es)`, `${iterCount} iteration(s)`) : L('sin actividad', 'no activity')}
                 </span>
               </div>
               <div className="reply-content" ref={stepsRef}>
                 {Object.keys(stepsByIter).length === 0 && !finalText && (
-                  <span className="empty">La actividad del agente va a aparecer acá: cada llamada a herramienta y su resultado.</span>
+                  <span className="empty">{L('La actividad del agente va a aparecer acá: cada llamada a herramienta y su resultado.', "The agent's activity will appear here: each tool call and its result.")}</span>
                 )}
                 {Object.entries(stepsByIter).map(([iter, group]) => (
                   <div key={iter} className="agent-iter">
-                    <div className="agent-iter-title">— Iteración #{iter} —</div>
+                    <div className="agent-iter-title">— {L('Iteración', 'Iteration')} #{iter} —</div>
                     {group.map((s, idx) => (
                       <AgentStep key={idx} step={s} />
                     ))}
@@ -625,7 +701,7 @@ export default function LoopAgentico() {
                 ))}
                 {finalText && (
                   <div className="agent-final">
-                    <div className="agent-final-title">✓ Respuesta final del agente</div>
+                    <div className="agent-final-title">✓ {L('Respuesta final del agente', "Agent's final response")}</div>
                     <div className="agent-final-text">{finalText}</div>
                   </div>
                 )}
@@ -640,43 +716,41 @@ export default function LoopAgentico() {
           aria-orientation="vertical"
           onMouseDown={startResize(1)}
           onDoubleClick={handleResetCols}
-          title="Arrastrá para redimensionar · doble clic = reset"
+          title={L('Arrastrá para redimensionar · doble clic = reset', 'Drag to resize · double-click = reset')}
         />
 
         {/* Panel 3 — Historial Raw + Log */}
         <section className="panel raw-panel">
           <div className="panel-title">
-            <span>Historial Request/Response</span>
+            <span>{L('Historial Request/Response', 'Request/Response history')}</span>
             <span className="agent-context-title">
               <span className="context-meta">
                 {rawHistory.length === 0
                   ? activeContextMessages.length > 0
-                    ? `${activeContextMessages.length} msg(s) guardado(s)`
-                    : 'sin actividad'
-                  : `${rawHistory.length} iteración(es) · ${activeContextMessages.length} msg(s) guardado(s)`}
+                    ? L(`${activeContextMessages.length} msg(s) guardado(s)`, `${activeContextMessages.length} saved msg(s)`)
+                    : L('sin actividad', 'no activity')
+                  : L(`${rawHistory.length} iteración(es) · ${activeContextMessages.length} msg(s) guardado(s)`, `${rawHistory.length} iteration(s) · ${activeContextMessages.length} saved msg(s)`)}
               </span>
               <span
                 className={`context-dial context-dial-${contextState}`}
                 style={{ '--ctx-pct': `${contextPct}%` }}
-                title={`Último request: ≈${contextTokens} tokens de ${CONTEXT_BUDGET_TOKENS}`}
+                title={L(`Último request: ≈${contextTokens} tokens de ${CONTEXT_BUDGET_TOKENS}`, `Last request: ≈${contextTokens} tokens of ${CONTEXT_BUDGET_TOKENS}`)}
               >
                 <span className="context-dial-ring">
                   <span className="context-dial-value">{contextPct}%</span>
                 </span>
-                <span className="context-dial-label">contexto</span>
+                <span className="context-dial-label">{L('contexto', 'context')}</span>
               </span>
             </span>
           </div>
           <div className="ctx-tip" style={{ marginTop: 0 }}>
-            💡 <b>El prompt crece turno a turno.</b> Mirá cómo en cada iteración el array{' '}
-            <code>messages</code> incluye los <code>tool_result</code> del turno anterior — eso
-            es lo que hace que la IA pueda encadenar llamadas. <b>Un solo prompt</b> tuyo, N
-            requests internas.
+            💡 <b>{L('El prompt crece turno a turno.', 'The prompt grows turn by turn.')}</b> {L('Mirá cómo en cada iteración el array', 'See how in each iteration the')}{' '}
+            <code>messages</code> {L('incluye los', 'array includes the')} <code>tool_result</code> {L('del turno anterior — eso es lo que hace que la IA pueda encadenar llamadas.', 'from the previous turn — that is what lets the AI chain calls.')} <b>{L('Un solo prompt', 'A single prompt')}</b> {L('tuyo, N requests internas.', 'from you, N internal requests.')}
           </div>
 
           <div className="raw-history" ref={rawHistoryRef}>
             {rawHistory.length === 0 && (
-              <div className="empty" style={{ padding: 12 }}>Mandale una instrucción al agente para ver el historial.</div>
+              <div className="empty" style={{ padding: 12 }}>{L('Mandale una instrucción al agente para ver el historial.', 'Send an instruction to the agent to see the history.')}</div>
             )}
             {rawHistory.map((entry) => {
               const isCollapsed = collapsed.has(entry.iter)
@@ -695,12 +769,12 @@ export default function LoopAgentico() {
                         return ns
                       })
                     }
-                    title="Click para expandir/colapsar"
+                    title={L('Click para expandir/colapsar', 'Click to expand/collapse')}
                   >
                     <span className="raw-iter-chev">{isCollapsed ? '▸' : '▾'}</span>
-                    <span className="raw-iter-label">Iteración #{entry.iter}</span>
+                    <span className="raw-iter-label">{L('Iteración', 'Iteration')} #{entry.iter}</span>
                     <span className="raw-iter-meta">
-                      {reqMsgCount} msg(s) · ≈{reqTokens}t · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : 'esperando…'}
+                      {reqMsgCount} msg(s) · ≈{reqTokens}t · {entry.response ? `stop=${entry.response.stop_reason ?? entry.response.choices?.[0]?.finish_reason ?? '?'}` : L('esperando…', 'waiting…')}
                     </span>
                   </button>
                   {!isCollapsed && (
@@ -711,7 +785,7 @@ export default function LoopAgentico() {
                       </pre>
                       <div className="raw-iter-subtitle">← Response</div>
                       <pre className="raw raw-compact raw-nested">
-                        {entry.response ? JSON.stringify(entry.response, null, 2) : '// esperando…'}
+                        {entry.response ? JSON.stringify(entry.response, null, 2) : L('// esperando…', '// waiting…')}
                       </pre>
                     </>
                   )}
@@ -723,14 +797,14 @@ export default function LoopAgentico() {
           <div className="panel-title panel-title-sub">
             <span>Log</span>
             <span className="panel-links">
-              <span className="context-meta">{logs.length} línea(s)</span>
+              <span className="context-meta">{L(`${logs.length} línea(s)`, `${logs.length} line(s)`)}</span>
               {logs.length > 0 && (
-                <button type="button" onClick={handleClearLogs} className="docs-link">vaciar</button>
+                <button type="button" onClick={handleClearLogs} className="docs-link">{L('vaciar', 'clear')}</button>
               )}
             </span>
           </div>
           <div className="log log-compact" ref={logRef}>
-            {logs.length === 0 && <div className="empty">Sin actividad todavía.</div>}
+            {logs.length === 0 && <div className="empty">{L('Sin actividad todavía.', 'No activity yet.')}</div>}
             {logs.map((entry, i) => (
               <div key={i} className={`log-line log-${entry.level}`}>
                 <span className="log-time">{entry.timestamp}</span>
