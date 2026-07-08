@@ -713,7 +713,7 @@ export default function ModosAgentsMdSkills() {
           </section>
 
           {isDone && (
-            <section className="criollo-section ce-closing" id="cierre">
+            <section className="criollo-section demo-closing" id="cierre">
               <h2>{L('Lo que importa', 'What matters')}</h2>
               <ol>
                 <li>
@@ -727,26 +727,26 @@ export default function ModosAgentsMdSkills() {
                   {INDEX_SYSTEM_CHARS} chars {L('vs', 'vs')} {FAT_SYSTEM_CHARS} {L('del modo FAT. El body del skill recien entro al contexto cuando el test fallo.', 'of the FAT mode. The skill body only entered the context when the test failed.')}
                 </li>
               </ol>
-              <div className="ce-closing-ctas">
-                <a href="/agents-md-skills" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">S</span>
+              <div className="demo-closing-ctas">
+                <a href="/agents-md-skills" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">S</span>
                   <span>
                     <b>{L('Ver el modo real editable', 'See the real editable mode')}</b>
-                    <span className="ce-closing-cta-sub">/agents-md-skills</span>
+                    <span className="demo-closing-cta-sub">/agents-md-skills</span>
                   </span>
                 </a>
-                <a href="/demo/agents-md" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">A</span>
+                <a href="/demo/agents-md" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">A</span>
                   <span>
                     <b>{L('Volver al demo de AGENTS.md base', 'Back to the base AGENTS.md demo')}</b>
-                    <span className="ce-closing-cta-sub">/demo/agents-md</span>
+                    <span className="demo-closing-cta-sub">/demo/agents-md</span>
                   </span>
                 </a>
-                <a href="/demo/loop" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">L</span>
+                <a href="/demo/loop" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">L</span>
                   <span>
                     <b>{L('Ver como se ejecutan las tools', 'See how the tools run')}</b>
-                    <span className="ce-closing-cta-sub">/demo/loop</span>
+                    <span className="demo-closing-cta-sub">/demo/loop</span>
                   </span>
                 </a>
               </div>

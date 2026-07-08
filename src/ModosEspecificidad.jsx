@@ -226,7 +226,7 @@ export default function ModosEspecificidad() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -239,11 +239,22 @@ export default function ModosEspecificidad() {
                 <b>{L('En agentes, esto se multiplica', 'With agents, this compounds')}</b>: {L('un pedido vago a un agente de 10 pasos son 10 oportunidades de desviarse.', 'a vague request to a 10-step agent is 10 chances to drift.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para correrlo con requests reales — mismo agente, dos pedidos, checklist determinística — andá al lab', 'To run it with real requests — same agent, two requests, deterministic checklist — go to the lab')}{' '}
-              <a href="/especificidad">/especificidad</a>. {L('Y para la otra mitad (contexto sucio),', 'And for the other half (dirty context),')}{' '}
-              <a href="/demo/ruido">/demo/ruido</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/especificidad" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎯</span>
+                <span>
+                  <b>{L('¿Querés correrlo con un agente real y la checklist determinística?', 'Want to run it with a real agent and the deterministic checklist?')}</b>
+                  <span className="demo-closing-cta-sub">→ /especificidad</span>
+                </span>
+              </a>
+              <a href="/demo/ruido" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Y la otra mitad de la historia (contexto sucio)?', 'And the other half of the story (dirty context)?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/ruido</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

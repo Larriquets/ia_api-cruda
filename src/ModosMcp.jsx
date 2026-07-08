@@ -190,7 +190,7 @@ export default function ModosMcp() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -203,11 +203,22 @@ export default function ModosMcp() {
                 <b>{L('Estándar = intercambiable', 'Standard = interchangeable')}</b>: {L('el mismo server MCP le sirve a Claude, a un agente tuyo o a cualquier cliente. Escribís la tool una vez.', 'the same MCP server works for Claude, for your own agent, or any client. You write the tool once.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para correr el intercambio de verdad — levantando el server de juguete con', 'To run the exchange for real — spinning up the toy server with')} <code>npm run mcp</code> {L('y disparando cada mensaje vos — andá al lab', 'and firing each message yourself — go to the lab')}{' '}
-              <a href="/mcp">/mcp</a>. {L('Y para ver el ciclo agéntico completo,', 'And to see the full agentic loop,')}{' '}
-              <a href="/demo/loop">/demo/loop</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/mcp" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🔌</span>
+                <span>
+                  <b>{L('¿Querés disparar el intercambio real, con el server de juguete corriendo?', 'Want to fire the real exchange, with the toy server running?')}</b>
+                  <span className="demo-closing-cta-sub">→ /mcp</span>
+                </span>
+              </a>
+              <a href="/demo/loop" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Y el ciclo agéntico completo?', 'And the full agentic loop?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/loop</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

@@ -481,7 +481,7 @@ export default function ModosChat() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -497,9 +497,24 @@ export default function ModosChat() {
                 <b>{L('Persistente es lock-in', 'Persistent is lock-in')}</b>. {L('El endpoint', 'The endpoint')} <code>/v1/responses</code> {L('y la Conversations API son OpenAI-only. Si mañana querés cambiar a Claude, el historial guardado en OpenAI no se mueve.', 'and the Conversations API are OpenAI-only. If tomorrow you want to switch to Claude, the history stored in OpenAI doesn\'t move.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para ver esto con un request', 'To see this with a')} <i>{L('real', 'real')}</i> {L('request, andá al', 'request, go to the')} <a href="/chat">Chat</a> {L('y mirá el panel "Request → API (crudo)" mientras cambiás de modo con el segmented control de arriba. Para entender la anatomía completa del POST,', 'and watch the "Request → API (raw)" panel while you switch modes with the segmented control at the top. To understand the full anatomy of the POST,')}{' '}
-              <a href="/como-funciona">/como-funciona</a>.
+            <div className="demo-closing-ctas">
+              <a href="/chat" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">💬</span>
+                <span>
+                  <b>{L('¿Querés ver el JSON crudo de una charla real, cambiando de modo en vivo?', 'Want to see the raw JSON of a real chat, switching modes live?')}</b>
+                  <span className="demo-closing-cta-sub">→ /chat</span>
+                </span>
+              </a>
+              <a href="/demo/tokens" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Y cuánto cuesta en tokens cada mensaje que se re-manda?', 'And how many tokens does each resent message cost?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/tokens</span>
+                </span>
+              </a>
+            </div>
+            <p className="demo-closing-note">
+              {L('Para entender la anatomía completa del POST,', 'To understand the full anatomy of the POST,')} <a href="/como-funciona">/como-funciona</a>.
             </p>
           </section>
 

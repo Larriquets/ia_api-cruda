@@ -541,7 +541,7 @@ export default function ModosAgentsMd() {
           </section>
 
           {isDone && (
-            <section className="criollo-section ce-closing" id="cierre">
+            <section className="criollo-section demo-closing" id="cierre">
               <h2>{L('Lo que importa', 'What matters')}</h2>
               <ol>
                 <li>
@@ -555,33 +555,33 @@ export default function ModosAgentsMd() {
                   <b>{L('El costo es repeticion.', 'The cost is repetition.')}</b> {L('Si el loop tiene 6 requests, AGENTS.md viaja 6 veces. Conviene que sea corto, concreto y accionable.', 'If the loop has 6 requests, AGENTS.md travels 6 times. Better keep it short, concrete and actionable.')}
                 </li>
               </ol>
-              <div className="ce-closing-ctas">
-                <a href="/agents-md" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">A</span>
+              <div className="demo-closing-ctas">
+                <a href="/agents-md" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">A</span>
                   <span>
                     <b>{L('Ver el modo real editable', 'See the real editable mode')}</b>
-                    <span className="ce-closing-cta-sub">/agents-md</span>
+                    <span className="demo-closing-cta-sub">/agents-md</span>
                   </span>
                 </a>
-                <a href="/agents-md-skills" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">S</span>
+                <a href="/agents-md-skills" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">S</span>
                   <span>
                     <b>{L('Ver la misma idea con skills', 'See the same idea with skills')}</b>
-                    <span className="ce-closing-cta-sub">/agents-md-skills</span>
+                    <span className="demo-closing-cta-sub">/agents-md-skills</span>
                   </span>
                 </a>
-                <a href="/demo/agents-md-skills" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">D</span>
+                <a href="/demo/agents-md-skills" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">D</span>
                   <span>
                     <b>{L('Demo: lazy load + test deterministico', 'Demo: lazy load + deterministic test')}</b>
-                    <span className="ce-closing-cta-sub">/demo/agents-md-skills</span>
+                    <span className="demo-closing-cta-sub">/demo/agents-md-skills</span>
                   </span>
                 </a>
-                <a href="/demo/loop" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">L</span>
+                <a href="/demo/loop" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">L</span>
                   <span>
                     <b>{L('Ver como se ejecutan las tools', 'See how the tools run')}</b>
-                    <span className="ce-closing-cta-sub">/demo/loop</span>
+                    <span className="demo-closing-cta-sub">/demo/loop</span>
                   </span>
                 </a>
               </div>

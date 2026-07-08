@@ -221,7 +221,7 @@ export default function ModosVentana() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -234,11 +234,22 @@ export default function ModosVentana() {
                 <b>{L('Toda estrategia pierde algo', 'Every strategy loses something')}</b>: {L('FIFO pierde historia, compaction pierde detalle y suma costo. Elegir ventana es elegir qué perder.', 'FIFO loses history, compaction loses detail and adds cost. Choosing a window strategy is choosing what to lose.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para ver la poda pasar en vivo sobre una charla real — con FIFO, sliding window y compaction intercambiables — andá al lab', 'To watch the trimming happen live on a real chat — with FIFO, sliding window and compaction switchable — go to the lab')}{' '}
-              <a href="/ventana-contexto">/ventana-contexto</a>. {L('Y para la base de todo esto,', 'And for the foundation of all this,')}{' '}
-              <a href="/demo/chat">/demo/chat</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/ventana-contexto" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🪟</span>
+                <span>
+                  <b>{L('¿Querés ver la poda en vivo — FIFO, sliding window y compaction intercambiables?', 'Want to watch the trimming live — FIFO, sliding window and compaction switchable?')}</b>
+                  <span className="demo-closing-cta-sub">→ /ventana-contexto</span>
+                </span>
+              </a>
+              <a href="/demo/chat" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Cuál es la base de todo esto?', 'What is the foundation of all this?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/chat</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

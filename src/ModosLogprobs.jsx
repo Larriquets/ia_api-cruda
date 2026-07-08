@@ -241,7 +241,7 @@ export default function ModosLogprobs() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -254,11 +254,22 @@ export default function ModosLogprobs() {
                 <b>{L('Por eso el contexto es todo', "That's why context is everything")}</b>: {L('las probabilidades se calculan mirando el texto previo. Cambiá el prompt y cambia la lotería entera.', 'the probabilities are computed by looking at the prior text. Change the prompt and the whole lottery changes.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para ver los números reales — con tu key, tu prompt y la temperatura que quieras — andá al lab', 'To see the real numbers — with your key, your prompt and any temperature you like — go to the lab')}{' '}
-              <a href="/logprobs">/logprobs</a>. {L('Y para ver el texto hecho pedacitos,', 'And to see text chopped into pieces,')}{' '}
-              <a href="/demo/tokens">/demo/tokens</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/logprobs" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎲</span>
+                <span>
+                  <b>{L('¿Querés ver los números reales, con tu key, tu prompt y tu temperatura?', 'Want to see the real numbers, with your key, your prompt and your temperature?')}</b>
+                  <span className="demo-closing-cta-sub">→ /logprobs</span>
+                </span>
+              </a>
+              <a href="/demo/tokens" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Y el texto hecho pedacitos?', 'And text chopped into pieces?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/tokens</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

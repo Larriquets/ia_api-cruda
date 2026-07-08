@@ -248,7 +248,7 @@ export default function ModosTokens() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -261,11 +261,22 @@ export default function ModosTokens() {
                 <b>{L('Por eso falla en letras y aritmética', "That's why it fails at letters and arithmetic")}</b>. {L('"987654321" se parte en pedazos arbitrarios; las letras de adentro de una palabra son invisibles.', '"987654321" gets split into arbitrary chunks; the letters inside a word are invisible.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para jugar con TU texto — comparar encodings, ver bytes, IDs y costos por modelo — andá al lab', 'To play with YOUR text — compare encodings, see bytes, IDs and per-model costs — go to the lab')}{' '}
-              <a href="/tokens">/tokens</a>. {L('Y para entender por qué la charla entera se re-manda cada vez,', 'And to understand why the whole chat gets re-sent every time,')}{' '}
-              <a href="/demo/chat">/demo/chat</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/tokens" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🔡</span>
+                <span>
+                  <b>{L('¿Querés jugar con TU texto — bytes, IDs y costos por modelo?', 'Want to play with YOUR text — bytes, IDs and per-model costs?')}</b>
+                  <span className="demo-closing-cta-sub">→ /tokens</span>
+                </span>
+              </a>
+              <a href="/demo/chat" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Por qué se re-manda la charla entera cada vez?', 'Why does the whole chat get re-sent every time?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/chat</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

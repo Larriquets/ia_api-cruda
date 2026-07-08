@@ -331,7 +331,7 @@ export default function ModosRag() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -347,11 +347,22 @@ export default function ModosRag() {
                 <b>{L('Por eso es barato', 'That\'s why it\'s cheap')}</b>. {L('De 4 documentos viajaron 2. Con una biblioteca de 10.000, también viajan 2 — indexar se paga una vez, preguntar cuesta casi lo mismo siempre.', 'Out of 4 documents, 2 traveled. With a library of 10,000, still 2 travel — indexing is paid once, asking costs about the same every time.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para hacer esto con requests reales — editar la biblioteca, ver los vectores crudos y probar la pregunta trampa — andá al lab', 'To do this with real requests — edit the library, see the raw vectors and try the trap question — go to the lab')}{' '}
-              <a href="/rag">/rag</a>. {L('Y si querés ver por qué la IA responde mal cuando el contexto viene sucio,', 'And if you want to see why the AI answers badly when the context comes in dirty,')}{' '}
-              <a href="/ruido">/ruido</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/rag" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">📚</span>
+                <span>
+                  <b>{L('¿Querés hacerlo con requests reales — tu biblioteca y la pregunta trampa?', 'Want to do it with real requests — your library and the trap question?')}</b>
+                  <span className="demo-closing-cta-sub">→ /rag</span>
+                </span>
+              </a>
+              <a href="/ruido" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🔊</span>
+                <span>
+                  <b>{L('¿Por qué la IA responde mal cuando el contexto viene sucio?', 'Why does the AI answer badly when the context comes in dirty?')}</b>
+                  <span className="demo-closing-cta-sub">→ /ruido</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

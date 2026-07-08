@@ -229,7 +229,7 @@ export default function ModosInjection() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -242,11 +242,22 @@ export default function ModosInjection() {
                 <b>{L('Vale para todo contenido ajeno', 'It applies to all third-party content')}</b>: {L('mails, webs, PDFs, resultados de tools. Si la IA lo lee y alguien más lo escribió, puede traer órdenes.', 'emails, webpages, PDFs, tool results. If the AI reads it and someone else wrote it, it can carry orders.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para intentar el ataque vos — con requests reales y varios niveles de defensa — andá al lab', 'To try the attack yourself — with real requests and several defense levels — go to the lab')}{' '}
-              <a href="/prompt-injection">/prompt-injection</a>. {L('Y para ver dónde viven las reglas,', 'And to see where the rules live,')}{' '}
-              <a href="/demo/agents-md">/demo/agents-md</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/prompt-injection" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🛡</span>
+                <span>
+                  <b>{L('¿Querés intentar el ataque vos, con varios niveles de defensa?', 'Want to try the attack yourself, with several defense levels?')}</b>
+                  <span className="demo-closing-cta-sub">→ /prompt-injection</span>
+                </span>
+              </a>
+              <a href="/demo/agents-md" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Dónde viven las reglas que definen qué puede hacer la IA?', 'Where do the rules that define what the AI can do live?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/agents-md</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

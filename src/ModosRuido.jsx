@@ -222,7 +222,7 @@ export default function ModosRuido() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -235,11 +235,22 @@ export default function ModosRuido() {
                 <b>{L('En agentes es crítico', "In agents it's critical")}</b>: {L('cada tool_result inflado se arrastra por TODOS los pasos siguientes del loop.', 'every bloated tool_result drags through ALL the following steps of the loop.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para correrlo de verdad — la misma tarea agéntica con y sin ruido, y ver al agente marearse en vivo — andá al lab', 'To run it for real — the same agentic task with and without noise, watching the agent get dizzy live — go to the lab')}{' '}
-              <a href="/ruido">/ruido</a>. {L('Y para la otra mitad de la historia (pedidos vagos vs precisos),', 'And for the other half of the story (vague vs precise requests),')}{' '}
-              <a href="/demo/especificidad">/demo/especificidad</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/ruido" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🔊</span>
+                <span>
+                  <b>{L('¿Querés correrlo con un agente real y ver cómo se marea?', 'Want to run it with a real agent and watch it get dizzy?')}</b>
+                  <span className="demo-closing-cta-sub">→ /ruido</span>
+                </span>
+              </a>
+              <a href="/demo/especificidad" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Y la otra mitad de la historia (pedidos vagos vs precisos)?', 'And the other half of the story (vague vs precise requests)?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/especificidad</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

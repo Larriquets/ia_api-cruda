@@ -522,7 +522,7 @@ export default function ComoEdita() {
 
           {/* ============== CIERRE ============== */}
           {isDone && (
-            <section className="criollo-section ce-closing" id="cierre">
+            <section className="criollo-section demo-closing" id="cierre">
               <h2>📌 {L('Lo que importa', 'What matters')}</h2>
               <ol>
                 <li>
@@ -535,30 +535,30 @@ export default function ComoEdita() {
                   <b>{L('El loop existe porque la IA itera.', 'The loop exists because the AI iterates.')}</b> {L('No hace todo en una llamada. Pide ver, mira el resultado, pide editar, mira cómo quedó, pide editar otra vez, hasta decidir terminar. Eso es el', "It doesn't do everything in one call. It asks to see, looks at the result, asks to edit, looks at how it came out, asks to edit again, until it decides to stop. That's the")} <code>stop_reason: "end_turn"</code>.
                 </li>
               </ol>
-              <div className="ce-closing-ctas">
-                <a href="/loop-agentico" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">🤖</span>
+              <div className="demo-closing-ctas">
+                <a href="/loop-agentico" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">🤖</span>
                   <span>
                     <b>{L('¿Querés ver el JSON crudo de una corrida real?', 'Want to see the raw JSON of a real run?')}</b>
-                    <span className="ce-closing-cta-sub">→ /loop-agentico</span>
+                    <span className="demo-closing-cta-sub">→ /loop-agentico</span>
                   </span>
                 </a>
-                <a href="/agents-md-skills" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">📋</span>
+                <a href="/agents-md-skills" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">📋</span>
                   <span>
                     <b>{L('¿Y con reglas (AGENTS.md, skills)?', 'And with rules (AGENTS.md, skills)?')}</b>
-                    <span className="ce-closing-cta-sub">→ /agents-md-skills</span>
+                    <span className="demo-closing-cta-sub">→ /agents-md-skills</span>
                   </span>
                 </a>
-                <a href="/demo/editor" className="ce-closing-cta">
-                  <span className="ce-closing-cta-emoji">🎬</span>
+                <a href="/demo/editor" className="demo-closing-cta">
+                  <span className="demo-closing-cta-emoji">🎬</span>
                   <span>
                     <b>{L('¿En qué cambia con el Editor (que NO es agéntico)?', 'How does it change with the Editor (which is NOT agentic)?')}</b>
-                    <span className="ce-closing-cta-sub">→ /demo/editor</span>
+                    <span className="demo-closing-cta-sub">→ /demo/editor</span>
                   </span>
                 </a>
               </div>
-              <p className="ce-closing-note">
+              <p className="demo-closing-note">
                 {L('Heads up: esta corrida tiene 7 pasos. Una real puede tener 2 o 15 — depende de la complejidad del cambio. El mecanismo es el mismo.', 'Heads up: this run has 7 steps. A real one can have 2 or 15 — it depends on the complexity of the change. The mechanism is the same.')}
               </p>
             </section>

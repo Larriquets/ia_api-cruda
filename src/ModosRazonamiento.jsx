@@ -468,7 +468,7 @@ export default function ModosRazonamiento() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -484,11 +484,22 @@ export default function ModosRazonamiento() {
                 <b>{L('No todos los modelos razonan', 'Not every model reasons')}</b>. {L('gpt-4o-mini no razona; Haiku tampoco. Elegir modelo también es elegir si puede pensar antes de responder.', 'gpt-4o-mini doesn\'t reason; neither does Haiku. Picking a model is also picking whether it can think before answering.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para hacer esto con requests reales — tu propia pregunta, cambiar el effort y ver el JSON crudo — andá al lab', 'To do this with real requests — your own question, changing the effort and seeing the raw JSON — go to the lab')}{' '}
-              <a href="/razonamiento">/razonamiento</a>. {L('Y si querés entender qué es exactamente un token de los que acá se facturan,', 'And if you want to understand what exactly one of these billed tokens is,')}{' '}
-              <a href="/tokens">/tokens</a>.
-            </p>
+            <div className="demo-closing-ctas">
+              <a href="/razonamiento" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🧠</span>
+                <span>
+                  <b>{L('¿Querés hacerlo con tu propia pregunta, cambiando el effort en vivo?', 'Want to do it with your own question, changing effort live?')}</b>
+                  <span className="demo-closing-cta-sub">→ /razonamiento</span>
+                </span>
+              </a>
+              <a href="/tokens" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🔡</span>
+                <span>
+                  <b>{L('¿Qué es exactamente un token de los que acá se facturan?', "What exactly is one of the tokens billed here?")}</b>
+                  <span className="demo-closing-cta-sub">→ /tokens</span>
+                </span>
+              </a>
+            </div>
           </section>
 
           <footer className="criollo-footer">

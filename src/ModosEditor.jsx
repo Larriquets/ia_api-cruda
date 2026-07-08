@@ -535,7 +535,7 @@ export default function ModosEditor() {
           </section>
 
           {/* ============== CIERRE ============== */}
-          <section className="criollo-section" id="cierre">
+          <section className="criollo-section demo-closing" id="cierre">
             <h2>📌 {L('Lo que importa', 'What matters')}</h2>
             <ul>
               <li>
@@ -551,9 +551,24 @@ export default function ModosEditor() {
                 <b>{L('Con contexto el costo crece rápido.', 'With context the cost grows fast.')}</b> {L('Cada turno suma el código completo otra vez (porque está embebido en el user del turno anterior). Después de N turnos, el POST tiene ~N copias del código. Para sesiones largas, mejor el modo agéntico.', 'Each turn adds the whole code again (because it\'s embedded in the previous turn\'s user). After N turns, the POST has ~N copies of the code. For long sessions, the agentic mode is better.')}
               </li>
             </ul>
-            <p style={{ marginTop: 12 }}>
-              {L('Para ver esto con un request', 'To see this with a')} <i>{L('real', 'real')}</i> {L('request, andá al', 'request, go to the')} <a href="/editor">Editor</a> {L('y prendé/apagá el checkbox "mantener contexto" mientras mirás el panel "Request → API (crudo)". Para entender la anatomía completa del POST,', 'and toggle the "keep context" checkbox while you watch the "Request → API (raw)" panel. To understand the full anatomy of the POST,')}{' '}
-              <a href="/como-funciona">/como-funciona</a>.
+            <div className="demo-closing-ctas">
+              <a href="/editor" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">💻</span>
+                <span>
+                  <b>{L('¿Querés ver el JSON real, prendiendo y apagando "mantener contexto"?', 'Want to see the real JSON, toggling "keep context" on and off?')}</b>
+                  <span className="demo-closing-cta-sub">→ /editor</span>
+                </span>
+              </a>
+              <a href="/demo/loop" className="demo-closing-cta">
+                <span className="demo-closing-cta-emoji">🎬</span>
+                <span>
+                  <b>{L('¿Cómo es la versión que sí itera con tools?', 'What does the version that iterates with tools look like?')}</b>
+                  <span className="demo-closing-cta-sub">→ /demo/loop</span>
+                </span>
+              </a>
+            </div>
+            <p className="demo-closing-note">
+              {L('Para entender la anatomía completa del POST,', 'To understand the full anatomy of the POST,')} <a href="/como-funciona">/como-funciona</a>.
             </p>
           </section>
 
