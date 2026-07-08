@@ -44,6 +44,7 @@ import ModosRazonamiento from './ModosRazonamiento.jsx'
 import Entrada from './Entrada.jsx'
 import Tutos from './Tutos.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
@@ -120,6 +121,9 @@ export default function App() {
       return []
     }
   })
+  // Si al montar vinieron líneas de localStorage, el panel les pone arriba un
+  // divisor "sesión anterior" para que no parezcan actividad de ahora.
+  const [hasRestoredLogs, setHasRestoredLogs] = useState(logs.length > 0)
   const [rawMode, setRawMode] = useState(true)
   const [persistentMode, setPersistentMode] = useState(false)
   const [provider, setProvider] = useState(() => {
@@ -498,6 +502,7 @@ export default function App() {
 
   const handleClearLogs = () => {
     setLogs([])
+    setHasRestoredLogs(false)
     try {
       localStorage.removeItem(LOGS_KEY)
     } catch { /* noop */ }
@@ -519,13 +524,15 @@ export default function App() {
   const goHome = () => { window.location.href = '/' }
   if (page === 'entrada') {
     // La landing es la bienvenida: no monta el WelcomeModal.
+    // (El WelcomeModal describe los 5 modos del taller, así que solo se monta
+    // en esas cinco páginas — no en labs, demos, tutos ni recorrido.)
     return <Entrada />
   }
   if (page === 'contexto') {
-    return <><WelcomeModal /><Contexto onBack={goHome} /></>
+    return <Contexto onBack={goHome} />
   }
   if (page === 'proveedores') {
-    return <><WelcomeModal /><Proveedores onBack={goHome} /></>
+    return <Proveedores onBack={goHome} />
   }
   if (page === 'editor') {
     return <><WelcomeModal /><Editor onBack={goHome} /></>
@@ -540,103 +547,103 @@ export default function App() {
     return <><WelcomeModal /><EditorAgentsMd withSkills={true} /></>
   }
   if (page === 'ventana-contexto') {
-    return <><WelcomeModal /><VentanaContexto /></>
+    return <VentanaContexto />
   }
   if (page === 'prompt-injection') {
-    return <><WelcomeModal /><PromptInjection /></>
+    return <PromptInjection />
   }
   if (page === 'razonamiento') {
-    return <><WelcomeModal /><Razonamiento /></>
+    return <Razonamiento />
   }
   if (page === 'logprobs') {
-    return <><WelcomeModal /><Logprobs /></>
+    return <Logprobs />
   }
   if (page === 'tokens') {
-    return <><WelcomeModal /><Tokens /></>
+    return <Tokens />
   }
   if (page === 'mcp') {
-    return <><WelcomeModal /><Mcp /></>
+    return <Mcp />
   }
   if (page === 'ruido') {
-    return <><WelcomeModal /><Ruido /></>
+    return <Ruido />
   }
   if (page === 'rag') {
-    return <><WelcomeModal /><Rag /></>
+    return <Rag />
   }
   if (page === 'especificidad') {
-    return <><WelcomeModal /><Especificidad /></>
+    return <Especificidad />
   }
   if (page === 'docs') {
-    return <><WelcomeModal /><Docs /></>
+    return <Docs />
   }
   if (page === 'como-funciona') {
-    return <><WelcomeModal /><ComoFunciona /></>
+    return <ComoFunciona />
   }
   if (page === 'recorrido') {
-    return <><WelcomeModal /><Recorrido /></>
+    return <Recorrido />
   }
   if (page === 'tuto-memoria') {
-    return <><WelcomeModal /><Tutos tema="memoria" /></>
+    return <Tutos tema="memoria" />
   }
   if (page === 'tuto-tokens') {
-    return <><WelcomeModal /><Tutos tema="tokens" /></>
+    return <Tutos tema="tokens" />
   }
   if (page === 'tuto-inventa') {
-    return <><WelcomeModal /><Tutos tema="inventa" /></>
+    return <Tutos tema="inventa" />
   }
   if (page === 'tuto-fuentes') {
-    return <><WelcomeModal /><Tutos tema="fuentes" /></>
+    return <Tutos tema="fuentes" />
   }
   if (page === 'tuto-piensa') {
-    return <><WelcomeModal /><Tutos tema="piensa" /></>
+    return <Tutos tema="piensa" />
   }
   if (page === 'tuto-agentes') {
-    return <><WelcomeModal /><Tutos tema="agentes" /></>
+    return <Tutos tema="agentes" />
   }
   if (page === 'tuto-reglas') {
-    return <><WelcomeModal /><Tutos tema="reglas" /></>
+    return <Tutos tema="reglas" />
   }
   if (page === 'demo-chat') {
-    return <><WelcomeModal /><ModosChat /></>
+    return <ModosChat />
   }
   if (page === 'demo-editor') {
-    return <><WelcomeModal /><ModosEditor /></>
+    return <ModosEditor />
   }
   if (page === 'demo-loop') {
-    return <><WelcomeModal /><ComoEdita /></>
+    return <ComoEdita />
   }
   if (page === 'demo-rag') {
-    return <><WelcomeModal /><ModosRag /></>
+    return <ModosRag />
   }
   if (page === 'demo-tokens') {
-    return <><WelcomeModal /><ModosTokens /></>
+    return <ModosTokens />
   }
   if (page === 'demo-logprobs') {
-    return <><WelcomeModal /><ModosLogprobs /></>
+    return <ModosLogprobs />
   }
   if (page === 'demo-mcp') {
-    return <><WelcomeModal /><ModosMcp /></>
+    return <ModosMcp />
   }
   if (page === 'demo-ventana-contexto') {
-    return <><WelcomeModal /><ModosVentana /></>
+    return <ModosVentana />
   }
   if (page === 'demo-ruido') {
-    return <><WelcomeModal /><ModosRuido /></>
+    return <ModosRuido />
   }
   if (page === 'demo-especificidad') {
-    return <><WelcomeModal /><ModosEspecificidad /></>
+    return <ModosEspecificidad />
   }
   if (page === 'demo-prompt-injection') {
-    return <><WelcomeModal /><ModosInjection /></>
+    return <ModosInjection />
   }
   if (page === 'demo-razonamiento') {
-    return <><WelcomeModal /><ModosRazonamiento /></>
+    return <ModosRazonamiento />
   }
   if (page === 'demo-agents-md') {
-    return <><WelcomeModal /><ModosAgentsMd /></>
+    return <ModosAgentsMd />
   }
   if (page === 'demo-agents-md-skills') {
-    return <><WelcomeModal /><ModosAgentsMdSkills /></>
+    return <ModosAgentsMdSkills />
   }
 
   return (
@@ -653,6 +660,7 @@ export default function App() {
       </header>
 
       <DemoBacklink href="/demo/chat" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/chat" />
 
       <ConfigBar>
         <label className="hdr-select">
@@ -700,7 +708,7 @@ export default function App() {
               title={t('app.claudeModelTitle')}
             >
               {ANTHROPIC_CHAT_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+                <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
               ))}
             </select>
           </label>
@@ -719,7 +727,7 @@ export default function App() {
               title={t('app.openaiModelTitle')}
             >
               {OPENAI_CHAT_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+                <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
               ))}
             </select>
           </label>
@@ -1098,6 +1106,9 @@ export default function App() {
           </div>
           <div className="log" ref={logRef}>
             {logs.length === 0 && <div className="empty">{t('app.logEmpty')}</div>}
+            {hasRestoredLogs && logs.length > 0 && (
+              <div className="log-restored-divider">{t('app.logPrevSession')}</div>
+            )}
             {logs.map((entry, i) => (
               <div key={i} className={`log-line log-${entry.level}`}>
                 <span className="log-time">{entry.timestamp}</span>

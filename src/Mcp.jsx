@@ -4,8 +4,9 @@ import { mcpInitialize, mcpListTools, mcpCallTool, DEFAULT_MCP_HOST, MCP_PROTOCO
 import { runMcpAgent, MCP_AGENT_DEFAULT_SYSTEM } from './mcp-agent.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
+import { useT } from './i18n/useT.js'
 
 const HOST_KEY = 'mcp_host'
 const LOGS_KEY = 'mcp_logs'
@@ -44,6 +45,7 @@ const safeReadJSON = (key) => {
 }
 
 export default function Mcp() {
+  const { t } = useT()
   const [host, setHost] = useState(() => localStorage.getItem(HOST_KEY) || DEFAULT_MCP_HOST)
   const [serverInfo, setServerInfo] = useState(null) // result de initialize
   const [tools, setTools] = useState(null)           // null = todavía no se pidió
@@ -216,7 +218,6 @@ export default function Mcp() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />
@@ -228,6 +229,7 @@ export default function Mcp() {
       </header>
 
       <DemoBacklink href="/demo/mcp" />
+      <MissingKeyNotice provider={agentProvider} demoHref="/demo/mcp" />
 
       <ConfigBar>
         <label className="hdr-select mcp-host-field">
@@ -632,7 +634,7 @@ export default function Mcp() {
             <span>Log del proceso</span>
             <span className="panel-links">
               <span className="context-meta">
-                {logs.length} línea(s) · persistido
+                {t('app.logLines', { n: logs.length })}
               </span>
               {logs.length > 0 && (
                 <button

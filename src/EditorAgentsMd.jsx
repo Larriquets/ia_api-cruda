@@ -7,6 +7,7 @@ import { runLmStudioAgent } from './lmstudio-agent.js'
 import { AGENT_SYSTEM_PROMPT } from './agent-tools.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
@@ -699,6 +700,7 @@ export default function EditorAgentsMd({ withSkills = true }) {
       </header>
 
       <DemoBacklink href={withSkills ? '/demo/agents-md-skills' : '/demo/agents-md'} />
+      <MissingKeyNotice provider={provider} demoHref={withSkills ? '/demo/agents-md-skills' : '/demo/agents-md'} />
 
       <ConfigBar>
         <label className="hdr-select">

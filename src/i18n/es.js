@@ -90,6 +90,7 @@ export const es = {
     logClear: 'vaciar',
     logClearTitle: 'Borra el log y elimina la entrada de localStorage',
     logEmpty: 'Sin actividad todavía.',
+    logPrevSession: '↓ log de una sesión anterior (quedó guardado en localStorage)',
     // logs
     logUserSends: 'Usuario envía: "{text}"',
     logPersistActive: 'Modo PERSISTENTE activo — usando /v1/responses + Conversations API',
@@ -232,6 +233,7 @@ export const es = {
     tDemosTitle: '🎬 Demos animadas (sin API)',
     tDocsLabel: 'Docs',
     tDocsSub: 'el material completo de la clase',
+    verTodos: 'ver los {count} →',
     footNote: 'Las dos puertas cuentan la misma verdad: no hay magia — hay texto viajando en un POST. Y sin embargo hace lo que hace. Cada parada del recorrido tiene un botón para cruzar al taller, y cada lab tiene su versión guiada.',
     footLink: 'Ver la anatomía completa del POST →',
   },
@@ -256,6 +258,33 @@ export const es = {
   demobacklink: {
     text: '¿Mucho JSON? Esta página tiene una versión guiada y animada, sin API:',
     link: 'ver la demo',
+  },
+
+  missingkey: {
+    title: 'Este modo necesita una key de {provider} — y acá no hay ninguna configurada.',
+    body: 'La key se carga en el archivo .env al levantar la app (está explicado en el README). Si estás en una clase, pedísela a quien la dicta. Mientras tanto, nada está roto:',
+    demoCta: 'Mirá la versión animada — funciona sin key',
+    tourCta: 'o volvé al recorrido guiado',
+  },
+
+  // Notas de los dropdowns de modelos (los arrays viven en los wrappers .js,
+  // que no pueden usar el hook t(); acá va solo el texto de cada noteKey).
+  models: {
+    cheapClass: 'barato — recomendado para clase',
+    moreCapable: 'más capaz',
+    fastBigContext: 'rápido, contexto grande',
+    mostCapableNonReasoner: 'el más capaz (no razonador)',
+    fastCheapClass: 'rápido y barato — recomendado para clase',
+    speedIntelligence: 'balance velocidad/inteligencia',
+    mostCapablePricier: 'el más capaz — más caro',
+    fastCheapDefault: 'rápido y barato — default',
+    bigReasoner: 'razonador grande',
+    stablePrevGen: 'estable, generación anterior',
+    olderCheaper: 'más viejo, más barato',
+    firstReasoners: 'primera tanda de razonadores',
+    sonnet45Recommended: 'Sonnet 4.5 — recomendado',
+    opus41Pricier: 'Opus 4.1 — más caro',
+    sonnet37: 'Sonnet 3.7',
   },
 
   configbar: {

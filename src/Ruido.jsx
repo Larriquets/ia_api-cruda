@@ -8,6 +8,7 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 
 // Lab de context rot: corre la MISMA tarea agéntica dos veces — una limpia y
 // otra con cada tool_result inflado por bloatToolResult (src/noise.js) — y
@@ -239,6 +240,7 @@ export default function Ruido() {
       </header>
 
       <DemoBacklink href="/demo/ruido" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/ruido" />
 
       <ConfigBar>
         <label className="hdr-select">

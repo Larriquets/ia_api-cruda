@@ -89,6 +89,7 @@ export const en = {
     logClear: 'empty',
     logClearTitle: 'Clears the log and removes the localStorage entry',
     logEmpty: 'No activity yet.',
+    logPrevSession: '↓ log from a previous session (saved in localStorage)',
     // logs
     logUserSends: 'User sends: "{text}"',
     logPersistActive: 'PERSISTENT mode active — using /v1/responses + Conversations API',
@@ -231,6 +232,7 @@ export const en = {
     tDemosTitle: '🎬 Animated demos (no API)',
     tDocsLabel: 'Docs',
     tDocsSub: 'the full class material',
+    verTodos: 'see all {count} →',
     footNote: "Both doors tell the same truth: there's no magic — there's text traveling in a POST. And yet it does what it does. Every stop of the tour has a button to cross into the workshop, and every lab has its guided version.",
     footLink: 'See the full anatomy of the POST →',
   },
@@ -255,6 +257,31 @@ export const en = {
   demobacklink: {
     text: 'Too much JSON? This page has a guided, animated version — no API:',
     link: 'see the demo',
+  },
+
+  missingkey: {
+    title: 'This mode needs a {provider} key — and none is configured here.',
+    body: 'The key goes in the .env file when the app is started (see the README). If you are in a class, ask whoever runs it. In the meantime, nothing is broken:',
+    demoCta: 'Watch the animated version — no key needed',
+    tourCta: 'or go back to the guided tour',
+  },
+
+  models: {
+    cheapClass: 'cheap — recommended for class',
+    moreCapable: 'more capable',
+    fastBigContext: 'fast, large context',
+    mostCapableNonReasoner: 'most capable (non-reasoner)',
+    fastCheapClass: 'fast and cheap — recommended for class',
+    speedIntelligence: 'speed/intelligence balance',
+    mostCapablePricier: 'most capable — pricier',
+    fastCheapDefault: 'fast and cheap — default',
+    bigReasoner: 'large reasoner',
+    stablePrevGen: 'stable, previous generation',
+    olderCheaper: 'older, cheaper',
+    firstReasoners: 'first wave of reasoners',
+    sonnet45Recommended: 'Sonnet 4.5 — recommended',
+    opus41Pricier: 'Opus 4.1 — pricier',
+    sonnet37: 'Sonnet 3.7',
   },
 
   configbar: {

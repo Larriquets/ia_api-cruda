@@ -4,9 +4,10 @@ import { sendLogprobsMessage, TOP_LOGPROBS_OPTIONS } from './openai-logprobs.js'
 import { OPENAI_CHAT_MODELS } from './openai.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
+import { useT } from './i18n/useT.js'
 
 const MODEL_KEY = 'logprobs_model'
 const TEMP_KEY = 'logprobs_temperature'
@@ -77,6 +78,7 @@ const displayToken = (token) =>
   token.replace(/ /g, '␣').replace(/\n/g, '⏎') || '∅'
 
 export default function Logprobs() {
+  const { t } = useT()
   const [model, setModel] = useState(
     () => localStorage.getItem(MODEL_KEY) || import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini',
   )
@@ -101,6 +103,8 @@ export default function Logprobs() {
   const [usage, setUsage] = useState(null)
   const [selectedIdx, setSelectedIdx] = useState(null)
   const [logs, setLogs] = useState(() => safeReadJSON(LOGS_KEY) || [])
+  // Divisor "sesión anterior" sobre las líneas que vinieron de localStorage.
+  const [hasRestoredLogs, setHasRestoredLogs] = useState(logs.length > 0)
 
   const logRef = useRef(null)
 
@@ -186,6 +190,7 @@ export default function Logprobs() {
 
   const handleClearLogs = () => {
     setLogs([])
+    setHasRestoredLogs(false)
     try { localStorage.removeItem(LOGS_KEY) } catch { /* noop */ }
   }
 
@@ -199,7 +204,6 @@ export default function Logprobs() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />
@@ -211,6 +215,7 @@ export default function Logprobs() {
       </header>
 
       <DemoBacklink href="/demo/logprobs" />
+      <MissingKeyNotice provider="openai" demoHref="/demo/logprobs" />
 
       <ConfigBar>
         <label className="hdr-select">
@@ -238,7 +243,7 @@ export default function Logprobs() {
             title="Modelos de chat clásicos. Los razonadores (gpt-5, o-*) no devuelven logprobs."
           >
             {OPENAI_CHAT_MODELS.map((m) => (
-              <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+              <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
             ))}
           </select>
         </label>
@@ -508,7 +513,7 @@ export default function Logprobs() {
             <span>Log del proceso</span>
             <span className="panel-links">
               <span className="context-meta">
-                {logs.length} línea(s) · persistido
+                {t('app.logLines', { n: logs.length })}
               </span>
               {logs.length > 0 && (
                 <button
@@ -523,6 +528,9 @@ export default function Logprobs() {
           </div>
           <div className="log" ref={logRef}>
             {logs.length === 0 && <div className="empty">Sin actividad todavía.</div>}
+            {hasRestoredLogs && logs.length > 0 && (
+              <div className="log-restored-divider">{t('app.logPrevSession')}</div>
+            )}
             {logs.map((entry, i) => (
               <div key={i} className={`log-line log-${entry.level}`}>
                 <span className="log-time">{entry.timestamp}</span>

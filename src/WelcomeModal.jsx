@@ -3,6 +3,9 @@ import Brand from './Brand.jsx'
 import { useT } from './i18n/useT.js'
 
 const DISMISS_KEY = 'welcome_dismissed_v1'
+// sessionStorage: cerrar el modal (aunque sea sin tildar "no volver a mostrar")
+// alcanza para no verlo más en esta sesión — la navegación es full page load.
+const SESSION_KEY = 'welcome_dismissed_session'
 
 const STEPS = [
   { emoji: '💬', titleKey: 'welcome.chatTitle', descKey: 'welcome.chatDesc', href: '/chat' },
@@ -21,6 +24,7 @@ export default function WelcomeModal() {
     if (typeof window === 'undefined') return
     try {
       const dismissed = localStorage.getItem(DISMISS_KEY) === 'true'
+        || sessionStorage.getItem(SESSION_KEY) === 'true'
       if (!dismissed) setOpen(true)
     } catch {
       setOpen(true)
@@ -36,6 +40,7 @@ export default function WelcomeModal() {
   }, [open, dontShowAgain])
 
   const handleClose = () => {
+    try { sessionStorage.setItem(SESSION_KEY, 'true') } catch { /* noop */ }
     if (dontShowAgain) {
       try { localStorage.setItem(DISMISS_KEY, 'true') } catch { /* noop */ }
     }

@@ -7,10 +7,10 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import SystemEditor from './SystemEditor.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 import { CHAT_DEFAULT_SYSTEM, CHAT_PRESETS } from './system-presets.js'
 import {
   applyFifo,
@@ -298,7 +298,6 @@ export default function VentanaContexto() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />
@@ -310,6 +309,7 @@ export default function VentanaContexto() {
       </header>
 
       <DemoBacklink href="/demo/ventana-contexto" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/ventana-contexto" />
 
       <ConfigBar>
         <label className="hdr-select">

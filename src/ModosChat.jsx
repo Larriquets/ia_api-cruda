@@ -238,7 +238,7 @@ export default function ModosChat() {
           <section className="criollo-section" id="intro">
             <h2>🎯 {L('La pregunta del millón', 'The million-dollar question')}</h2>
             <p>
-              {L('¿La IA', 'Does the AI')} <b>{L('se acuerda', 'remember')}</b> {L('de lo que le dijiste antes? La respuesta corta es:', 'what you told it before? The short answer is:')} <b>{L('no', 'no')}</b>.
+              {L('¿La IA', 'Does the AI')} <b>{L('se acuerda', 'remember')}</b> {L('de lo que le dijiste antes? La respuesta corta es:', 'what you told it before? The short answer is:')} <b>{L('no', 'no')}</b>.{' '}
               {L('La respuesta larga es: depende de', 'The long answer is: it depends on')} <b>{L('quién', 'who')}</b> {L('guarda el historial. Esta página simula la misma conversación de 3 turnos en los 3 modos del Chat y muestra, lado a lado, qué JSON sale del navegador en cada turno.', 'stores the history. This page simulates the same 3-turn conversation in the 3 Chat modes and shows, side by side, what JSON leaves the browser each turn.')}
             </p>
             <div className="prov-callout">

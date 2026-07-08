@@ -11,10 +11,10 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 // los razonadores (gpt-5 y familia o-*) viven en /razonamiento y no aceptan
 // temperature, así que romperían el control de temperatura de esta página.
 export const OPENAI_CHAT_MODELS = [
-  { id: 'gpt-4o-mini', label: 'gpt-4o-mini', note: 'barato — recomendado para clase' },
-  { id: 'gpt-4o', label: 'gpt-4o', note: 'más capaz' },
-  { id: 'gpt-4.1-mini', label: 'gpt-4.1-mini', note: 'rápido, contexto grande' },
-  { id: 'gpt-4.1', label: 'gpt-4.1', note: 'el más capaz (no razonador)' },
+  { id: 'gpt-4o-mini', label: 'gpt-4o-mini', noteKey: 'models.cheapClass' },
+  { id: 'gpt-4o', label: 'gpt-4o', noteKey: 'models.moreCapable' },
+  { id: 'gpt-4.1-mini', label: 'gpt-4.1-mini', noteKey: 'models.fastBigContext' },
+  { id: 'gpt-4.1', label: 'gpt-4.1', noteKey: 'models.mostCapableNonReasoner' },
 ]
 
 // ============== /chat/completions (modo clásico) ==============

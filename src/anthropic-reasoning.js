@@ -19,9 +19,9 @@ const getDefaultModel = () =>
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export const ANTHROPIC_REASONING_MODELS = [
-  { id: 'claude-sonnet-4-5', label: 'claude-sonnet-4-5', note: 'Sonnet 4.5 — recomendado' },
-  { id: 'claude-opus-4-1', label: 'claude-opus-4-1', note: 'Opus 4.1 — más caro' },
-  { id: 'claude-3-7-sonnet-latest', label: 'claude-3-7-sonnet-latest', note: 'Sonnet 3.7' },
+  { id: 'claude-sonnet-4-5', label: 'claude-sonnet-4-5', noteKey: 'models.sonnet45Recommended' },
+  { id: 'claude-opus-4-1', label: 'claude-opus-4-1', noteKey: 'models.opus41Pricier' },
+  { id: 'claude-3-7-sonnet-latest', label: 'claude-3-7-sonnet-latest', noteKey: 'models.sonnet37' },
 ]
 
 // Equivalentes aproximados a los "effort" de OpenAI, para que la UI sea uniforme.

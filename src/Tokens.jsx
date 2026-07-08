@@ -10,7 +10,6 @@ import {
 } from 'gpt-tokenizer/encoding/cl100k_base'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
 
 const TEXT_KEY = 'tokens_text'
@@ -146,7 +145,6 @@ export default function Tokens() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />

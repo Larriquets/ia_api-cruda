@@ -2735,6 +2735,19 @@ a:where(:link, :visited):hover {
     display: none;
   }
 
+  /* Excepción: en el nav de tutos la pregunta ES el link — sin el texto
+     quedan cuadraditos de emoji imposibles de adivinar. Se achica en vez
+     de ocultarse. */
+  .docs-layout .docs-nav-questions .docs-nav-link {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .docs-layout .docs-nav-questions .docs-nav-desc {
+    display: inline;
+    font-size: 12px;
+  }
+
   /* Evitar overflow horizontal por <code> largos o palabras sin espacio
      dentro de párrafos. */
   .criollo-section p,
@@ -8897,6 +8910,42 @@ a:where(:link, :visited):hover {
   color: #64748b;
 }
 
+/* Labs y demos plegados en la puerta 2: el summary reusa el look del título. */
+.entrada-collapse > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.entrada-collapse > summary::-webkit-details-marker {
+  display: none;
+}
+
+.entrada-collapse > summary::before {
+  content: '▸';
+  font-size: 10px;
+  color: #64748b;
+  transition: transform 0.15s ease;
+}
+
+.entrada-collapse[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.entrada-collapse > summary:hover,
+.entrada-collapse > summary:hover::before {
+  color: #94a3b8;
+}
+
+.entrada-collapse-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #7dd3fc;
+}
+
 .entrada-links {
   list-style: none;
   margin: 0;
@@ -9083,4 +9132,73 @@ a:where(:link, :visited):hover {
 .demo-backlink-btn:hover {
   color: #ddd6fe;
   text-decoration: underline;
+}
+
+/* ===== Aviso de key faltante (MissingKeyNotice) ===== */
+/* Advertencia suave, no error: el lab no está roto, solo falta la key. */
+
+.missing-key-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 12px 20px;
+  padding: 12px 16px;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.missing-key-emoji {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.missing-key-title {
+  color: #fbbf24;
+}
+
+.missing-key-text {
+  margin: 4px 0 8px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.missing-key-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+}
+
+.missing-key-demo {
+  color: #6ee7b7;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.missing-key-demo:hover {
+  color: #a7f3d0;
+  text-decoration: underline;
+}
+
+.missing-key-tour {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+.missing-key-tour:hover {
+  color: #bae6fd;
+  text-decoration: underline;
+}
+
+/* Divisor sobre las líneas de log restauradas de localStorage. */
+.log-restored-divider {
+  padding: 4px 0 6px;
+  border-bottom: 1px dashed #334155;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-style: italic;
+  color: #64748b;
 }

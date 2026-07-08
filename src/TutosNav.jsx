@@ -7,8 +7,10 @@ import { useT } from './i18n/useT.js'
 
 export default function TutosNav({ current, titleKey = 'tutos.navTitle' }) {
   const { t } = useT()
+  // docs-nav-questions: acá la pregunta ES el link — en mobile no se puede
+  // colapsar a solo-emoji como el nav "MÁS DOCS" (ver styles.css).
   return (
-    <nav className="docs-nav" aria-label={t('tutos.navAria')}>
+    <nav className="docs-nav docs-nav-questions" aria-label={t('tutos.navAria')}>
       <div className="docs-nav-title">{t(titleKey)}</div>
       {PREGUNTAS.filter((q) => q.href !== current).map((q) => (
         <a key={q.href} href={q.href} className="docs-nav-link">
