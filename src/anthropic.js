@@ -8,9 +8,9 @@ const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 // Modelos de chat seleccionables desde la UI. IDs sin sufijo de fecha (alias).
 export const ANTHROPIC_CHAT_MODELS = [
-  { id: 'claude-haiku-4-5', label: 'claude-haiku-4-5', note: 'rápido y barato — recomendado para clase' },
-  { id: 'claude-sonnet-4-6', label: 'claude-sonnet-4-6', note: 'balance velocidad/inteligencia' },
-  { id: 'claude-opus-4-8', label: 'claude-opus-4-8', note: 'el más capaz — más caro' },
+  { id: 'claude-haiku-4-5', label: 'claude-haiku-4-5', noteKey: 'models.fastCheapClass' },
+  { id: 'claude-sonnet-4-6', label: 'claude-sonnet-4-6', noteKey: 'models.speedIntelligence' },
+  { id: 'claude-opus-4-8', label: 'claude-opus-4-8', noteKey: 'models.mostCapablePricier' },
 ]
 
 const SYSTEM_PROMPT = 'Eres un asistente útil que responde en español de forma clara y concisa.'

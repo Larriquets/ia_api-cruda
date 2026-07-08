@@ -49,7 +49,7 @@ a:where(:link, :visited):hover {
   gap: 8px;
 }
 
-/* === Marca "{ La IA Cruda } // todo es contexto" (reutilizable en headers y modal) === */
+/* === Marca "{ La IA Cruda } // todo es contexto" (reutilizable en headers) === */
 .brand-home {
   display: inline-flex;
   align-items: center;
@@ -207,176 +207,6 @@ a:where(:link, :visited):hover {
   background: rgba(34, 197, 94, 0.18);
   border-color: #22c55e;
   color: #dcfce7;
-}
-
-/* === Modal de bienvenida === */
-.welcome-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.78);
-  backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-  animation: welcome-fade 180ms ease-out;
-}
-
-@keyframes welcome-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.welcome-modal {
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  max-width: 640px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-}
-
-.welcome-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px 12px;
-  border-bottom: 1px solid #1e293b;
-}
-
-.welcome-header h2 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: #e2e8f0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.welcome-close {
-  background: transparent;
-  border: none;
-  color: #64748b;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 4px;
-  transition: color 0.15s;
-}
-
-.welcome-close:hover {
-  color: #cbd5e1;
-}
-
-.welcome-intro {
-  margin: 14px 22px 8px;
-  font-size: 13px;
-  color: #94a3b8;
-  line-height: 1.5;
-}
-
-.welcome-steps {
-  list-style: none;
-  padding: 8px 22px 4px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.welcome-step {
-  display: flex;
-  gap: 12px;
-  padding: 10px 12px;
-  background: #0b1220;
-  border: 1px solid #1e293b;
-  border-radius: 8px;
-}
-
-.welcome-step-num {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1px;
-}
-
-.welcome-step-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.welcome-step-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #e2e8f0;
-  margin-bottom: 2px;
-}
-
-.welcome-step-emoji {
-  font-size: 15px;
-}
-
-.welcome-step-desc {
-  font-size: 12px;
-  color: #94a3b8;
-  line-height: 1.5;
-}
-
-.welcome-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 22px 18px;
-  border-top: 1px solid #1e293b;
-  margin-top: 10px;
-}
-
-.welcome-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #94a3b8;
-  cursor: pointer;
-  user-select: none;
-}
-
-.welcome-checkbox input {
-  cursor: pointer;
-}
-
-.welcome-cta {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 9px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.welcome-cta:hover {
-  background: #2563eb;
 }
 
 /* === Sub-barra de configuración (debajo del header) === */
@@ -2733,6 +2563,19 @@ a:where(:link, :visited):hover {
 
   .docs-layout .docs-nav-desc {
     display: none;
+  }
+
+  /* Excepción: en el nav de tutos la pregunta ES el link — sin el texto
+     quedan cuadraditos de emoji imposibles de adivinar. Se achica en vez
+     de ocultarse. */
+  .docs-layout .docs-nav-questions .docs-nav-link {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .docs-layout .docs-nav-questions .docs-nav-desc {
+    display: inline;
+    font-size: 12px;
   }
 
   /* Evitar overflow horizontal por <code> largos o palabras sin espacio
@@ -8897,6 +8740,42 @@ a:where(:link, :visited):hover {
   color: #64748b;
 }
 
+/* Labs y demos plegados en la puerta 2: el summary reusa el look del título. */
+.entrada-collapse > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.entrada-collapse > summary::-webkit-details-marker {
+  display: none;
+}
+
+.entrada-collapse > summary::before {
+  content: '▸';
+  font-size: 10px;
+  color: #64748b;
+  transition: transform 0.15s ease;
+}
+
+.entrada-collapse[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.entrada-collapse > summary:hover,
+.entrada-collapse > summary:hover::before {
+  color: #94a3b8;
+}
+
+.entrada-collapse-hint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #7dd3fc;
+}
+
 .entrada-links {
   list-style: none;
   margin: 0;
@@ -9083,4 +8962,324 @@ a:where(:link, :visited):hover {
 .demo-backlink-btn:hover {
   color: #ddd6fe;
   text-decoration: underline;
+}
+
+/* ===== Aviso de key faltante (MissingKeyNotice) ===== */
+/* Advertencia suave, no error: el lab no está roto, solo falta la key. */
+
+.missing-key-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 12px 20px;
+  padding: 12px 16px;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.missing-key-emoji {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.missing-key-title {
+  color: #fbbf24;
+}
+
+.missing-key-text {
+  margin: 4px 0 8px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.missing-key-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+}
+
+.missing-key-demo {
+  color: #6ee7b7;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.missing-key-demo:hover {
+  color: #a7f3d0;
+  text-decoration: underline;
+}
+
+.missing-key-tour {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+.missing-key-tour:hover {
+  color: #bae6fd;
+  text-decoration: underline;
+}
+
+/* Divisor sobre las líneas de log restauradas de localStorage. */
+.log-restored-divider {
+  padding: 4px 0 6px;
+  border-bottom: 1px dashed #334155;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-style: italic;
+  color: #64748b;
+}
+
+/* ============================================================
+   /mapa: el mapa del territorio. Archipiélago isométrico en SVG
+   puro — cada isla agrupa rutas, cada nodo es un <a> real.
+   El "3D" es fake: rombos con cara lateral más oscura, cero deps.
+   ============================================================ */
+.mapa-page {
+  min-height: 100vh;
+  height: auto;
+}
+
+.mapa-main {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.mapa-hero {
+  text-align: center;
+}
+
+.mapa-hero h2 {
+  margin: 6px 0 10px;
+  font-size: 26px;
+  color: #f1f5f9;
+}
+
+.mapa-hero p {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #94a3b8;
+}
+
+/* Barra de hover: muestra adónde lleva el nodo, con el pathname crudo.
+   aria-live para que el lector de pantalla también se entere. */
+.mapa-hoverbar {
+  margin: 16px auto 4px;
+  max-width: 760px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.mapa-hoverbar b {
+  color: #e2e8f0;
+}
+
+.mapa-hoverbar code {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: #fbbf24;
+  background: #1e293b;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* En pantallas angostas el SVG scrollea horizontal dentro de su caja,
+   nunca la página. */
+.mapa-canvas {
+  overflow-x: auto;
+}
+
+.mapa-canvas svg {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+}
+
+/* --- Rutas entre islas: punteadas y en movimiento lento --- */
+.mapa-ruta {
+  fill: none;
+  stroke: #475569;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+  animation: mapa-dash 40s linear infinite;
+}
+
+.mapa-ruta-verde { stroke: rgba(74, 222, 128, 0.65); stroke-width: 2; }
+.mapa-ruta-azul { stroke: rgba(96, 165, 250, 0.65); stroke-width: 2; }
+
+@keyframes mapa-dash {
+  to { stroke-dashoffset: -600; }
+}
+
+/* --- Plataformas (islas) --- */
+.mapa-plataforma {
+  cursor: pointer;
+}
+
+.mapa-plataforma:focus-visible {
+  outline: none;
+}
+
+.mapa-plat-top {
+  fill: #1e293b;
+  stroke-width: 1.5;
+  transition: fill 0.15s;
+}
+
+.mapa-plat-lado {
+  fill: #0b1526;
+  stroke-width: 1;
+}
+
+.mapa-plataforma:hover .mapa-plat-top,
+.mapa-plataforma:focus-visible .mapa-plat-top,
+.mapa-isla-sel .mapa-plat-top {
+  fill: #263449;
+}
+
+.mapa-plat-label {
+  fill: #e2e8f0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mapa-plat-count {
+  fill: #64748b;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Acento por isla: mismo verde de la puerta 1 para el recorrido,
+   celeste para los modos (puerta 2), y familia para el resto. */
+.mapa-isla-recorrido .mapa-plat-top,
+.mapa-isla-recorrido .mapa-plat-lado { stroke: #4ade80; }
+.mapa-isla-recorrido .mapa-nodo-top { fill: #166534; stroke: #4ade80; }
+.mapa-isla-recorrido .mapa-nodo-lado { fill: #14532d; }
+
+.mapa-isla-modos .mapa-plat-top,
+.mapa-isla-modos .mapa-plat-lado { stroke: #60a5fa; }
+.mapa-isla-modos .mapa-nodo-top { fill: #1e40af; stroke: #93c5fd; }
+.mapa-isla-modos .mapa-nodo-lado { fill: #1e3a8a; }
+
+.mapa-isla-labs .mapa-plat-top,
+.mapa-isla-labs .mapa-plat-lado { stroke: #22d3ee; }
+.mapa-isla-labs .mapa-nodo-top { fill: #155e75; stroke: #67e8f9; }
+.mapa-isla-labs .mapa-nodo-lado { fill: #164e63; }
+
+.mapa-isla-demos .mapa-plat-top,
+.mapa-isla-demos .mapa-plat-lado { stroke: #fbbf24; }
+.mapa-isla-demos .mapa-nodo-top { fill: #92400e; stroke: #fcd34d; }
+.mapa-isla-demos .mapa-nodo-lado { fill: #78350f; }
+
+.mapa-isla-docs .mapa-plat-top,
+.mapa-isla-docs .mapa-plat-lado { stroke: #94a3b8; }
+.mapa-isla-docs .mapa-nodo-top { fill: #334155; stroke: #94a3b8; }
+.mapa-isla-docs .mapa-nodo-lado { fill: #1e293b; }
+
+.mapa-isla-entrada .mapa-nodo-top { fill: #3b0764; stroke: #e879f9; }
+.mapa-isla-entrada .mapa-nodo-lado { fill: #2a0547; }
+
+/* --- Nodos: rombos linkeables que se levantan al hover --- */
+.mapa-nodo {
+  cursor: pointer;
+  outline: none;
+}
+
+.mapa-nodo-lift {
+  transition: transform 0.15s ease;
+}
+
+.mapa-nodo:hover .mapa-nodo-lift,
+.mapa-nodo:focus-visible .mapa-nodo-lift {
+  transform: translateY(-5px);
+}
+
+.mapa-nodo:focus-visible .mapa-nodo-top {
+  stroke-width: 2.5;
+}
+
+.mapa-nodo-top {
+  stroke-width: 1;
+  transition: filter 0.15s;
+}
+
+.mapa-nodo:hover .mapa-nodo-top {
+  filter: brightness(1.45);
+}
+
+.mapa-nodo-emoji {
+  font-size: 12px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Caminito interno del recorrido: las paradas se visitan en orden */
+.mapa-orden {
+  fill: none;
+  stroke: rgba(74, 222, 128, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  pointer-events: none;
+}
+
+.mapa-escalera {
+  margin: 10px auto 0;
+  max-width: 760px;
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  color: #64748b;
+}
+
+/* --- Panel de la isla seleccionada: reusa .entrada-link --- */
+.mapa-panel {
+  margin-top: 22px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.mapa-panel h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #f1f5f9;
+}
+
+.mapa-panel-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 4px 14px;
+}
+
+.mapa-panel-hint {
+  margin: 22px auto 0;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.entrada-hero-mapa {
+  margin: 10px 0 0;
+  font-size: 13px;
 }

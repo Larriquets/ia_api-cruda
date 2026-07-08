@@ -9,6 +9,7 @@ import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 
 const PROVIDER_KEY = 'promptinj_provider'
 const TEMP_KEY = 'promptinj_temperature'
@@ -241,6 +242,7 @@ export default function PromptInjection() {
       </header>
 
       <DemoBacklink href="/demo/prompt-injection" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/prompt-injection" />
 
       <ConfigBar>
         <label className="hdr-select">

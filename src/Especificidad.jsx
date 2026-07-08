@@ -7,6 +7,7 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 
 // Lab de especificidad del pedido: corre la MISMA tarea agéntica dos veces —
 // una con un pedido vago ("agregale que se pueda sacar plata") y otra con un
@@ -233,6 +234,7 @@ export default function Especificidad() {
       </header>
 
       <DemoBacklink href="/demo/especificidad" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/especificidad" />
 
       <ConfigBar>
         <label className="hdr-select">

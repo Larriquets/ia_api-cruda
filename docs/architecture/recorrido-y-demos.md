@@ -57,7 +57,7 @@ Al pie de cada tuto hay un **pager anterior/siguiente** (`.tuto-pager` en [Tutos
 - **Puerta "Entender"**: CTA a `/recorrido` + la lista de tutos **nombrados por la pregunta humana** de [preguntas.js](../../src/preguntas.js) (`PREGUNTAS`: cada una → su `/tutos/*`). La misma lista alimenta la nav lateral de los tutos ([TutosNav.jsx](../../src/TutosNav.jsx)) — un solo lugar para que no se desincronicen. El header de la puerta 2 (`ModeSwitch`) no lista la puerta 1: se entra por la landing.
 - **Puerta "Taller"**: CTA a `/chat` + la lista completa de [taller.js](../../src/taller.js) (`MODOS` + `LABS` + `DEMOS`, con títulos de sección) + link a `/docs`. La misma fuente alimenta los dropdowns "Modos" y "Labs" del header — espejo del patrón de `preguntas.js`. Las demos animadas cuelgan de esta puerta: son la versión guiada del taller, no la capa para no programadores (esa son los tutos).
 
-La landing no monta el `WelcomeModal` (la landing *es* la bienvenida). Copy vía namespace `entrada.*` del i18n.
+La landing *es* la bienvenida (no hay modal de bienvenida). Copy vía namespace `entrada.*` del i18n.
 
 ## Demos animadas (`/demo/*`)
 

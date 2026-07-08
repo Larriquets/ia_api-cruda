@@ -13,9 +13,9 @@ import {
 import { sendLmStudioReasoningMessage } from './lmstudio-reasoning.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
 import { useT } from './i18n/useT.js'
 
@@ -419,7 +419,6 @@ export default function Razonamiento() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />
@@ -431,6 +430,7 @@ export default function Razonamiento() {
       </header>
 
       <DemoBacklink href="/demo/razonamiento" />
+      <MissingKeyNotice provider={provider} demoHref="/demo/razonamiento" />
 
       <ConfigBar>
         <label className="hdr-select">
@@ -479,7 +479,7 @@ export default function Razonamiento() {
               title="Solo modelos razonadores de OpenAI. gpt-4o-mini NO es razonador."
             >
               {REASONING_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+                <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
               ))}
             </select>
           </label>
@@ -496,7 +496,7 @@ export default function Razonamiento() {
               title="Solo modelos con extended thinking. Haiku NO razona."
             >
               {ANTHROPIC_REASONING_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+                <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
               ))}
             </select>
           </label>
@@ -916,7 +916,7 @@ export default function Razonamiento() {
             <span>Log del proceso</span>
             <span className="panel-links">
               <span className="context-meta">
-                {logs.length} línea(s) · persistido
+                {t('app.logLines', { n: logs.length })}
               </span>
               {logs.length > 0 && (
                 <button

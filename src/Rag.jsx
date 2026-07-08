@@ -4,6 +4,8 @@ import { embedTexts, cosineSimilarity, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS } f
 import { sendChatMessage, OPENAI_CHAT_MODELS } from './openai.js'
 import ModeSwitch from './ModeSwitch.jsx'
 import ConfigBar from './ConfigBar.jsx'
+import DemoBacklink from './DemoBacklink.jsx'
+import MissingKeyNotice from './MissingKeyNotice.jsx'
 import { useT } from './i18n/useT.js'
 
 const DOCS_KEY = 'rag_docs'
@@ -287,6 +289,9 @@ export default function Rag() {
         </div>
       </header>
 
+      <DemoBacklink href="/demo/rag" />
+      <MissingKeyNotice provider="openai" demoHref="/demo/rag" />
+
       <ConfigBar>
         <label className="hdr-select">
           <span className="hdr-select-label">{t('rag.providerLabel')}</span>
@@ -310,7 +315,7 @@ export default function Rag() {
             title={t('rag.modelTitle')}
           >
             {OPENAI_CHAT_MODELS.map((m) => (
-              <option key={m.id} value={m.id}>{m.label} — {m.note}</option>
+              <option key={m.id} value={m.id}>{m.label} — {t(m.noteKey)}</option>
             ))}
           </select>
         </label>

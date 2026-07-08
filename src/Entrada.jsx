@@ -44,6 +44,9 @@ export default function Entrada() {
         <section className="entrada-hero">
           <h2>{t('entrada.heroTitle')}</h2>
           <p>{t('entrada.heroSub')}</p>
+          <p className="entrada-hero-mapa">
+            <a href="/mapa">{t('entrada.mapaLink')}</a>
+          </p>
         </section>
 
         <div className="entrada-doors">
@@ -80,19 +83,32 @@ export default function Entrada() {
                 <EntradaLink key={m.href} {...m} t={t} />
               ))}
             </ul>
-            <div className="entrada-links-title">{t('modeswitch.labsBtn')}</div>
-            <ul className="entrada-links">
-              {LABS.map((m) => (
-                <EntradaLink key={m.href} {...m} t={t} />
-              ))}
-            </ul>
-            <div className="entrada-links-title">{t('entrada.tDemosTitle')}</div>
-            <ul className="entrada-links">
-              {DEMOS.map((m) => (
-                <EntradaLink key={m.href} {...m} t={t} />
-              ))}
-              <EntradaLink emoji="📚" href="/docs" labelKey="entrada.tDocsLabel" subKey="entrada.tDocsSub" t={t} />
-            </ul>
+            {/* Labs y demos colapsados por defecto: la puerta 2 desplegada entera
+                es una pared de ~30 ítems con jerga que intimida al que todavía
+                está eligiendo puerta. Los 5 modos alcanzan como vidriera. */}
+            <details className="entrada-collapse">
+              <summary className="entrada-links-title">
+                {t('modeswitch.labsBtn')}
+                <span className="entrada-collapse-hint">{t('entrada.verTodos', { count: LABS.length })}</span>
+              </summary>
+              <ul className="entrada-links">
+                {LABS.map((m) => (
+                  <EntradaLink key={m.href} {...m} t={t} />
+                ))}
+              </ul>
+            </details>
+            <details className="entrada-collapse">
+              <summary className="entrada-links-title">
+                {t('entrada.tDemosTitle')}
+                <span className="entrada-collapse-hint">{t('entrada.verTodos', { count: DEMOS.length + 1 })}</span>
+              </summary>
+              <ul className="entrada-links">
+                {DEMOS.map((m) => (
+                  <EntradaLink key={m.href} {...m} t={t} />
+                ))}
+                <EntradaLink emoji="📚" href="/docs" labelKey="entrada.tDocsLabel" subKey="entrada.tDocsSub" t={t} />
+              </ul>
+            </details>
           </section>
         </div>
 

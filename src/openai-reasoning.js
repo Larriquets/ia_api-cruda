@@ -14,11 +14,11 @@ const getDefaultModel = () => import.meta.env.VITE_OPENAI_REASONING_MODEL || 'gp
 const maskKey = (k) => `${k.slice(0, 7)}…${k.slice(-4)}`
 
 export const REASONING_MODELS = [
-  { id: 'gpt-5-mini', label: 'gpt-5-mini', note: 'rápido y barato — default' },
-  { id: 'gpt-5', label: 'gpt-5', note: 'razonador grande' },
-  { id: 'o4-mini', label: 'o4-mini', note: 'estable, generación anterior' },
-  { id: 'o3-mini', label: 'o3-mini', note: 'más viejo, más barato' },
-  { id: 'o1-mini', label: 'o1-mini', note: 'primera tanda de razonadores' },
+  { id: 'gpt-5-mini', label: 'gpt-5-mini', noteKey: 'models.fastCheapDefault' },
+  { id: 'gpt-5', label: 'gpt-5', noteKey: 'models.bigReasoner' },
+  { id: 'o4-mini', label: 'o4-mini', noteKey: 'models.stablePrevGen' },
+  { id: 'o3-mini', label: 'o3-mini', noteKey: 'models.olderCheaper' },
+  { id: 'o1-mini', label: 'o1-mini', noteKey: 'models.firstReasoners' },
 ]
 
 export const REASONING_EFFORTS = [

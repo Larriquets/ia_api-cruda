@@ -89,6 +89,7 @@ export const en = {
     logClear: 'empty',
     logClearTitle: 'Clears the log and removes the localStorage entry',
     logEmpty: 'No activity yet.',
+    logPrevSession: '↓ log from a previous session (saved in localStorage)',
     // logs
     logUserSends: 'User sends: "{text}"',
     logPersistActive: 'PERSISTENT mode active — using /v1/responses + Conversations API',
@@ -198,6 +199,7 @@ export const en = {
     contextoSub: 'live view of the messages array',
     provLabel: '⚖️ /providers',
     provSub: 'OpenAI vs Anthropic',
+    mapaTitle: 'Territory map: the whole app in one chart, every node is a link',
   },
 
   entrada: {
@@ -231,8 +233,29 @@ export const en = {
     tDemosTitle: '🎬 Animated demos (no API)',
     tDocsLabel: 'Docs',
     tDocsSub: 'the full class material',
+    verTodos: 'see all {count} →',
     footNote: "Both doors tell the same truth: there's no magic — there's text traveling in a POST. And yet it does what it does. Every stop of the tour has a button to cross into the workshop, and every lab has its guided version.",
     footLink: 'See the full anatomy of the POST →',
+    mapaLink: '🗺 or check the territory map: the whole app in one chart →',
+  },
+
+  mapa: {
+    subtitle: '// territory map',
+    title: 'The territory map',
+    intro: 'The whole app in one chart. Every node is a real route: what you see here is literally the list of pathnames App.jsx knows how to serve. Tap an island to list its stops, or click a node to go straight there.',
+    islaRecorrido: 'Tour',
+    islaModos: 'Modes',
+    islaLabs: 'Labs',
+    islaDemos: 'Animated demos',
+    islaDocs: 'Docs',
+    paradas: '{count} stops',
+    entradaNode: 'the entrance',
+    entradaNodeSub: 'the two-door landing',
+    recorridoStartLabel: 'The guided tour',
+    recorridoStartSub: 'the 7 stops in order, no API',
+    hoverIdle: 'hover a node to see where it leads — click to go',
+    escalera: 'The dotted routes are the usual ladder: the two doors leave from the entrance, the tour steps down to the demos, the demos to the lab and the lab to the modes. Docs watches over everything.',
+    panelHint: 'Tap an island on the map to list all of its stops down here.',
   },
 
   tutos: {
@@ -255,6 +278,31 @@ export const en = {
   demobacklink: {
     text: 'Too much JSON? This page has a guided, animated version — no API:',
     link: 'see the demo',
+  },
+
+  missingkey: {
+    title: 'This mode needs a {provider} key — and none is configured here.',
+    body: 'The key goes in the .env file when the app is started (see the README). If you are in a class, ask whoever runs it. In the meantime, nothing is broken:',
+    demoCta: 'Watch the animated version — no key needed',
+    tourCta: 'or go back to the guided tour',
+  },
+
+  models: {
+    cheapClass: 'cheap — recommended for class',
+    moreCapable: 'more capable',
+    fastBigContext: 'fast, large context',
+    mostCapableNonReasoner: 'most capable (non-reasoner)',
+    fastCheapClass: 'fast and cheap — recommended for class',
+    speedIntelligence: 'speed/intelligence balance',
+    mostCapablePricier: 'most capable — pricier',
+    fastCheapDefault: 'fast and cheap — default',
+    bigReasoner: 'large reasoner',
+    stablePrevGen: 'stable, previous generation',
+    olderCheaper: 'older, cheaper',
+    firstReasoners: 'first wave of reasoners',
+    sonnet45Recommended: 'Sonnet 4.5 — recommended',
+    opus41Pricier: 'Opus 4.1 — pricier',
+    sonnet37: 'Sonnet 3.7',
   },
 
   configbar: {
@@ -351,24 +399,6 @@ export const en = {
     hintDefault: 'Replaces the base system that travels in every request. Empty = the default is used.',
     logRestored: 'System prompt restored to default',
     logPreset: 'System prompt: preset "{label}" applied',
-  },
-
-  welcome: {
-    subtitle: '// everything is context — request, response and context, all raw',
-    close: 'Close',
-    intro: 'This app hides nothing: you see the JSON going out, the JSON coming back, and how context accumulates between calls. It has 5 modes — each shows a different layer of how you work with an LLM API. Go through them in order.',
-    dontShow: "Don't show again",
-    cta: 'Start →',
-    chatTitle: 'Chat',
-    chatDesc: 'Chat straight to OpenAI / Claude. Shows the 3 context modes: raw, conversation and persistent.',
-    editorTitle: 'Editor',
-    editorDesc: 'Code editor + AI. You pass a snippet and an instruction, it returns modified code. With or without context.',
-    loopTitle: 'Agentic Loop',
-    loopDesc: 'Loop with tool-use. The AI decides which tools to use (read/edit the code) and runs multiple steps on its own.',
-    agentsTitle: 'Agent + rules',
-    agentsDesc: 'Agent with an AGENTS.md file injected into the system prompt: persistent instructions it always follows (style, constraints, project conventions).',
-    skillsTitle: 'Agent + skills',
-    skillsDesc: 'Same agent with AGENTS.md, but with instructions loaded on demand (load_skill) + a deterministic test (run_skill_test) the AI runs after editing.',
   },
 
   lmstudio: {
