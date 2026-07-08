@@ -8,7 +8,7 @@ import { MODOS, LABS } from './taller.js'
  * "Modos", "Labs" y "Docs" son dropdowns. La puerta 1 (recorrido + tutos)
  * tiene su propia nav (TutosNav) y se entra desde la landing.
  *
- * @param {string} active - "entrada" | "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "rag" | "especificidad" | "docs"
+ * @param {string} active - "entrada" | "chat" | "editor" | "loop-agentico" | "agents-md" | "agents-md-skills" | "ventana-contexto" | "prompt-injection" | "razonamiento" | "logprobs" | "mcp" | "ruido" | "rag" | "especificidad" | "docs" | "mapa"
  */
 export default function ModeSwitch({ active }) {
   const { t } = useT()
@@ -174,6 +174,10 @@ export default function ModeSwitch({ active }) {
           </div>
         )}
       </div>
+
+      <a href="/mapa" className={cls('mapa')} {...aria('mapa')} title={t('modeswitch.mapaTitle')}>
+        🗺
+      </a>
 
       <LanguageToggle />
     </div>

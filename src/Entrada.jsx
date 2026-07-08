@@ -44,6 +44,9 @@ export default function Entrada() {
         <section className="entrada-hero">
           <h2>{t('entrada.heroTitle')}</h2>
           <p>{t('entrada.heroSub')}</p>
+          <p className="entrada-hero-mapa">
+            <a href="/mapa">{t('entrada.mapaLink')}</a>
+          </p>
         </section>
 
         <div className="entrada-doors">

@@ -42,6 +42,7 @@ import ModosEspecificidad from './ModosEspecificidad.jsx'
 import ModosInjection from './ModosInjection.jsx'
 import ModosRazonamiento from './ModosRazonamiento.jsx'
 import Entrada from './Entrada.jsx'
+import Mapa from './Mapa.jsx'
 import Tutos from './Tutos.jsx'
 import DemoBacklink from './DemoBacklink.jsx'
 import MissingKeyNotice from './MissingKeyNotice.jsx'
@@ -49,7 +50,6 @@ import ModeSwitch from './ModeSwitch.jsx'
 import ReadDocLink from './ReadDocLink.jsx'
 import ConfigBar from './ConfigBar.jsx'
 import LmStudioModelPicker from './LmStudioModelPicker.jsx'
-import WelcomeModal from './WelcomeModal.jsx'
 import SystemEditor from './SystemEditor.jsx'
 import TemperatureControl from './TemperatureControl.jsx'
 import FirstTenMinutesGuide from './FirstTenMinutesGuide.jsx'
@@ -167,6 +167,7 @@ export default function App() {
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
     if (window.location.pathname === '/recorrido') return 'recorrido'
+    if (window.location.pathname === '/mapa') return 'mapa'
     if (window.location.pathname === '/tutos/memoria') return 'tuto-memoria'
     if (window.location.pathname === '/tutos/tokens') return 'tuto-tokens'
     if (window.location.pathname === '/tutos/inventa') return 'tuto-inventa'
@@ -523,9 +524,6 @@ export default function App() {
 
   const goHome = () => { window.location.href = '/' }
   if (page === 'entrada') {
-    // La landing es la bienvenida: no monta el WelcomeModal.
-    // (El WelcomeModal describe los 5 modos del taller, así que solo se monta
-    // en esas cinco páginas — no en labs, demos, tutos ni recorrido.)
     return <Entrada />
   }
   if (page === 'contexto') {
@@ -535,16 +533,16 @@ export default function App() {
     return <Proveedores onBack={goHome} />
   }
   if (page === 'editor') {
-    return <><WelcomeModal /><Editor onBack={goHome} /></>
+    return <Editor onBack={goHome} />
   }
   if (page === 'loop-agentico') {
-    return <><WelcomeModal /><LoopAgentico /></>
+    return <LoopAgentico />
   }
   if (page === 'agents-md') {
-    return <><WelcomeModal /><EditorAgentsMd withSkills={false} /></>
+    return <EditorAgentsMd withSkills={false} />
   }
   if (page === 'agents-md-skills') {
-    return <><WelcomeModal /><EditorAgentsMd withSkills={true} /></>
+    return <EditorAgentsMd withSkills={true} />
   }
   if (page === 'ventana-contexto') {
     return <VentanaContexto />
@@ -581,6 +579,9 @@ export default function App() {
   }
   if (page === 'recorrido') {
     return <Recorrido />
+  }
+  if (page === 'mapa') {
+    return <Mapa />
   }
   if (page === 'tuto-memoria') {
     return <Tutos tema="memoria" />
@@ -648,7 +649,6 @@ export default function App() {
 
   return (
     <div className="app">
-      <WelcomeModal />
       <header className="header">
         <h1>
           <BrandHome />

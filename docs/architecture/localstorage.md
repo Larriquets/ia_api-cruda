@@ -7,8 +7,6 @@
 | Key | Contenido |
 |---|---|
 | `lang` | `'es' \| 'en'` — idioma de la UI (ver [i18n.md](i18n.md)) |
-| `welcome_dismissed_v1` | `'true'` si el alumno tildó "no volver a mostrar" en el WelcomeModal (que solo se monta en los 5 modos del taller) |
-| `welcome_dismissed_session` | **`sessionStorage`**, no localStorage: cerrar el WelcomeModal (aun sin tildar) lo silencia por el resto de la sesión |
 
 ## Chat (`/chat`)
 

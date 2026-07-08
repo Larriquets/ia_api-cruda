@@ -200,6 +200,7 @@ export const es = {
     contextoSub: 'vista en vivo del array messages',
     provLabel: '⚖️ /proveedores',
     provSub: 'OpenAI vs Anthropic',
+    mapaTitle: 'Mapa del territorio: toda la app en un plano, cada nodo es un link',
   },
 
   entrada: {
@@ -236,6 +237,26 @@ export const es = {
     verTodos: 'ver los {count} →',
     footNote: 'Las dos puertas cuentan la misma verdad: no hay magia — hay texto viajando en un POST. Y sin embargo hace lo que hace. Cada parada del recorrido tiene un botón para cruzar al taller, y cada lab tiene su versión guiada.',
     footLink: 'Ver la anatomía completa del POST →',
+    mapaLink: '🗺 o mirá el mapa del territorio: toda la app en un plano →',
+  },
+
+  mapa: {
+    subtitle: '// mapa del territorio',
+    title: 'El mapa del territorio',
+    intro: 'Toda la app en un plano. Cada nodo es una ruta de verdad: lo que ves acá es literalmente la lista de pathnames que App.jsx sabe atender. Tocá una isla para listar sus paradas, o hacé click en un nodo para ir directo.',
+    islaRecorrido: 'Recorrido',
+    islaModos: 'Modos',
+    islaLabs: 'Labs',
+    islaDemos: 'Demos animadas',
+    islaDocs: 'Docs',
+    paradas: '{count} paradas',
+    entradaNode: 'la entrada',
+    entradaNodeSub: 'la landing de las dos puertas',
+    recorridoStartLabel: 'El recorrido guiado',
+    recorridoStartSub: 'las 7 paradas en orden, sin API',
+    hoverIdle: 'pasá por un nodo para ver adónde lleva — click para ir',
+    escalera: 'Las rutas punteadas son la escalera de siempre: de la entrada salen las dos puertas, el recorrido baja a las demos, las demos al lab y el lab a los modos. Docs mira todo desde arriba.',
+    panelHint: 'Tocá una isla del mapa para ver acá abajo la lista completa de sus paradas.',
   },
 
   tutos: {
@@ -381,24 +402,6 @@ export const es = {
     hintDefault: 'Reemplaza el system base que viaja en cada request. Vacío = se usa el default.',
     logRestored: 'System prompt restaurado al default',
     logPreset: 'System prompt: preset "{label}" aplicado',
-  },
-
-  welcome: {
-    subtitle: '// todo es contexto — request, response y contexto, todo crudo',
-    close: 'Cerrar',
-    intro: 'Esta app no esconde nada: ves el JSON que sale, el JSON que vuelve, y cómo se acumula el contexto entre llamadas. Tiene 5 modos — cada uno muestra una capa distinta de cómo se trabaja con la API de un LLM. Recorrelos en orden.',
-    dontShow: 'No volver a mostrar',
-    cta: 'Empezar →',
-    chatTitle: 'Chat',
-    chatDesc: 'Chat directo a OpenAI / Claude. Mostrá los 3 modos de contexto: crudo, conversación y persistente.',
-    editorTitle: 'Editor',
-    editorDesc: 'Editor de código + IA. Le pasás un fragmento y una instrucción, te devuelve código modificado. Con o sin contexto.',
-    loopTitle: 'Loop Agéntico',
-    loopDesc: 'Loop con tool-use. La IA decide qué herramientas usar (leer/editar el código) y ejecuta múltiples pasos sola.',
-    agentsTitle: 'Agente + reglas',
-    agentsDesc: 'Agente con un archivo AGENTS.md inyectado en el system prompt: instrucciones persistentes que sigue siempre (estilo, restricciones, convenciones del proyecto).',
-    skillsTitle: 'Agente + skills',
-    skillsDesc: 'El mismo agente con AGENTS.md, pero con instrucciones cargadas bajo demanda (load_skill) + un test determinístico (run_skill_test) que la IA corre después de editar.',
   },
 
   lmstudio: {
