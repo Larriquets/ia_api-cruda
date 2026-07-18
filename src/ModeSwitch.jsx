@@ -171,6 +171,10 @@ export default function ModeSwitch({ active }) {
               <b>{t('modeswitch.provLabel')}</b>
               <span className="app-mode-menu-sub">{t('modeswitch.provSub')}</span>
             </a>
+            <a href="/ides" className="app-mode-menu-item" role="menuitem">
+              <b>{t('modeswitch.idesLabel')}</b>
+              <span className="app-mode-menu-sub">{t('modeswitch.idesSub')}</span>
+            </a>
           </div>
         )}
       </div>

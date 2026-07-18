@@ -199,6 +199,8 @@ export const en = {
     contextoSub: 'live view of the messages array',
     provLabel: '⚖️ /providers',
     provSub: 'OpenAI vs Anthropic',
+    idesLabel: '🖥 /ides',
+    idesSub: 'what Cursor & friends really send',
     mapaTitle: 'Territory map: the whole app in one chart, every node is a link',
   },
 
@@ -446,6 +448,7 @@ export const en = {
     comoFuncDesc: 'system / context / tools in the POST',
     contextoDesc: "live view of the chat's messages array",
     provDesc: 'OpenAI vs Anthropic: where context lives',
+    idesDesc: 'the agentic IDE uncovered: every feature and its lab',
     demoChatDesc: 'automatic Chat demo: raw vs conversation vs persistent',
     demoEditorDesc: 'automatic Editor demo: no context vs with context',
     demoLoopDesc: 'automatic Loop demo: agentic editing with tools',
@@ -460,6 +463,7 @@ export const en = {
     demoRazonDesc: 'animated Reasoning demo: think before you answer',
     demoAgentsDesc: 'automatic AGENTS.md demo: same tools, different system',
     demoSkillsDesc: 'automatic skills demo: lazy load + deterministic test vs inline rules',
+    demoIdeDesc: "animated IDE demo: the POST your editor builds behind your back",
   },
 
   guide: {

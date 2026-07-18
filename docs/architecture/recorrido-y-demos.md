@@ -79,8 +79,11 @@ Comparadores animados **sin API ni key**: simulan el intercambio para que un no 
 | `/demo/razonamiento` | [ModosRazonamiento.jsx](../../src/ModosRazonamiento.jsx) | OpenAI vs Claude "pensando" (qué expone cada uno) |
 | `/demo/agents-md` | [ModosAgentsMd.jsx](../../src/ModosAgentsMd.jsx) | Con y sin AGENTS.md |
 | `/demo/agents-md-skills` | [ModosAgentsMdSkills.jsx](../../src/ModosAgentsMdSkills.jsx) | AGENTS.md "fat" vs skill con test |
+| `/demo/ide` | [ModosIde.jsx](../../src/ModosIde.jsx) | El POST que arma un IDE agéntico (Cursor, Claude Code…): rules → system, archivos → contexto, tools → tool_call + diff |
 
 Las demos no persisten nada en `localStorage`.
+
+**Caso especial `/demo/ide`**: no tiene lab gemelo propio — su "versión real" es `/loop-agentico` y su doc hermana es `/ides` ([Ides.jsx](../../src/Ides.jsx) + [content/IdesBody.jsx](../../src/content/IdesBody.jsx), mismo andamiaje que `/como-funciona`): el anexo que mapea cada feature del IDE al mecanismo y al lab que ya lo demuestra, con buenas prácticas deducidas del mecanismo. La demo cierra con CTAs a `/ides` y `/loop-agentico`; la doc cierra con CTAs a `/demo/ide` y `/loop-agentico`.
 
 ### Puente lab ↔ demo
 
@@ -88,7 +91,7 @@ Las demos no persisten nada en `localStorage`.
 
 ## Lector text-to-speech
 
-[SpeechReader.jsx](../../src/SpeechReader.jsx) permite **escuchar** la página en vez de leerla. Usa la **Web Speech API nativa** del browser (`window.speechSynthesis`) — sin librería ni API externa, coherente con "la simplicidad es el material". Montado en el `aside` sticky del sidebar (queda visible al scrollear) de las páginas de docs (`/recorrido`, `/docs`, `/como-funciona`, `/proveedores`, `/contexto`, `/tutos/*`) **y de todas las demos animadas `/demo/*`**. En las demos lee lo que está en el DOM en ese momento: los pasos que todavía no se revelaron no se leen.
+[SpeechReader.jsx](../../src/SpeechReader.jsx) permite **escuchar** la página en vez de leerla. Usa la **Web Speech API nativa** del browser (`window.speechSynthesis`) — sin librería ni API externa, coherente con "la simplicidad es el material". Montado en el `aside` sticky del sidebar (queda visible al scrollear) de las páginas de docs (`/recorrido`, `/docs`, `/como-funciona`, `/ides`, `/proveedores`, `/contexto`, `/tutos/*`) **y de todas las demos animadas `/demo/*`**. En las demos lee lo que está en el DOM en ese momento: los pasos que todavía no se revelaron no se leen.
 
 Cómo funciona:
 

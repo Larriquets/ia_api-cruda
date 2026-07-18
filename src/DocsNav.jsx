@@ -5,6 +5,7 @@ const LINKS = [
   { key: 'como-funciona', href: '/como-funciona', emoji: 'C', name: '/como-funciona', descKey: 'docsnav.comoFuncDesc' },
   { key: 'contexto', href: '/contexto', emoji: 'M', name: '/contexto', descKey: 'docsnav.contextoDesc' },
   { key: 'proveedores', href: '/proveedores', emoji: 'P', name: '/proveedores', descKey: 'docsnav.provDesc' },
+  { key: 'ides', href: '/ides', emoji: 'V', name: '/ides', descKey: 'docsnav.idesDesc' },
 ]
 
 const DEMO_LINKS = [
@@ -22,6 +23,7 @@ const DEMO_LINKS = [
   { key: 'demo-razonamiento', href: '/demo/razonamiento', emoji: 'Z', name: '/demo/razonamiento', descKey: 'docsnav.demoRazonDesc' },
   { key: 'demo-agents-md', href: '/demo/agents-md', emoji: 'A', name: '/demo/agents-md', descKey: 'docsnav.demoAgentsDesc' },
   { key: 'demo-agents-md-skills', href: '/demo/agents-md-skills', emoji: 'S', name: '/demo/agents-md-skills', descKey: 'docsnav.demoSkillsDesc' },
+  { key: 'demo-ide', href: '/demo/ide', emoji: 'D', name: '/demo/ide', descKey: 'docsnav.demoIdeDesc' },
 ]
 
 export default function DocsNav({ current }) {

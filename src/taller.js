@@ -30,6 +30,7 @@ export const DEMOS = [
   { key: 'demo-razonamiento', emoji: '🧠', href: '/demo/razonamiento', label: '/demo/razonamiento', subKey: 'docsnav.demoRazonDesc' },
   { key: 'demo-agents-md', emoji: '📋', href: '/demo/agents-md', label: '/demo/agents-md', subKey: 'docsnav.demoAgentsDesc' },
   { key: 'demo-agents-md-skills', emoji: '🧪', href: '/demo/agents-md-skills', label: '/demo/agents-md-skills', subKey: 'docsnav.demoSkillsDesc' },
+  { key: 'demo-ide', emoji: '🖥', href: '/demo/ide', label: '/demo/ide', subKey: 'docsnav.demoIdeDesc' },
 ]
 
 export const LABS = [

@@ -43,7 +43,7 @@ La raíz `/` es una landing ([Entrada.jsx](../../src/Entrada.jsx)) que separa la
 El puente es bidireccional:
 
 - Cada demo/doc tiene su `TryModeCTA` ([TryModeCTA.jsx](../../src/TryModeCTA.jsx)) hacia el lab real.
-- Cada lab monta [DemoBacklink.jsx](../../src/DemoBacklink.jsx) (tira fina bajo el header, link alineado a la derecha) hacia su demo gemela. **Todos los modos y labs tienen demo**: Chat, Editor, Loop Agéntico, AGENTS.md (con/sin skills), Razonamiento, Tokens, Logprobs, MCP, Ventana de contexto, Ruido, Especificidad y Prompt injection — la ruta es siempre `/demo/<lab>`.
+- Cada lab monta [DemoBacklink.jsx](../../src/DemoBacklink.jsx) (tira fina bajo el header, link alineado a la derecha) hacia su demo gemela. **Todos los modos y labs tienen demo**: Chat, Editor, Loop Agéntico, AGENTS.md (con/sin skills), Razonamiento, Tokens, Logprobs, MCP, Ventana de contexto, Ruido, Especificidad y Prompt injection — la ruta es siempre `/demo/<lab>`. Excepción: `/demo/ide` no tiene lab gemelo propio — su doc hermana es el anexo `/ides` y su "versión real" es `/loop-agentico`.
 
 La landing no monta el `ModeSwitch`: su header muestra solo el toggle de idioma, porque las dos puertas *son* la navegación. La landing *es* la bienvenida (no hay modal de bienvenida).
 

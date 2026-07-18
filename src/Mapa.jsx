@@ -30,6 +30,7 @@ const DOCS_ITEMS = [
   { emoji: '⚙️', href: '/como-funciona', label: '/como-funciona', subKey: 'modeswitch.comoFuncSub' },
   { emoji: '🧾', href: '/contexto', label: '/contexto', subKey: 'modeswitch.contextoSub' },
   { emoji: '⚖️', href: '/proveedores', label: '/proveedores', subKey: 'modeswitch.provSub' },
+  { emoji: '🖥', href: '/ides', label: '/ides', subKey: 'modeswitch.idesSub' },
 ]
 
 const ENTRADA_ITEM = { emoji: '🚪', href: '/', labelKey: 'mapa.entradaNode', subKey: 'mapa.entradaNodeSub' }

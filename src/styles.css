@@ -9283,3 +9283,8 @@ a:where(:link, :visited):hover {
   margin: 10px 0 0;
   font-size: 13px;
 }
+
+/* ============== /demo/ide — diff del paso 4 ============== */
+
+.mid-diff-del { color: #fca5a5; }
+.mid-diff-add { color: #86efac; }

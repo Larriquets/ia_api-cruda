@@ -26,6 +26,7 @@ import Rag from './Rag.jsx'
 import Especificidad from './Especificidad.jsx'
 import Docs from './Docs.jsx'
 import ComoFunciona from './ComoFunciona.jsx'
+import Ides from './Ides.jsx'
 import Recorrido from './Recorrido.jsx'
 import ModosChat from './ModosChat.jsx'
 import ModosEditor from './ModosEditor.jsx'
@@ -41,6 +42,7 @@ import ModosRuido from './ModosRuido.jsx'
 import ModosEspecificidad from './ModosEspecificidad.jsx'
 import ModosInjection from './ModosInjection.jsx'
 import ModosRazonamiento from './ModosRazonamiento.jsx'
+import ModosIde from './ModosIde.jsx'
 import Entrada from './Entrada.jsx'
 import Mapa from './Mapa.jsx'
 import Tutos from './Tutos.jsx'
@@ -166,6 +168,7 @@ export default function App() {
     if (window.location.pathname === '/especificidad') return 'especificidad'
     if (window.location.pathname === '/docs') return 'docs'
     if (window.location.pathname === '/como-funciona') return 'como-funciona'
+    if (window.location.pathname === '/ides') return 'ides'
     if (window.location.pathname === '/recorrido') return 'recorrido'
     if (window.location.pathname === '/mapa') return 'mapa'
     if (window.location.pathname === '/tutos/memoria') return 'tuto-memoria'
@@ -187,6 +190,7 @@ export default function App() {
     if (window.location.pathname === '/demo/especificidad') return 'demo-especificidad'
     if (window.location.pathname === '/demo/prompt-injection') return 'demo-prompt-injection'
     if (window.location.pathname === '/demo/razonamiento') return 'demo-razonamiento'
+    if (window.location.pathname === '/demo/ide') return 'demo-ide'
     if (window.location.pathname === '/demo/agents-md') return 'demo-agents-md'
     if (window.location.pathname === '/demo/agents-md-skills') return 'demo-agents-md-skills'
     return 'chat'
@@ -577,6 +581,9 @@ export default function App() {
   if (page === 'como-funciona') {
     return <ComoFunciona />
   }
+  if (page === 'ides') {
+    return <Ides />
+  }
   if (page === 'recorrido') {
     return <Recorrido />
   }
@@ -639,6 +646,9 @@ export default function App() {
   }
   if (page === 'demo-razonamiento') {
     return <ModosRazonamiento />
+  }
+  if (page === 'demo-ide') {
+    return <ModosIde />
   }
   if (page === 'demo-agents-md') {
     return <ModosAgentsMd />
